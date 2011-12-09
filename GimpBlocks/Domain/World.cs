@@ -81,7 +81,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y + 1, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x - 1, y, y + 1, z - 1, z, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
@@ -89,7 +89,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y + 1, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x - 1, y, y + 1, z, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
@@ -97,7 +97,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x - 1, y - 1, y, z, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
@@ -105,7 +105,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x - 1, y - 1, y, z - 1, z, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -128,7 +128,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y + 1, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x + 1, x + 1, y, y + 1, z - 1, z, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
@@ -136,7 +136,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y + 1, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x + 1, x + 1, y, y + 1, z, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
@@ -144,7 +144,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x + 1, x + 1, y - 1, y, z - 1, z, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
@@ -152,7 +152,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x + 1, x + 1, y - 1, y, z, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
             });
 
             indexList.Add(topRightFrontIndex);
@@ -175,7 +175,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y - 1, y, z - 1, z - 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
@@ -183,7 +183,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y - 1, y, z - 1, z - 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
             });
 
             var topLeftBackIndex = (short)vertexList.Count;
@@ -191,7 +191,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y + 1, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y, y + 1, z - 1, z - 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
@@ -199,7 +199,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y + 1, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y, y + 1, z - 1, z - 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
             });
 
             indexList.Add(topRightBackIndex);
@@ -222,7 +222,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y - 1, y, z + 1, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
@@ -230,7 +230,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y - 1, y, z + 1, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
@@ -238,7 +238,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y + 1, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y, y + 1, z + 1, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
@@ -246,7 +246,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y + 1, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y, y + 1, z + 1, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.85f))
+                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
             });
 
             indexList.Add(topLeftFrontIndex);
@@ -269,7 +269,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y + 1, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y + 1, y + 1, z - 1, z, _lightBuffer.MaximumLightLevel)
+                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), 1f)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
@@ -277,15 +277,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y + 1, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y + 1, y + 1, z - 1, z, _lightBuffer.MaximumLightLevel)
-            });
-
-            var topRightFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y + 1, z + 1),
-                Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y + 1, y + 1, z, z + 1, _lightBuffer.MaximumLightLevel)
+                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), 1f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
@@ -293,7 +285,15 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y + 1, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y + 1, y + 1, z, z + 1, _lightBuffer.MaximumLightLevel)
+                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), 1f)
+            });
+
+            var topRightFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = new Vector3(x + 1, y + 1, z + 1),
+                Color = Color.LightGray,
+                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), 1f)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -316,7 +316,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y - 1, y - 1, z - 1, z, (int) (_lightBuffer.MaximumLightLevel * 0.70f))
+                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), 0.70f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
@@ -324,15 +324,7 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x + 1, y, z),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y - 1, y - 1, z - 1, z, (int) (_lightBuffer.MaximumLightLevel * 0.70f))
-            });
-
-            var bottomRightFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y, z + 1),
-                Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x, x + 1, y - 1, y - 1, z, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.70f))
+                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), 0.70f)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
@@ -340,7 +332,15 @@ namespace GimpBlocks
             {
                 Position = new Vector3(x, y, z + 1),
                 Color = Color.LightGray,
-                Lighting = _lightBuffer.AverageForVolume(x - 1, x, y - 1, y - 1, z, z + 1, (int) (_lightBuffer.MaximumLightLevel * 0.70f))
+                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), 0.70f)
+            });
+
+            var bottomRightFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = new Vector3(x + 1, y, z + 1),
+                Color = Color.LightGray,
+                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), 0.70f)
             });
 
             indexList.Add(bottomLeftFrontIndex);
@@ -349,6 +349,14 @@ namespace GimpBlocks
             indexList.Add(bottomLeftFrontIndex);
             indexList.Add(bottomRightBackIndex);
             indexList.Add(bottomLeftBackIndex);
+        }
+
+        Vector3 AverageLightingFor(int light1, int light2, int light3, float limit)
+        {
+            var average = (light1 + light2 + light3) / 3f;
+            var percentage = Math.Min(average / _lightBuffer.MaximumLightLevel, limit);
+
+            return new Vector3(percentage);
         }
     }
 }

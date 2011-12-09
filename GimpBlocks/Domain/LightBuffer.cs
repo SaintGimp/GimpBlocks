@@ -98,13 +98,5 @@ namespace GimpBlocks
             PropogateLight(newLightValue, x, y, z - 1);
             PropogateLight(newLightValue, x, y, z + 1);
         }
-
-        public Vector3 AverageForVolume(int x0, int x1, int y0, int y1, int z0, int z1, int max)
-        {
-            var average = (float) GetVolume(x0, x1, y0, y1, z0, z1).Average();
-            if (average > max)
-                average = max;
-            return new Vector3(average / MaximumLightLevel);
-        }
     }
 }
