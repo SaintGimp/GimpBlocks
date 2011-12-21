@@ -41,6 +41,11 @@ namespace GimpBlocks
             get { return _buffer[i]; }
         }
 
+        public T this[BufferLocation location]
+        {
+            get { return this[location.X, location.Y, location.Z]; }
+        }
+
         public void Initialize(Func<int, int, int, T> initializerFunction)
         {
             for (int x = 0; x < _xDimension; x++)

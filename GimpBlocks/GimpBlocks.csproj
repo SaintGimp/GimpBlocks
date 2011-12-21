@@ -80,6 +80,7 @@
     <Compile Include="Domain\BlockBuffer.cs" />
     <Compile Include="Cameras\Camera.cs" />
     <Compile Include="Cameras\CameraController.cs" />
+    <Compile Include="Domain\BufferLocation.cs" />
     <Compile Include="Domain\World.cs" />
     <Compile Include="Events\EventAggregator.cs" />
     <Compile Include="Events\EventAggregatorTypeInterceptor.cs" />

@@ -8,7 +8,7 @@ namespace GimpBlocks
 {
     public class LightBuffer : VoxelBuffer<int>
     {
-        public readonly int MaximumLightLevel = 16;
+        public readonly int MaximumLightLevel = 15;
         readonly BlockBuffer _blockBuffer;
 
         public LightBuffer(int xDimension, int yDimension, int zDimension, BlockBuffer blockBuffer)

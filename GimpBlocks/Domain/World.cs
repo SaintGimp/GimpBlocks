@@ -60,206 +60,18 @@ namespace GimpBlocks
 
         void BuildQuads(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
         {
-            BuildLeftQuad(vertexList, indexList, x, y, z);
-            BuildRightQuad(vertexList, indexList, x, y, z);
-            BuildFrontQuad(vertexList, indexList, x, y, z);
-            BuildBackQuad(vertexList, indexList, x, y, z);
-            BuildTopQuad(vertexList, indexList, x, y, z);
-            BuildBottomQuad(vertexList, indexList, x, y, z);
+            var block = new BufferLocation(x, y, z);
+            BuildLeftQuad(vertexList, indexList, block);
+            BuildRightQuad(vertexList, indexList, block);
+            BuildFrontQuad(vertexList, indexList, block);
+            BuildBackQuad(vertexList, indexList, block);
+            BuildTopQuad(vertexList, indexList, block);
+            BuildBottomQuad(vertexList, indexList, block);
         }
 
-        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
+        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
         {
-            if (_blockBuffer.LeftNeighbor(x, y, z).IsSolid)
-            {
-                return;
-            }
-
-            // TODO: should average only three blocks that affect each vertex, not four
-            var topLeftBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y + 1, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
-            });
-
-            var topLeftFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y + 1, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            var bottomLeftFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            var bottomLeftBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.LeftNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
-            });
-
-            indexList.Add(topLeftBackIndex);
-            indexList.Add(topLeftFrontIndex);
-            indexList.Add(bottomLeftFrontIndex);
-            indexList.Add(topLeftBackIndex);
-            indexList.Add(bottomLeftFrontIndex);
-            indexList.Add(bottomLeftBackIndex);
-        }
-
-        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
-        {
-            if (_blockBuffer.RightNeighbor(x, y, z).IsSolid)
-            {
-                return;
-            }
-
-            var topRightBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y + 1, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
-            });
-
-            var topRightFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y + 1, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            var bottomRightBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
-            });
-
-            var bottomRightFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.RightNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            indexList.Add(topRightFrontIndex);
-            indexList.Add(topRightBackIndex);
-            indexList.Add(bottomRightBackIndex);
-            indexList.Add(topRightFrontIndex);
-            indexList.Add(bottomRightBackIndex);
-            indexList.Add(bottomRightFrontIndex);
-        }
-
-        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
-        {
-            if (_blockBuffer.BackNeighbor(x, y, z).IsSolid)
-            {
-                return;
-            }
-
-            var bottomLeftBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
-            });
-
-            var bottomRightBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
-            });
-
-            var topLeftBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y + 1, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), _lightBuffer.LeftBackNeighbor(x, y, z), 0.85f)
-            });
-
-            var topRightBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y + 1, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.BackNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), _lightBuffer.RightBackNeighbor(x, y, z), 0.85f)
-            });
-
-            indexList.Add(topRightBackIndex);
-            indexList.Add(topLeftBackIndex);
-            indexList.Add(bottomLeftBackIndex);
-            indexList.Add(topRightBackIndex);
-            indexList.Add(bottomLeftBackIndex);
-            indexList.Add(bottomRightBackIndex);
-        }
-
-        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
-        {
-            if (_blockBuffer.FrontNeighbor(x, y, z).IsSolid)
-            {
-                return;
-            }
-
-            var bottomRightFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            var bottomLeftFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            var topRightFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y + 1, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), _lightBuffer.RightFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            var topLeftFrontIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y + 1, z + 1),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.FrontNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), _lightBuffer.LeftFrontNeighbor(x, y, z), 0.85f)
-            });
-
-            indexList.Add(topLeftFrontIndex);
-            indexList.Add(topRightFrontIndex);
-            indexList.Add(bottomRightFrontIndex);
-            indexList.Add(topLeftFrontIndex);
-            indexList.Add(bottomRightFrontIndex);
-            indexList.Add(bottomLeftFrontIndex);
-        }
-
-        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
-        {
-            if (_blockBuffer.UpNeighbor(x, y, z).IsSolid)
+            if (_blockBuffer[block.Left].IsSolid)
             {
                 return;
             }
@@ -267,33 +79,221 @@ namespace GimpBlocks
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = new Vector3(x, y + 1, z),
+                Position = block.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), 1f)
-            });
-
-            var topRightBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y + 1, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.UpBackNeighbor(x, y, z), 1f)
+                Lighting = AverageLightingOver(block.Left, block.Left.Up, block.Left.Back, block.Left.Up.Back, 0.85f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = new Vector3(x, y + 1, z + 1),
+                Position = block.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpLeftNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), 1f)
+                Lighting = AverageLightingOver(block.Left, block.Left.Up, block.Left.Front, block.Left.Up.Front, 0.85f)
+            });
+
+            var bottomLeftFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Left, block.Left.Down, block.Left.Front, block.Left.Down.Front, 0.85f)
+            });
+
+            var bottomLeftBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Left, block.Left.Down, block.Left.Back, block.Left.Down.Back, 0.85f)
+            });
+
+            indexList.Add(topLeftBackIndex);
+            indexList.Add(topLeftFrontIndex);
+            indexList.Add(bottomLeftFrontIndex);
+            indexList.Add(topLeftBackIndex);
+            indexList.Add(bottomLeftFrontIndex);
+            indexList.Add(bottomLeftBackIndex);
+        }
+
+        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        {
+            if (_blockBuffer[block.Right].IsSolid)
+            {
+                return;
+            }
+
+            var topRightFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Up.Right.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Right, block.Right.Up, block.Right.Front, block.Right.Up.Front, 0.85f)
+            });
+
+            var topRightBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Up.Right,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Right, block.Right.Up, block.Right.Back, block.Right.Up.Back, 0.85f)
+            });
+
+            var bottomRightBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Right, block.Right.Down, block.Right.Back, block.Right.Down.Back, 0.85f)
+            });
+
+            var bottomRightFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Right, block.Right.Down, block.Right.Front, block.Right.Down.Front, 0.85f)
+            });
+
+            indexList.Add(topRightFrontIndex);
+            indexList.Add(topRightBackIndex);
+            indexList.Add(bottomRightBackIndex);
+            indexList.Add(topRightFrontIndex);
+            indexList.Add(bottomRightBackIndex);
+            indexList.Add(bottomRightFrontIndex);
+        }
+
+        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        {
+            if (_blockBuffer[block.Back].IsSolid)
+            {
+                return;
+            }
+
+            var topRightBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right.Up,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Back, block.Back.Up, block.Back.Right, block.Back.Up.Right, 0.85f)
+            });
+
+            var topLeftBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Up,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Back, block.Back.Up, block.Back.Left, block.Back.Up.Left, 0.85f)
+            });
+
+            var bottomLeftBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Back, block.Back.Down, block.Back.Left, block.Back.Down.Left, 0.85f)
+            });
+
+            var bottomRightBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Back, block.Back.Down, block.Back.Right, block.Back.Down.Right, 0.85f)
+            });
+
+            indexList.Add(topRightBackIndex);
+            indexList.Add(topLeftBackIndex);
+            indexList.Add(bottomLeftBackIndex);
+            indexList.Add(topRightBackIndex);
+            indexList.Add(bottomLeftBackIndex);
+            indexList.Add(bottomRightBackIndex);
+        }
+
+        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        {
+            if (_blockBuffer[block.Front].IsSolid)
+            {
+                return;
+            }
+
+            var topLeftFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Up.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Front, block.Front.Up, block.Front.Left, block.Front.Up.Left, 0.85f)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = new Vector3(x + 1, y + 1, z + 1),
+                Position = block.Right.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.UpNeighbor(x, y, z), _lightBuffer.UpRightNeighbor(x, y, z), _lightBuffer.UpFrontNeighbor(x, y, z), 1f)
+                Lighting = AverageLightingOver(block.Front, block.Front.Up, block.Front.Right, block.Front.Up.Right, 0.85f)
+            });
+
+            var bottomRightFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Front, block.Front.Down, block.Front.Right, block.Front.Down.Right, 0.85f)
+            });
+
+            var bottomLeftFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Front, block.Front.Down, block.Front.Left, block.Front.Down.Left, 0.85f)
+            });
+
+            indexList.Add(topLeftFrontIndex);
+            indexList.Add(topRightFrontIndex);
+            indexList.Add(bottomRightFrontIndex);
+            indexList.Add(topLeftFrontIndex);
+            indexList.Add(bottomRightFrontIndex);
+            indexList.Add(bottomLeftFrontIndex);
+        }
+
+        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        {
+            if (_blockBuffer[block.Up].IsSolid)
+            {
+                return;
+            }
+
+            var topLeftBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Up,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Up, block.Up.Left, block.Up.Back, block.Up.Left.Back, 1f)
+            });
+
+            var topRightBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right.Up,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Up, block.Up.Right, block.Up.Back, block.Up.Right.Back, 1f)
+            });
+
+            var topRightFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right.Up.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Up, block.Up.Right, block.Up.Front, block.Up.Right.Front, 1f)
+            });
+
+            var topLeftFrontIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Up.Front,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Up, block.Up.Left, block.Up.Front, block.Up.Left.Front, 1f)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -304,43 +304,43 @@ namespace GimpBlocks
             indexList.Add(topLeftFrontIndex);
         }
 
-        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
+        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
         {
-            if (_blockBuffer.DownNeighbor(x, y, z).IsSolid)
+            if (_blockBuffer[block.Down].IsSolid)
             {
                 return;
             }
 
-            var bottomLeftBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x, y, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), 0.70f)
-            });
-
-            var bottomRightBackIndex = (short)vertexList.Count;
-            vertexList.Add(new VertexPositionColorLighting
-            {
-                Position = new Vector3(x + 1, y, z),
-                Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.DownBackNeighbor(x, y, z), 0.70f)
-            });
-
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = new Vector3(x, y, z + 1),
+                Position = block.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownLeftNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), 0.70f)
+                Lighting = AverageLightingOver(block.Down, block.Down.Left, block.Down.Front, block.Down.Left.Front, 0.70f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = new Vector3(x + 1, y, z + 1),
+                Position = block.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingFor(_lightBuffer.DownNeighbor(x, y, z), _lightBuffer.DownRightNeighbor(x, y, z), _lightBuffer.DownFrontNeighbor(x, y, z), 0.70f)
+                Lighting = AverageLightingOver(block.Down, block.Down.Right, block.Down.Front, block.Down.Right.Front, 0.70f)
+            });
+
+            var bottomRightBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block.Right,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Down, block.Down.Right, block.Down.Back, block.Down.Right.Back, 0.70f)
+            });
+
+            var bottomLeftBackIndex = (short)vertexList.Count;
+            vertexList.Add(new VertexPositionColorLighting
+            {
+                Position = block,
+                Color = Color.LightGray,
+                Lighting = AverageLightingOver(block.Down, block.Down.Left, block.Down.Back, block.Down.Left.Back, 0.70f)
             });
 
             indexList.Add(bottomLeftFrontIndex);
@@ -351,9 +351,27 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        Vector3 AverageLightingFor(int light1, int light2, int light3, float limit)
+        Vector3 AverageLightingOver(BufferLocation adjacent, BufferLocation edge1, BufferLocation edge2, BufferLocation diagonal, float limit)
         {
-            var average = (light1 + light2 + light3) / 3f;
+            // For each vertex we examine four voxels grouped around the vertex in the plane of the face that the vertex belongs to.
+            // The voxels we're interested in for a particular vertex are:
+            //   The voxel adjacent to the face we're calculating
+            //   One voxel along the edge of the face we're calculating
+            //   The other voxel along the edge of the face we're calculating 
+            //   The voxel diagonal to the face we're calculating
+
+            float average;
+            if (_blockBuffer[edge1].IsSolid && _blockBuffer[edge2].IsSolid)
+            {
+                // If the two edge voxels are solid then light can't get from the diagonal to the vertex we're calculating
+                // so we don't include it in the average
+                average = (_lightBuffer[adjacent] + _lightBuffer[edge1] + _lightBuffer[edge2]) / 3f;
+            }
+            else
+            {
+                average = (_lightBuffer[adjacent] + _lightBuffer[edge1] + _lightBuffer[edge2] + _lightBuffer[diagonal]) / 4f;
+            }
+
             var percentage = Math.Min(average / _lightBuffer.MaximumLightLevel, limit);
 
             return new Vector3(percentage);
