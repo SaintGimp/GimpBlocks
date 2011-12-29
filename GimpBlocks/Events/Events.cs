@@ -38,6 +38,10 @@ namespace GimpBlocks
     {
     }
 
+    public class MouseMove : InputMessage
+    {
+    }
+
     public class ToggleDrawWireframeSetting : InputMessage
     {
     }
@@ -79,6 +83,22 @@ namespace GimpBlocks
     }
 
     public class ExitApplication : InputMessage
+    {
+    }
+
+    public class PlaceBlock : InputMessage
+    {
+    }
+
+    public class DestroyBlock : InputMessage
+    {
+    }
+
+    public class ChunkRebuilt
+    {
+    }
+
+    public class CameraMoved
     {
     }
 }

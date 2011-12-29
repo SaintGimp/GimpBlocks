@@ -7,16 +7,22 @@ using Microsoft.Xna.Framework;
 namespace GimpBlocks
 {
     public class World
+        : IListener<PlaceBlock>,
+        IListener<DestroyBlock>
     {
         readonly IWorldRenderer _renderer;
-        readonly BlockBuffer _blockBuffer;
-        readonly LightBuffer _lightBuffer;
+        readonly BlockArray _blockArray;
+        readonly LightArray _lightArray;
+        readonly BlockPrototypeMap _prototypeMap;
+        readonly BlockPicker _blockPicker;
 
-        public World(IWorldRenderer renderer)
+        public World(IWorldRenderer renderer, BlockArray blockArray, LightArray lightArray, BlockPrototypeMap prototypeMap, BlockPicker blockPicker)
         {
             _renderer = renderer;
-            _blockBuffer = new BlockBuffer(16, 16, 16);
-            _lightBuffer = new LightBuffer(16, 16, 16, _blockBuffer);
+            _blockArray = blockArray;
+            _lightArray = lightArray;
+            _prototypeMap = prototypeMap;
+            _blockPicker = blockPicker;
         }
 
         public void Generate()
@@ -24,54 +30,54 @@ namespace GimpBlocks
 
             var random = new Random(123);
 
-            _blockBuffer.Initialize((x, y, z) =>
+            _blockArray.Initialize((x, y, z) =>
             {
                 if (x > 0 && x < 15 && y > 0 && y < 15 && z > 0 && z < 15)
                 {
-                    return new Block()
-                    {
-                        Type = random.Next(4) > 0 ? BlockType.Air : BlockType.Stone
-                    };
+                    return random.Next(4) > 0 ? _prototypeMap[0] : _prototypeMap[1];
                 }
                 else
                 {
-                    return new Block()
-                    {
-                        Type = BlockType.Air
-                    };
+                    return _prototypeMap[0];
                 }
             });
 
-            _lightBuffer.Calculate();
+            Rebuild();
+        }
+
+        void Rebuild()
+        {
+            _lightArray.Calculate();
 
             var vertexList = new List<VertexPositionColorLighting>();
             var indexList = new List<short>();
 
-            _blockBuffer.ForEach((block, x, y, z) =>
-            {
-                if (block.IsSolid)
+            _blockArray.ForEach(block =>
                 {
-                    BuildQuads(vertexList, indexList, x, y, z);
-                }
-            });
+                    if (block.Prototype.IsSolid)
+                    {
+                        BuildQuads(vertexList, indexList, block.Position);
+                    }
+                });
 
             _renderer.Initialize(vertexList, indexList);
+
+            EventAggregator.Instance.SendMessage(new ChunkRebuilt());
         }
 
-        void BuildQuads(List<VertexPositionColorLighting> vertexList, List<short> indexList, int x, int y, int z)
+        void BuildQuads(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
         {
-            var block = new BufferLocation(x, y, z);
-            BuildLeftQuad(vertexList, indexList, block);
-            BuildRightQuad(vertexList, indexList, block);
-            BuildFrontQuad(vertexList, indexList, block);
-            BuildBackQuad(vertexList, indexList, block);
-            BuildTopQuad(vertexList, indexList, block);
-            BuildBottomQuad(vertexList, indexList, block);
+            BuildLeftQuad(vertexList, indexList, blockPosition);
+            BuildRightQuad(vertexList, indexList, blockPosition);
+            BuildFrontQuad(vertexList, indexList, blockPosition);
+            BuildBackQuad(vertexList, indexList, blockPosition);
+            BuildTopQuad(vertexList, indexList, blockPosition);
+            BuildBottomQuad(vertexList, indexList, blockPosition);
         }
 
-        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
         {
-            if (_blockBuffer[block.Left].IsSolid)
+            if (_blockArray[blockPosition.Left].IsSolid)
             {
                 return;
             }
@@ -79,33 +85,33 @@ namespace GimpBlocks
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up,
+                Position = blockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Left, block.Left.Up, block.Left.Back, block.Left.Up.Back, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Up, blockPosition.Left.Back, blockPosition.Left.Up.Back, 0.85f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up.Front,
+                Position = blockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Left, block.Left.Up, block.Left.Front, block.Left.Up.Front, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Up, blockPosition.Left.Front, blockPosition.Left.Up.Front, 0.85f)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Front,
+                Position = blockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Left, block.Left.Down, block.Left.Front, block.Left.Down.Front, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Down, blockPosition.Left.Front, blockPosition.Left.Down.Front, 0.85f)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block,
+                Position = blockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Left, block.Left.Down, block.Left.Back, block.Left.Down.Back, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Down, blockPosition.Left.Back, blockPosition.Left.Down.Back, 0.85f)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -116,9 +122,9 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
         {
-            if (_blockBuffer[block.Right].IsSolid)
+            if (_blockArray[blockPosition.Right].IsSolid)
             {
                 return;
             }
@@ -126,33 +132,33 @@ namespace GimpBlocks
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up.Right.Front,
+                Position = blockPosition.Up.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Right, block.Right.Up, block.Right.Front, block.Right.Up.Front, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Up, blockPosition.Right.Front, blockPosition.Right.Up.Front, 0.85f)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up.Right,
+                Position = blockPosition.Up.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Right, block.Right.Up, block.Right.Back, block.Right.Up.Back, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Up, blockPosition.Right.Back, blockPosition.Right.Up.Back, 0.85f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right,
+                Position = blockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Right, block.Right.Down, block.Right.Back, block.Right.Down.Back, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Down, blockPosition.Right.Back, blockPosition.Right.Down.Back, 0.85f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right.Front,
+                Position = blockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Right, block.Right.Down, block.Right.Front, block.Right.Down.Front, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Down, blockPosition.Right.Front, blockPosition.Right.Down.Front, 0.85f)
             });
 
             indexList.Add(topRightFrontIndex);
@@ -163,9 +169,9 @@ namespace GimpBlocks
             indexList.Add(bottomRightFrontIndex);
         }
 
-        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
         {
-            if (_blockBuffer[block.Back].IsSolid)
+            if (_blockArray[blockPosition.Back].IsSolid)
             {
                 return;
             }
@@ -173,33 +179,33 @@ namespace GimpBlocks
             var topRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right.Up,
+                Position = blockPosition.Right.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Back, block.Back.Up, block.Back.Right, block.Back.Up.Right, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Up, blockPosition.Back.Right, blockPosition.Back.Up.Right, 0.85f)
             });
 
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up,
+                Position = blockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Back, block.Back.Up, block.Back.Left, block.Back.Up.Left, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Up, blockPosition.Back.Left, blockPosition.Back.Up.Left, 0.85f)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block,
+                Position = blockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Back, block.Back.Down, block.Back.Left, block.Back.Down.Left, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Down, blockPosition.Back.Left, blockPosition.Back.Down.Left, 0.85f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right,
+                Position = blockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Back, block.Back.Down, block.Back.Right, block.Back.Down.Right, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Down, blockPosition.Back.Right, blockPosition.Back.Down.Right, 0.85f)
             });
 
             indexList.Add(topRightBackIndex);
@@ -210,9 +216,9 @@ namespace GimpBlocks
             indexList.Add(bottomRightBackIndex);
         }
 
-        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
         {
-            if (_blockBuffer[block.Front].IsSolid)
+            if (_blockArray[blockPosition.Front].IsSolid)
             {
                 return;
             }
@@ -220,33 +226,33 @@ namespace GimpBlocks
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up.Front,
+                Position = blockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Front, block.Front.Up, block.Front.Left, block.Front.Up.Left, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Up, blockPosition.Front.Left, blockPosition.Front.Up.Left, 0.85f)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right.Up.Front,
+                Position = blockPosition.Right.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Front, block.Front.Up, block.Front.Right, block.Front.Up.Right, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Up, blockPosition.Front.Right, blockPosition.Front.Up.Right, 0.85f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right.Front,
+                Position = blockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Front, block.Front.Down, block.Front.Right, block.Front.Down.Right, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Down, blockPosition.Front.Right, blockPosition.Front.Down.Right, 0.85f)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Front,
+                Position = blockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Front, block.Front.Down, block.Front.Left, block.Front.Down.Left, 0.85f)
+                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Down, blockPosition.Front.Left, blockPosition.Front.Down.Left, 0.85f)
             });
 
             indexList.Add(topLeftFrontIndex);
@@ -257,9 +263,9 @@ namespace GimpBlocks
             indexList.Add(bottomLeftFrontIndex);
         }
 
-        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
         {
-            if (_blockBuffer[block.Up].IsSolid)
+            if (_blockArray[blockPosition.Up].IsSolid)
             {
                 return;
             }
@@ -267,33 +273,33 @@ namespace GimpBlocks
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up,
+                Position = blockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Up, block.Up.Left, block.Up.Back, block.Up.Left.Back, 1f)
+                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Left, blockPosition.Up.Back, blockPosition.Up.Left.Back, 1f)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right.Up,
+                Position = blockPosition.Right.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Up, block.Up.Right, block.Up.Back, block.Up.Right.Back, 1f)
+                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Right, blockPosition.Up.Back, blockPosition.Up.Right.Back, 1f)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right.Up.Front,
+                Position = blockPosition.Right.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Up, block.Up.Right, block.Up.Front, block.Up.Right.Front, 1f)
+                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Right, blockPosition.Up.Front, blockPosition.Up.Right.Front, 1f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Up.Front,
+                Position = blockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Up, block.Up.Left, block.Up.Front, block.Up.Left.Front, 1f)
+                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Left, blockPosition.Up.Front, blockPosition.Up.Left.Front, 1f)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -304,9 +310,9 @@ namespace GimpBlocks
             indexList.Add(topLeftFrontIndex);
         }
 
-        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BufferLocation block)
+        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
         {
-            if (_blockBuffer[block.Down].IsSolid)
+            if (_blockArray[blockPosition.Down].IsSolid)
             {
                 return;
             }
@@ -314,33 +320,33 @@ namespace GimpBlocks
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Front,
+                Position = blockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Down, block.Down.Left, block.Down.Front, block.Down.Left.Front, 0.70f)
+                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Left, blockPosition.Down.Front, blockPosition.Down.Left.Front, 0.70f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right.Front,
+                Position = blockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Down, block.Down.Right, block.Down.Front, block.Down.Right.Front, 0.70f)
+                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Right, blockPosition.Down.Front, blockPosition.Down.Right.Front, 0.70f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block.Right,
+                Position = blockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Down, block.Down.Right, block.Down.Back, block.Down.Right.Back, 0.70f)
+                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Right, blockPosition.Down.Back, blockPosition.Down.Right.Back, 0.70f)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = block,
+                Position = blockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(block.Down, block.Down.Left, block.Down.Back, block.Down.Left.Back, 0.70f)
+                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Left, blockPosition.Down.Back, blockPosition.Down.Left.Back, 0.70f)
             });
 
             indexList.Add(bottomLeftFrontIndex);
@@ -351,7 +357,7 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        Vector3 AverageLightingOver(BufferLocation adjacent, BufferLocation edge1, BufferLocation edge2, BufferLocation diagonal, float limit)
+        Vector3 AverageLightingOver(BlockPosition adjacent, BlockPosition edge1, BlockPosition edge2, BlockPosition diagonal, float limit)
         {
             // For each vertex we examine four voxels grouped around the vertex in the plane of the face that the vertex belongs to.
             // The voxels we're interested in for a particular vertex are:
@@ -361,20 +367,40 @@ namespace GimpBlocks
             //   The voxel diagonal to the face we're calculating
 
             float average;
-            if (_blockBuffer[edge1].IsSolid && _blockBuffer[edge2].IsSolid)
+            if (_blockArray[edge1].IsSolid && _blockArray[edge2].IsSolid)
             {
                 // If the two edge voxels are solid then light can't get from the diagonal to the vertex we're calculating
                 // so we don't include it in the average
-                average = (_lightBuffer[adjacent] + _lightBuffer[edge1] + _lightBuffer[edge2]) / 3f;
+                average = (_lightArray[adjacent] + _lightArray[edge1] + _lightArray[edge2]) / 3f;
             }
             else
             {
-                average = (_lightBuffer[adjacent] + _lightBuffer[edge1] + _lightBuffer[edge2] + _lightBuffer[diagonal]) / 4f;
+                average = (_lightArray[adjacent] + _lightArray[edge1] + _lightArray[edge2] + _lightArray[diagonal]) / 4f;
             }
 
-            var percentage = Math.Min(average / _lightBuffer.MaximumLightLevel, limit);
+            var percentage = Math.Min(average / _lightArray.MaximumLightLevel, limit);
 
             return new Vector3(percentage);
+        }
+
+        public void Handle(PlaceBlock message)
+        {
+            if (_blockPicker.SelectedBlock != null)
+            {
+                _blockArray[_blockPicker.SelectedPlacePosition] = _prototypeMap[1];
+
+                Rebuild();
+            }
+        }
+
+        public void Handle(DestroyBlock message)
+        {
+            if (_blockPicker.SelectedBlock != null)
+            {
+                _blockArray[_blockPicker.SelectedBlock.Position] = _prototypeMap[0];
+
+                Rebuild();
+            }
         }
     }
 }

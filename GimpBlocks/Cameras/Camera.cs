@@ -28,6 +28,10 @@ namespace GimpBlocks
 
         Vector3 Location { get; set; }
 
+        Vector3 Up { get; }
+
+        Vector3 LookAt { get; }
+
         void ChangeYaw(float amount);
 
         void ChangePitch(float amount);
@@ -56,13 +60,15 @@ namespace GimpBlocks
         // This is a pretty normal three-axis free-flight camera.  Left and right motion are relative
         // to the current camera facing but forward, backward, up, and down are always axis-aligned.
 
-        ISettings _settings;
+        readonly ISettings _settings;
 
         // Attributes for view matrix
         Vector3 _cameraLocation;
         float _cameraYaw;
         float _cameraPitch;
         float _cameraRoll;
+        public Vector3 Up { get; private set; }
+        public Vector3 LookAt { get; private set; }
         Matrix _originBasedViewMatrix;
         public const float MaximumPitch = (float) Math.PI / 2 - 0.01f;
         public const float MinimumPitch = (float) -Math.PI / 2 + 0.01f;
@@ -76,7 +82,7 @@ namespace GimpBlocks
         Matrix _projectionMatrix;
 
         // View frustum
-        BoundingFrustum _originBasedViewFrustum = new BoundingFrustum(Matrix.Identity);
+        readonly BoundingFrustum _originBasedViewFrustum = new BoundingFrustum(Matrix.Identity);
 
         public Camera(ISettings settings)
         {
@@ -133,7 +139,7 @@ namespace GimpBlocks
 
             ClampPitch();
 
-            CreateViewMatrix();
+            UpdateView();
         }
 
         bool IsStraightUp(Vector3 vector)
@@ -159,7 +165,7 @@ namespace GimpBlocks
             _cameraPitch = pitch;
             _cameraRoll = roll;
 
-            CreateViewMatrix();
+            UpdateView();
         }
 
         public void SetProjectionParameters(float fieldOfView, float zoomLevel, float aspectRatio, float nearPlane, float farPlane)
@@ -205,7 +211,7 @@ namespace GimpBlocks
             set
             {
                 _cameraLocation = value;
-                CreateViewMatrix();
+                UpdateView();
             }
         }
 
@@ -219,7 +225,7 @@ namespace GimpBlocks
             set
             {
                 _cameraYaw = value;
-                CreateViewMatrix();
+                UpdateView();
             }
         }
 
@@ -234,7 +240,7 @@ namespace GimpBlocks
             {
                 _cameraPitch = value;
                 ClampPitch();
-                CreateViewMatrix();
+                UpdateView();
             }
         }
 
@@ -248,7 +254,7 @@ namespace GimpBlocks
             set
             {
                 _cameraRoll = value;
-                CreateViewMatrix();
+                UpdateView();
             }
         }
 
@@ -278,7 +284,13 @@ namespace GimpBlocks
             _originBasedViewFrustum.Matrix = Matrix.Multiply(OriginBasedViewTransformation, ProjectionTransformation);
         }
 
-        protected void CreateViewMatrix()
+        protected void UpdateView()
+        {
+            CreateViewMatrix();
+            EventAggregator.Instance.SendMessage(new CameraMoved());
+        }
+
+        void CreateViewMatrix()
         {
             Matrix yawMatrix = Matrix.CreateRotationY(_cameraYaw);
             Matrix pitchMatrix = Matrix.CreateRotationX(_cameraPitch);
@@ -289,12 +301,12 @@ namespace GimpBlocks
             // we need to apply pitch then yaw.
             Vector3 cameraRotation = Vector3.Transform(Vector3.Forward, pitchMatrix);
             cameraRotation = Vector3.Transform(cameraRotation, yawMatrix);
-            Vector3 cameraLookAt = cameraRotation;
-            Vector3 cameraUp = Vector3.Transform(Vector3.UnitY, rollMatrix);
+            LookAt = cameraRotation;
+            Up = Vector3.Transform(Vector3.UnitY, rollMatrix);
 
             // Now that we have a vector pointing towards where we want the camera to look,
             // create a view matrix to represent the total transformation.
-            _originBasedViewMatrix = Matrix.CreateLookAt(Vector3.Zero, cameraLookAt, cameraUp);
+            _originBasedViewMatrix = Matrix.CreateLookAt(Vector3.Zero, LookAt, Up);
 
             // Update the view frustum since we changed the camera transforms
             _originBasedViewFrustum.Matrix = OriginBasedViewTransformation * ProjectionTransformation;
@@ -303,13 +315,13 @@ namespace GimpBlocks
         public void ChangeYaw(float amount)
         {
             Yaw += amount;
-            CreateViewMatrix();
+            UpdateView();
         }
 
         public void ChangePitch(float amount)
         {
             Pitch += amount;
-            CreateViewMatrix();
+            UpdateView();
         }
 
         private void ClampPitch()
@@ -324,14 +336,14 @@ namespace GimpBlocks
             distance = -distance;
             var translationVector = new Vector3((float)(distance * Math.Sin(_cameraYaw)), 0.0f, (float)(distance * Math.Cos(_cameraYaw)));
             _cameraLocation += translationVector;
-            CreateViewMatrix();
+            UpdateView();
         }
 
         public void MoveBackwardHorizontally(float distance)
         {
             var translationVector = new Vector3((float)(distance * Math.Sin(_cameraYaw)), 0.0f, (float)(distance * Math.Cos(_cameraYaw)));
             _cameraLocation += translationVector;
-            CreateViewMatrix();
+            UpdateView();
         }
 
         public void MoveLeft(float distance)
@@ -339,21 +351,21 @@ namespace GimpBlocks
             distance = -distance;
             var translationVector = new Vector3((float)(distance * Math.Sin(_cameraYaw + (Math.PI / 2))), 0.0f, (float)(distance * Math.Cos(_cameraYaw + (Math.PI / 2))));
             _cameraLocation += translationVector;
-            CreateViewMatrix();
+            UpdateView();
         }
 
         public void MoveRight(float distance)
         {
             var translationVector = new Vector3((float)(distance * Math.Sin(_cameraYaw + (Math.PI / 2))), 0.0f, (float)(distance * Math.Cos(_cameraYaw + (Math.PI / 2))));
             _cameraLocation += translationVector;
-            CreateViewMatrix();
+            UpdateView();
         }
 
         public void MoveUp(float distance)
         {
             var translationVector = new Vector3(0.0f, distance, 0.0f);
             _cameraLocation += translationVector;
-            CreateViewMatrix();
+            UpdateView();
         }
 
         public void MoveDown(float distance)
@@ -361,7 +373,7 @@ namespace GimpBlocks
             distance = -distance;
             var translationVector = new Vector3(0.0f, distance, 0.0f);
             _cameraLocation += translationVector;
-            CreateViewMatrix();
+            UpdateView();
         }
     }
 }

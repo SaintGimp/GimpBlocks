@@ -18,24 +18,29 @@ namespace GimpBlocks
     /// </summary>
     public class Game : Microsoft.Xna.Framework.Game
     {
-        GraphicsDeviceManager graphics;
+        readonly GraphicsDeviceManager _graphics;
+        SpriteBatch _spriteBatch;
+        Texture2D _crosshairTexture;
+
         IInputState _inputState;
         IInputMapper _inputMapper;
         ICamera _camera;
         ICameraController _cameraController;
         World _world;
         IWorldRenderer _worldRenderer;
+        IBoundingBoxRenderer _boundingBoxRenderer;
+        BlockPicker _blockPicker;
 
         public Game()
         {
-            graphics = new GraphicsDeviceManager(this);
+            _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
             IsFixedTimeStep = false;
-            graphics.SynchronizeWithVerticalRetrace = true;
+            _graphics.SynchronizeWithVerticalRetrace = true;
 
-            graphics.PreferredDepthStencilFormat = DepthFormat.Depth24;
-            graphics.PreferMultiSampling = false;
+            _graphics.PreferredDepthStencilFormat = DepthFormat.Depth24;
+            _graphics.PreferMultiSampling = false;
 
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += Window_ClientSizeChanged;
@@ -60,6 +65,8 @@ namespace GimpBlocks
         protected override void Initialize()
         {
             IsMouseVisible = true;
+            Mouse.WindowHandle = Window.Handle;
+            Mouse.SetPosition(Window.ClientBounds.Center.X, Window.ClientBounds.Center.X);
 
             _inputState = ObjectFactory.GetInstance<IInputState>();
             _inputMapper = ObjectFactory.GetInstance<IInputMapper>();
@@ -67,11 +74,21 @@ namespace GimpBlocks
             // Don't need this right now but we have to create the object in the container so it can receive messages
             _cameraController = ObjectFactory.GetInstance<ICameraController>();
 
+            _inputState.SetRelativeMouseMode(new Point(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2));
             SetInputBindings();
 
             var effect = Content.Load<Effect>("BlockEffect");
-            _worldRenderer = new WorldRenderer(graphics.GraphicsDevice, effect);
-            _world = new World(_worldRenderer);
+            _worldRenderer = new WorldRenderer(_graphics.GraphicsDevice, effect);
+            _boundingBoxRenderer = new BoundingBoxRenderer(_graphics.GraphicsDevice);
+            var prototypeMap = new BlockPrototypeMap();
+            var blockArray = new BlockArray(prototypeMap, 16, 16, 16);
+            var lightArray = new LightArray(16, 16, 16, blockArray);
+            _blockPicker = new BlockPicker(blockArray, _camera, _graphics.GraphicsDevice);
+            _world = new World(_worldRenderer, blockArray, lightArray, prototypeMap, _blockPicker);
+
+            var eventAggregator = ObjectFactory.GetInstance<IEventAggregator>();
+            eventAggregator.AddListener(_blockPicker);
+            eventAggregator.AddListener(_world);
 
             var stopWatch = new Stopwatch();
             stopWatch.Measure(() => _world.Generate());
@@ -104,9 +121,9 @@ namespace GimpBlocks
 
             _inputMapper.AddKeyPressMessage<ExitApplication>(Keys.Escape);
 
-            // TODO: we don't specify which mouse button must be down (hardcoded to right button ATM),
-            // this can be extended when we need to.
-            _inputMapper.AddMouseMoveMessage<MouseLook>();
+            _inputMapper.AddGeneralInputMessage<MouseLook>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
+            _inputMapper.AddGeneralInputMessage<PlaceBlock>(inputState => inputState.IsRightMouseButtonClicked);
+            _inputMapper.AddGeneralInputMessage<DestroyBlock>(inputState => inputState.IsLeftMouseButtonClicked);
         }
 
 
@@ -116,7 +133,8 @@ namespace GimpBlocks
         /// </summary>
         protected override void LoadContent()
         {
-            // TODO: use this.Content to load your game content here
+            _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
+            _crosshairTexture = Content.Load<Texture2D>("crosshair");
         }
 
         /// <summary>
@@ -144,9 +162,26 @@ namespace GimpBlocks
         {
             GraphicsDevice.Clear(Color.Black);
 
+            GraphicsDevice.BlendState = BlendState.Opaque;
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
             _worldRenderer.Draw(Vector3.Zero, _camera.Location, _camera.OriginBasedViewTransformation,
                                 _camera.ProjectionTransformation);
             
+            if (_blockPicker.SelectedBlock != null)
+            {
+                var boundingBox = _blockPicker.SelectedBlock.BoundingBox;
+                var offset = new Vector3(0.003f);
+                var selectionBox = new BoundingBox(boundingBox.Min - offset, boundingBox.Max + offset);
+                _boundingBoxRenderer.Draw(selectionBox, _camera.Location,
+                                _camera.OriginBasedViewTransformation, _camera.ProjectionTransformation);
+            }
+
+            _spriteBatch.Begin();
+            var crossHairPosition = new Vector2(Window.ClientBounds.Width / 2 - _crosshairTexture.Width / 2, Window.ClientBounds.Height / 2 - _crosshairTexture.Height / 2);
+            _spriteBatch.Draw(_crosshairTexture, crossHairPosition, Color.White);
+            _spriteBatch.End();
+
             base.Draw(gameTime);
         }
     }

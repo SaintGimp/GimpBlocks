@@ -22,11 +22,11 @@ namespace GimpBlocks
 
             MakeSingleton<ICamera>();
             MakeSingleton<ICameraController>();
-            MakeSingleton<IEventAggregator>();
             MakeSingleton<IInputMapper>();
             MakeSingleton<ISettings>();
             MakeSingleton<Statistics>();
-            
+
+            For<IEventAggregator>().Use(() => EventAggregator.Instance);
             For<IInputState>().Use<XnaInputState>();
 
             RegisterInterceptor(new EventAggregatorTypeInterceptor());

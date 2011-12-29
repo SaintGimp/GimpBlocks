@@ -6,15 +6,15 @@ using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
 {
-    public class LightBuffer : VoxelBuffer<int>
+    public class LightArray : Array3<int>
     {
         public readonly int MaximumLightLevel = 15;
-        readonly BlockBuffer _blockBuffer;
+        readonly BlockArray _blockArray;
 
-        public LightBuffer(int xDimension, int yDimension, int zDimension, BlockBuffer blockBuffer)
+        public LightArray(int xDimension, int yDimension, int zDimension, BlockArray blockArray)
             : base(xDimension, yDimension, zDimension)
         {
-            _blockBuffer = blockBuffer;
+            _blockArray = blockArray;
         }
 
         public void Calculate()
@@ -25,12 +25,12 @@ namespace GimpBlocks
 
         void CastSunlight()
         {
-            for (int x = 0; x < 16; x++)
+            for (int x = 0; x < XDimension; x++)
             {
-                for (int z = 0; z < 16; z++)
+                for (int z = 0; z < ZDimension; z++)
                 {
-                    int y = 15;
-                    while (y >= 0 && !_blockBuffer[x, y, z].IsSolid)
+                    int y = YDimension - 1;
+                    while (y >= 0 && !_blockArray[x, y, z].IsSolid)
                     {
                         this[x, y, z] = MaximumLightLevel;
                         y--;
@@ -46,7 +46,7 @@ namespace GimpBlocks
                 return;
             }
 
-            if (_blockBuffer[x, y, z].IsSolid)
+            if (_blockArray[x, y, z].IsSolid)
             {
                 return;
             }
@@ -73,7 +73,7 @@ namespace GimpBlocks
                 return;
             }
 
-            if (_blockBuffer[x, y, z].IsSolid)
+            if (_blockArray[x, y, z].IsSolid)
             {
                 return;
             }

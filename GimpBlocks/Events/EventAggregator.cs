@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using StructureMap;
 
 namespace GimpBlocks
 {
@@ -14,8 +15,15 @@ namespace GimpBlocks
 
     public class EventAggregator : IEventAggregator
     {
-        object _lockObject = new object();
-        List<WeakReference> _listeners = new List<WeakReference>();
+        readonly object _lockObject = new object();
+        readonly List<WeakReference> _listeners = new List<WeakReference>();
+
+        static EventAggregator()
+        {
+            Instance = new EventAggregator();
+        }
+
+        public static IEventAggregator Instance { get; set; }
 
         public void SendMessage<T>(T message)
         {

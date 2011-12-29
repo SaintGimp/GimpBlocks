@@ -12,7 +12,7 @@ namespace GimpBlocks
 
         void AddKeyDownMessage<T>(Keys key) where T : InputMessage, new();
 
-        void AddMouseMoveMessage<T>() where T : InputMessage, new();
+        void AddGeneralInputMessage<T>(Func<IInputState, bool> filter) where T : InputMessage, new();
 
         void HandleInput(IInputState inputState);
     }
@@ -24,7 +24,7 @@ namespace GimpBlocks
         readonly IEventAggregator _eventAggregator;
         readonly List<KeyEvent> _keyPressEvents = new List<KeyEvent>();
         readonly List<KeyEvent> _keyDownEvents = new List<KeyEvent>();
-        readonly List<MouseMoveEvent> _mouseMoveEvents = new List<MouseMoveEvent>();
+        readonly List<InputEvent> _generalInputEvents = new List<InputEvent>();
 
         public InputMapper(IEventAggregator eventAggregator)
         {
@@ -35,7 +35,7 @@ namespace GimpBlocks
         {
             SendKeyPressMessages(inputState);
             SendKeyDownMessages(inputState);
-            SendMouseMoveMessages(inputState);
+            SendGeneralInputMessages(inputState);
         }
 
         private void SendKeyPressMessages(IInputState inputState)
@@ -54,15 +54,11 @@ namespace GimpBlocks
             }
         }
 
-        private void SendMouseMoveMessages(IInputState inputState)
+        private void SendGeneralInputMessages(IInputState inputState)
         {
-            // TODO: we have the "right mouse button down" requirement hardcoded here for now
-            if (inputState.IsRightMouseButtonDown && (inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0))
+            foreach (var inputEvent in _generalInputEvents.Where(inputEvent => inputEvent.Filter(inputState)))
             {
-                foreach (var moveEvent in _mouseMoveEvents)
-                {
-                    moveEvent.Send(inputState);
-                }
+                inputEvent.Send(inputState);
             }
         }
 
@@ -79,9 +75,9 @@ namespace GimpBlocks
             _keyDownEvents.Add(new KeyEvent { Key = key, Send = x => _eventAggregator.SendMessage(new T { InputState = x }) });
         }
 
-        public void AddMouseMoveMessage<T>() where T : InputMessage, new()
+        public void AddGeneralInputMessage<T>(Func<IInputState, bool> filter) where T : InputMessage, new()
         {
-            _mouseMoveEvents.Add(new MouseMoveEvent { Send = x => _eventAggregator.SendMessage(new T { InputState = x }) });
+            _generalInputEvents.Add(new InputEvent { Filter = filter, Send = x => _eventAggregator.SendMessage(new T { InputState = x }) });
         }
 
         private class KeyEvent
@@ -90,8 +86,9 @@ namespace GimpBlocks
             public Action<IInputState> Send;
         }
 
-        private class MouseMoveEvent
+        private class InputEvent
         {
+            public Func<IInputState, bool> Filter;
             public Action<IInputState> Send;
         }
     }
