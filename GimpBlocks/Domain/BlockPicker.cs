@@ -36,10 +36,11 @@ namespace GimpBlocks
             var ray = new Ray(_camera.Location, _camera.LookAt);
 
             var currentLocation = _camera.Location;
-            var lowerBound = new BlockPosition((int) currentLocation.X - 3, (int) currentLocation.Y - 3,
-                                               (int) currentLocation.Z - 3);
-            var upperBound = new BlockPosition((int) currentLocation.X + 3, (int) currentLocation.Y + 3,
-                                               (int) currentLocation.Z + 3);
+            var pickDistance = 4;
+            var lowerBound = new BlockPosition((int)currentLocation.X - pickDistance, (int)currentLocation.Y - pickDistance,
+                                               (int)currentLocation.Z - pickDistance);
+            var upperBound = new BlockPosition((int)currentLocation.X + pickDistance, (int)currentLocation.Y + pickDistance,
+                                               (int)currentLocation.Z + pickDistance);
 
             // TODO: potential optimizations: get only the blocks that could possibly be in view
             // (maybe plane/BB intersection tests, if they're faster?), test the nearest blocks first,
@@ -101,27 +102,6 @@ namespace GimpBlocks
         bool IsClose(float first, float second)
         {
             return Math.Abs(first - second) < 0.00000001;
-        }
-
-        public Ray CalculateCursorRay(Vector2 mouseScreenPosition, Matrix projectionMatrix, Matrix viewMatrix)
-        {
-            // create 2 positions in screenspace using the cursor position. 0 is as
-            // close as possible to the camera, 1 is as far away as possible.
-            var nearSource = new Vector3(mouseScreenPosition, 0f);
-            var farSource = new Vector3(mouseScreenPosition, 1f);
-
-            // use Viewport.Unproject to tell what those two screen space positions
-            // would be in world space.
-            Vector3 nearPoint = _graphicsDevice.Viewport.Unproject(nearSource, projectionMatrix, viewMatrix, Matrix.Identity);
-            Vector3 farPoint = _graphicsDevice.Viewport.Unproject(farSource, projectionMatrix, viewMatrix, Matrix.Identity);
-
-            // find the direction vector that goes from the nearPoint to the farPoint
-            // and normalize it....
-            Vector3 direction = farPoint - nearPoint;
-            direction.Normalize();
-
-            // and then create a new ray using nearPoint as the source.
-            return new Ray(nearPoint + _camera.Location, direction);
         }
 
         public void Handle(ChunkRebuilt message)

@@ -19,8 +19,17 @@ namespace GimpBlocks
 
         public void Calculate()
         {
+            ResetLight();
             CastSunlight();
             ForEach(BeginPropogateLight);
+        }
+
+        void ResetLight()
+        {
+            for (int x = 0; x < BufferSize; x++)
+            {
+                this[x] = 0;
+            }
         }
 
         void CastSunlight()

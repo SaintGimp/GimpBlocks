@@ -8,11 +8,11 @@ namespace GimpBlocks
     public class Array3<T>
     {
         // left-right
-        protected readonly int XDimension;
+        public int XDimension { get; protected set; }
         // up-down
-        protected readonly int YDimension;
+        public int YDimension { get; protected set; }
         // in-out (positive toward viewer);
-        protected readonly int ZDimension;
+        public int ZDimension { get; protected set; }
 
         protected readonly int LayerSize;
         protected readonly int BufferSize;
@@ -39,6 +39,7 @@ namespace GimpBlocks
         public T this[int i]
         {
             get { return Buffer[i]; }
+            set { Buffer[i] = value; }
         }
 
         public T this[BlockPosition location]

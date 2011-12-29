@@ -90,9 +90,7 @@ namespace GimpBlocks
             eventAggregator.AddListener(_blockPicker);
             eventAggregator.AddListener(_world);
 
-            var stopWatch = new Stopwatch();
-            stopWatch.Measure(() => _world.Generate());
-            Debug.WriteLine("Generation time: " + stopWatch.ElapsedMilliseconds + " ms");
+            _world.Generate();
 
             SetViewportDependentParameters();
 

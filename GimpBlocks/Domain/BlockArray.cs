@@ -16,6 +16,21 @@ namespace GimpBlocks
             _blockIndexes = new Array3<byte>(xDimension, yDimension, zDimension);
         }
 
+        public int XDimension
+        {
+            get { return _blockIndexes.XDimension; }
+        }
+
+        public int YDimension
+        {
+            get { return _blockIndexes.YDimension; }
+        }
+
+        public int ZDimension
+        {
+            get { return _blockIndexes.ZDimension; }
+        }
+
         public BlockPrototype this[int x, int y, int z]
         {
             get { return _prototypeMap[_blockIndexes[x, y, z]]; }

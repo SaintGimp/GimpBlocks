@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -27,7 +28,26 @@ namespace GimpBlocks
 
         public void Generate()
         {
+            //GenerateRandom();
 
+            GenerateSlab();
+
+            Rebuild();
+        }
+
+        void GenerateSlab()
+        {
+            for (int x = 1; x < _blockArray.XDimension - 1; x++)
+            {
+                for (int z = 1; z < _blockArray.ZDimension - 1; z++)
+                {
+                    _blockArray[x, 1, z] = _prototypeMap[1];
+                }
+            }
+        }
+
+        void GenerateRandom()
+        {
             var random = new Random(123);
 
             _blockArray.Initialize((x, y, z) =>
@@ -41,26 +61,30 @@ namespace GimpBlocks
                     return _prototypeMap[0];
                 }
             });
-
-            Rebuild();
         }
 
         void Rebuild()
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+
             _lightArray.Calculate();
 
             var vertexList = new List<VertexPositionColorLighting>();
             var indexList = new List<short>();
 
             _blockArray.ForEach(block =>
+            {
+                if (block.Prototype.IsSolid)
                 {
-                    if (block.Prototype.IsSolid)
-                    {
-                        BuildQuads(vertexList, indexList, block.Position);
-                    }
-                });
+                    BuildQuads(vertexList, indexList, block.Position);
+                }
+            });
 
             _renderer.Initialize(vertexList, indexList);
+
+            stopWatch.Stop();
+            Debug.WriteLine("Chunk rebuild time: " + stopWatch.ElapsedMilliseconds + " ms");
 
             EventAggregator.Instance.SendMessage(new ChunkRebuilt());
         }
