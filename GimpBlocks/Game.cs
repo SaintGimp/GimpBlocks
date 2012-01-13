@@ -23,7 +23,7 @@ namespace GimpBlocks
         Texture2D _crosshairTexture;
 
         IInputState _inputState;
-        IInputMapper _inputMapper;
+        InputManager _inputManager;
         ICamera _camera;
         ICameraController _cameraController;
         World _world;
@@ -49,6 +49,14 @@ namespace GimpBlocks
         void Window_ClientSizeChanged(object sender, EventArgs e)
         {
             SetViewportDependentParameters();
+            _inputManager.SetClientBounds(Window.ClientBounds);
+        }
+
+        protected override void OnActivated(object sender, EventArgs args)
+        {
+            _inputManager.OnActivated();
+
+            base.OnActivated(sender, args);
         }
 
         private void SetViewportDependentParameters()
@@ -64,18 +72,15 @@ namespace GimpBlocks
 
         protected override void Initialize()
         {
-            IsMouseVisible = true;
+            IsMouseVisible = false;
             Mouse.WindowHandle = Window.Handle;
             Mouse.SetPosition(Window.ClientBounds.Center.X, Window.ClientBounds.Center.X);
 
-            _inputState = ObjectFactory.GetInstance<IInputState>();
-            _inputMapper = ObjectFactory.GetInstance<IInputMapper>();
+            _inputManager = ObjectFactory.GetInstance<InputManager>();
+            _inputManager.SetClientBounds(Window.ClientBounds);
             _camera = ObjectFactory.GetInstance<ICamera>();
             // Don't need this right now but we have to create the object in the container so it can receive messages
             _cameraController = ObjectFactory.GetInstance<ICameraController>();
-
-            _inputState.SetRelativeMouseMode(new Point(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2));
-            SetInputBindings();
 
             var effect = Content.Load<Effect>("BlockEffect");
             _worldRenderer = new WorldRenderer(_graphics.GraphicsDevice, effect);
@@ -96,34 +101,6 @@ namespace GimpBlocks
 
             base.Initialize();
         }
-
-        void SetInputBindings()
-        {
-            _inputMapper.AddKeyDownMessage<MoveForward>(Keys.W);
-            _inputMapper.AddKeyDownMessage<MoveBackward>(Keys.S);
-            _inputMapper.AddKeyDownMessage<MoveLeft>(Keys.A);
-            _inputMapper.AddKeyDownMessage<MoveRight>(Keys.D);
-            _inputMapper.AddKeyDownMessage<MoveUp>(Keys.E);
-            _inputMapper.AddKeyDownMessage<MoveDown>(Keys.C);
-            _inputMapper.AddKeyPressMessage<IncreaseCameraSpeed>(Keys.OemPlus);
-            _inputMapper.AddKeyPressMessage<DecreaseCameraSpeed>(Keys.OemMinus);
-            _inputMapper.AddKeyPressMessage<ZoomIn>(Keys.OemPeriod);
-            _inputMapper.AddKeyPressMessage<ZoomOut>(Keys.OemComma);
-            _inputMapper.AddKeyDownMessage<GoToGround>(Keys.Z);
-
-            _inputMapper.AddKeyPressMessage<ToggleDrawWireframeSetting>(Keys.F);
-            _inputMapper.AddKeyPressMessage<ToggleUpdateSetting>(Keys.U);
-            _inputMapper.AddKeyPressMessage<ToggleSingleStepSetting>(Keys.P);
-
-            _inputMapper.AddKeyPressMessage<GarbageCollect>(Keys.G);
-
-            _inputMapper.AddKeyPressMessage<ExitApplication>(Keys.Escape);
-
-            _inputMapper.AddGeneralInputMessage<MouseLook>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
-            _inputMapper.AddGeneralInputMessage<PlaceBlock>(inputState => inputState.IsRightMouseButtonClicked);
-            _inputMapper.AddGeneralInputMessage<DestroyBlock>(inputState => inputState.IsLeftMouseButtonClicked);
-        }
-
 
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -146,16 +123,14 @@ namespace GimpBlocks
 
         protected override void Update(GameTime gameTime)
         {
-            _inputState.Update(gameTime.ElapsedGameTime, Keyboard.GetState(), Mouse.GetState());
-            _inputMapper.HandleInput(_inputState);
+            if (IsActive)
+            {
+                _inputManager.HandleInput(gameTime);
+            }
 
             base.Update(gameTime);
         }
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);

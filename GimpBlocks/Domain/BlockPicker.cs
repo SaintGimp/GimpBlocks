@@ -67,6 +67,12 @@ namespace GimpBlocks
                 var selectedFaceNormal = CalculateSelectedFaceNormal(SelectedBlock.BoundingBox, ray, nearestIntersection);
                 SelectedPlacePosition = SelectedBlock.Position + selectedFaceNormal;
             }
+
+            //var testSelectedBlock = ray.Intersects(_blockArray);
+            if (testSelectedBlock != null)
+            {
+                
+            }
         }
 
         Vector3 CalculateSelectedFaceNormal(BoundingBox boundingBox, Ray ray, float nearestIntersection)

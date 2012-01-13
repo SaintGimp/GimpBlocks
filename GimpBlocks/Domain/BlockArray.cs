@@ -43,6 +43,11 @@ namespace GimpBlocks
             set { _blockIndexes[location.X, location.Y, location.Z] = _prototypeMap[value]; }
         }
 
+        public bool IsInBounds(BlockPosition position)
+        {
+            return _blockIndexes.IsInBounds(position);
+        }
+
         public void Initialize(Func<int, int, int, BlockPrototype> initializerFunction)
         {
             _blockIndexes.Initialize((x, y, z) => _prototypeMap[initializerFunction(x, y, z)]);
@@ -57,6 +62,11 @@ namespace GimpBlocks
         {
             _blockIndexes.ForEachInVolume(lowerBound.X, lowerBound.Y, lowerBound.Z, upperBound.X, upperBound.Y, upperBound.Z,
                 (index, x, y, z) => action(new Block(_prototypeMap[index], new BlockPosition(x, y, z))));
+        }
+
+        public Block GetAt(BlockPosition blockPosition)
+        {
+            return new Block(this[blockPosition], blockPosition);
         }
     }
 }

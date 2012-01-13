@@ -103,11 +103,6 @@ namespace GimpBlocks
             _previousMouseState = _currentMouseState;
             _currentMouseState = newMouseState;
             _elapsedTime = elapsedTime;
-
-            if (_isRelativeMouseMode)
-            {
-                Mouse.SetPosition(_mouseOrigin.X, _mouseOrigin.Y);
-            }
         }
 
         public void SetAbsoluteMouseMode()
@@ -119,7 +114,6 @@ namespace GimpBlocks
         {
             _isRelativeMouseMode = true;
             _mouseOrigin = mouseOrigin;
-            Mouse.SetPosition(_mouseOrigin.X, _mouseOrigin.Y);
         }
     }
 }

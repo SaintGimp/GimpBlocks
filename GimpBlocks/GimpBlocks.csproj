@@ -84,6 +84,7 @@
     <Compile Include="Domain\Block.cs" />
     <Compile Include="Domain\BlockPicker.cs" />
     <Compile Include="Domain\BlockPrototypeMap.cs" />
+    <Compile Include="Domain\RayCaster.cs" />
     <Compile Include="Domain\StoneBlock.cs" />
     <Compile Include="Domain\BlockPosition.cs" />
     <Compile Include="Domain\World.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="Infrastructure\GameRegistry.cs" />
     <Compile Include="Infrastructure\StopwatchExtensions.cs" />
     <Compile Include="Input\IInputState.cs" />
+    <Compile Include="Input\InputManager.cs" />
     <Compile Include="Input\InputMapper.cs" />
     <Compile Include="Input\XNAInputState.cs" />
     <Compile Include="Domain\LightArray.cs" />

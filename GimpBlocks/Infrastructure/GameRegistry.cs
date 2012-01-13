@@ -22,7 +22,7 @@ namespace GimpBlocks
 
             MakeSingleton<ICamera>();
             MakeSingleton<ICameraController>();
-            MakeSingleton<IInputMapper>();
+            MakeSingleton<InputManager>();
             MakeSingleton<ISettings>();
             MakeSingleton<Statistics>();
 

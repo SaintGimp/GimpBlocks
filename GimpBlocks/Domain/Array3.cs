@@ -42,9 +42,15 @@ namespace GimpBlocks
             set { Buffer[i] = value; }
         }
 
-        public T this[BlockPosition location]
+        public T this[BlockPosition position]
         {
-            get { return this[location.X, location.Y, location.Z]; }
+            get { return this[position.X, position.Y, position.Z]; }
+        }
+
+        public bool IsInBounds(BlockPosition position)
+        {
+            return position.X >= 0 && position.X < XDimension && position.Y >= 0 && position.Y < YDimension &&
+                   position.Z >= 0 && position.Z < ZDimension;
         }
 
         public void Initialize(Func<int, int, int, T> initializerFunction)

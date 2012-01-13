@@ -21,6 +21,5 @@ namespace GimpBlocks
         {
             get { return new BoundingBox(new Vector3(Position.X, Position.Y, Position.Z), new Vector3(Position.X + 1, Position.Y + 1, Position.Z + 1));}
         }
-
     }
 }

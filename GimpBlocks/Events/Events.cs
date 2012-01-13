@@ -82,7 +82,7 @@ namespace GimpBlocks
     {
     }
 
-    public class ExitApplication : InputMessage
+    public class ToggleInputMode : InputMessage
     {
     }
 

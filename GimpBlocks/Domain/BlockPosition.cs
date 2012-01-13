@@ -54,9 +54,19 @@ namespace GimpBlocks
             get { return new BlockPosition(X, Y - 1, Z); }
         }
 
+        public BoundingBox BoundingBox
+        {
+            get { return new BoundingBox(new Vector3(X, Y, Z), new Vector3(X + 1, Y + 1, Z + 1)); }
+        }
+
         public static implicit operator Vector3(BlockPosition location)
         {
             return new Vector3(location.X, location.Y, location.Z);
+        }
+
+        public static implicit operator BlockPosition(Vector3 location)
+        {
+            return new BlockPosition((int)location.X, (int)location.Y, (int)location.Z);
         }
 
         public static BlockPosition operator +(BlockPosition first, BlockPosition second)
