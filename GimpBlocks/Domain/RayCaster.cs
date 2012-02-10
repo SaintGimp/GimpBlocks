@@ -8,131 +8,159 @@ namespace GimpBlocks
 {
     public static class RayExtensions
     {
+        enum Face
+        {
+            X,
+            Y,
+            Z
+        };
+
         public static IntersectionResult Intersects(this Ray ray, BlockArray blockArray)
         {
-
             BlockPosition startingBlockPosition = ray.Position;
-            var exitResult = GetExitPoint(ray, startingBlockPosition.BoundingBox);
-            if (exitResult == null)
+            int currentBlockX = startingBlockPosition.X;
+            int currentBlockY = startingBlockPosition.Y;
+            int currentBlockZ = startingBlockPosition.Z;
+            int stepX, stepY, stepZ;
+            float tMaxX, tMaxY, tMaxZ;
+            float tDeltaX, tDeltaY, tDeltaZ;
+
+            if (ray.Direction.X > 0)
             {
-                return null;
+                stepX = 1;
+                tDeltaX = 1 / ray.Direction.X;
+                tMaxX = (startingBlockPosition.X + 1 - ray.Position.X) * tDeltaX;
             }
-
-            var blockPositionToTest = startingBlockPosition + exitResult.ExitFaceNormal;
-            var intersectionDistance = blockPositionToTest.BoundingBox.Intersects(ray);
-
-            while (intersectionDistance != null)
+            else if (ray.Direction.X < 0)
             {
-                if (blockArray.IsInBounds(blockPositionToTest) && blockArray[blockPositionToTest].IsSolid)
-                {
-                    return new IntersectionResult() { IntersectedBlock = blockArray.GetAt(blockPositionToTest), IntersectionDistance = intersectionDistance.Value };
-                }
-
-                intersectionDistance = blockPositionToTest.BoundingBox.Intersects(ray);
-                if (intersectionDistance != null)
-                {
-                    var faceNormal = CalculateIntersectedFaceNormal(blockPositionToTest.BoundingBox, ray, intersectionDistance.Value);
-                    blockPositionToTest = blockPositionToTest + faceNormal;
-                }
-            }
-
-            return null;
-        }
-
-        static ExitResult GetExitPoint(Ray ray, BoundingBox boundingBox)
-        {
-            var corners = boundingBox.GetCorners();
-
-            var top = new Plane(corners[0], corners[1], corners[4]);
-            var intersection = ray.Intersects(top);
-            if (intersection != null)
-            {
-                return new ExitResult {ExitFaceNormal = Vector3.Up, IntersectionDistance = intersection.Value};
-            }
-
-            var bottom = new Plane(corners[2], corners[3], corners[6]);
-            intersection = ray.Intersects(bottom);
-            if (intersection != null)
-            {
-                return new ExitResult { ExitFaceNormal = Vector3.Down, IntersectionDistance = intersection.Value };
-            }
-
-            var left = new Plane(corners[0], corners[3], corners[4]);
-            intersection = ray.Intersects(left);
-            if (intersection != null)
-            {
-                return new ExitResult { ExitFaceNormal = Vector3.Left, IntersectionDistance = intersection.Value };
-            }
-
-            var right = new Plane(corners[1], corners[2], corners[5]);
-            intersection = ray.Intersects(right);
-            if (intersection != null)
-            {
-                return new ExitResult { ExitFaceNormal = Vector3.Right, IntersectionDistance = intersection.Value };
-            }
-
-            var back = new Plane(corners[4], corners[5], corners[6]);
-            intersection = ray.Intersects(back);
-            if (intersection != null)
-            {
-                return new ExitResult { ExitFaceNormal = Vector3.Forward, IntersectionDistance = intersection.Value };
-            }
-
-            var front = new Plane(corners[0], corners[1], corners[2]);
-            intersection = ray.Intersects(front);
-            if (intersection != null)
-            {
-                return new ExitResult { ExitFaceNormal = Vector3.Backward, IntersectionDistance = intersection.Value };
-            }
-
-            return null;
-        }
-
-        static Vector3 CalculateIntersectedFaceNormal(BoundingBox boundingBox, Ray ray, float intersectionDistance)
-        {
-            var intersectionPoint = ray.Position + (ray.Direction * intersectionDistance);
-
-            if (IsClose(intersectionPoint.X, boundingBox.Min.X))
-            {
-                return Vector3.Left;
-            }
-            else if (IsClose(intersectionPoint.Y, boundingBox.Min.Y))
-            {
-                return Vector3.Down;
-            }
-            else if (IsClose(intersectionPoint.Z, boundingBox.Min.Z))
-            {
-                return Vector3.Forward;
-            }
-            else if (IsClose(intersectionPoint.X, boundingBox.Max.X))
-            {
-                return Vector3.Right;
-            }
-            else if (IsClose(intersectionPoint.Y, boundingBox.Max.Y))
-            {
-                return Vector3.Up;
+                stepX = -1;
+                tDeltaX = 1 / -ray.Direction.X;
+                tMaxX = (ray.Position.X - startingBlockPosition.X) * tDeltaX;
             }
             else
             {
-                return Vector3.Backward;
+                stepX = 0;
+                tDeltaX = 0;
+                tMaxX = float.MaxValue;
             }
+
+            if (ray.Direction.Y > 0)
+            {
+                stepY = 1;
+                tDeltaY = 1 / ray.Direction.Y;
+                tMaxY = (startingBlockPosition.Y + 1 - ray.Position.Y) * tDeltaY;
+            }
+            else if (ray.Direction.Y < 0)
+            {
+                stepY = -1;
+                tDeltaY = 1 / -ray.Direction.Y;
+                tMaxY = (ray.Position.Y - startingBlockPosition.Y) * tDeltaY;
+            }
+            else
+            {
+                stepY = 0;
+                tDeltaY = 0;
+                tMaxY = float.MaxValue;
+            }
+
+            if (ray.Direction.Z > 0)
+            {
+                stepZ = 1;
+                tDeltaZ = 1 / ray.Direction.Z;
+                tMaxZ = (startingBlockPosition.Z + 1 - ray.Position.Z) * tDeltaZ;
+            }
+            else if (ray.Direction.Z < 0)
+            {
+                stepZ = -1;
+                tDeltaZ = 1 / -ray.Direction.Z;
+                tMaxZ = (ray.Position.Z - startingBlockPosition.Z) * tDeltaZ;
+            }
+            else
+            {
+                stepZ = 0;
+                tDeltaZ = 0;
+                tMaxZ = float.MaxValue;
+            }
+
+            float currentRayLength;
+            Face intersectedFace;
+            do
+            {
+                if (tMaxX < tMaxY)
+                {
+                    if (tMaxX < tMaxZ)
+                    {
+                        intersectedFace = Face.X;
+                        currentBlockX = currentBlockX + stepX;
+                        currentRayLength = tMaxX;
+                        tMaxX = tMaxX + tDeltaX;
+                    }
+                    else
+                    {
+                        intersectedFace = Face.Z;
+                        currentBlockZ = currentBlockZ + stepZ;
+                        currentRayLength = tMaxZ;
+                        tMaxZ = tMaxZ + tDeltaZ;
+                    }
+                }
+                else
+                {
+                    if (tMaxY < tMaxZ)
+                    {
+                        intersectedFace = Face.Y;
+                        currentBlockY = currentBlockY + stepY;
+                        currentRayLength = tMaxY;
+                        tMaxY = tMaxY + tDeltaY;
+                    }
+                    else
+                    {
+                        intersectedFace = Face.Z;
+                        currentBlockZ = currentBlockZ + stepZ;
+                        currentRayLength = tMaxZ;
+                        tMaxZ = tMaxZ + tDeltaZ;
+                    }
+                }
+
+                if (currentRayLength < 4)
+                {
+                    var blockPosition = new BlockPosition(currentBlockX, currentBlockY, currentBlockZ);
+                    if (blockArray.IsInBounds(blockPosition))
+                    {
+                        var blockPrototype = blockArray[currentBlockX, currentBlockY, currentBlockZ];
+                        if (blockPrototype.IsSolid)
+                        {
+                            var selectedFaceNormal = GetNormalForIntersectedFace(intersectedFace, stepX, stepY, stepZ);
+                            return new IntersectionResult
+                            {
+                                IntersectedBlock = blockArray.GetAt(blockPosition),
+                                IntersectedFaceNormal = selectedFaceNormal
+                            };
+                        }
+                    }
+                }
+            }
+            while (currentRayLength < 4);
+
+            return null;
         }
 
-        static bool IsClose(float first, float second)
+        static Vector3 GetNormalForIntersectedFace(Face intersectedFace, int stepX, int stepY, int stepZ)
         {
-            return Math.Abs(first - second) < 0.00000001;
+            switch (intersectedFace)
+            {
+                case Face.X:
+                    return new Vector3(-stepX, 0, 0);
+                case Face.Y:
+                    return new Vector3(0, -stepY, 0);
+                default:
+                    return new Vector3(0, 0, -stepZ);
+            }
         }
     }
 
     public class IntersectionResult
     {
         public Block IntersectedBlock;
-        public float IntersectionDistance;
-    }
-
-    public class ExitResult
-    {
-        public BlockPosition ExitFaceNormal;
-        public float IntersectionDistance;
+        public Vector3 IntersectedFaceNormal;
     }
 }

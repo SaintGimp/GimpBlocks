@@ -88,7 +88,7 @@ namespace GimpBlocks
             var prototypeMap = new BlockPrototypeMap();
             var blockArray = new BlockArray(prototypeMap, 16, 16, 16);
             var lightArray = new LightArray(16, 16, 16, blockArray);
-            _blockPicker = new BlockPicker(blockArray, _camera, _graphics.GraphicsDevice);
+            _blockPicker = new BlockPicker(blockArray, _camera);
             _world = new World(_worldRenderer, blockArray, lightArray, prototypeMap, _blockPicker);
 
             var eventAggregator = ObjectFactory.GetInstance<IEventAggregator>();
