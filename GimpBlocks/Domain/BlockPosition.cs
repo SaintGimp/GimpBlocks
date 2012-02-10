@@ -12,9 +12,9 @@ namespace GimpBlocks
     // TODO: would it be better to cache the neighboring locations once we create them?
     public struct BlockPosition
     {
-        public int X { get; private set; }
-        public int Y { get; private set; }
-        public int Z { get; private set; }
+        public int X;
+        public int Y;
+        public int Z;
 
         public BlockPosition(int x, int y, int z)
             : this()
@@ -24,6 +24,8 @@ namespace GimpBlocks
             Z = z;
         }
 
+        // TODO: Is it better to have these create new objects or to mutate
+        // the existing object?  Tradeoff between immutability benefits and performance.
         public BlockPosition Left
         {
             get { return new BlockPosition(X - 1, Y, Z); }
@@ -77,6 +79,15 @@ namespace GimpBlocks
         public static BlockPosition operator +(BlockPosition first, Vector3 second)
         {
             return new BlockPosition(first.X + (int)second.X, first.Y + (int)second.Y, first.Z + (int)second.Z);
+        }
+
+        public int DistanceSquared(BlockPosition otherPosition)
+        {
+            int deltaX = this.X - otherPosition.X;
+            int deltaY = this.Y - otherPosition.Y;
+            int deltaZ = this.Z - otherPosition.Z;
+
+            return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
         }
     }
 }

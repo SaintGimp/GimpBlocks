@@ -18,9 +18,7 @@ namespace GimpBlocks
         public static IntersectionResult Intersects(this Ray ray, BlockArray blockArray)
         {
             BlockPosition startingBlockPosition = ray.Position;
-            int currentBlockX = startingBlockPosition.X;
-            int currentBlockY = startingBlockPosition.Y;
-            int currentBlockZ = startingBlockPosition.Z;
+            BlockPosition currentBlockPosition = ray.Position;
             int stepX, stepY, stepZ;
             float tMaxX, tMaxY, tMaxZ;
             float tDeltaX, tDeltaY, tDeltaZ;
@@ -29,13 +27,13 @@ namespace GimpBlocks
             {
                 stepX = 1;
                 tDeltaX = 1 / ray.Direction.X;
-                tMaxX = (startingBlockPosition.X + 1 - ray.Position.X) * tDeltaX;
+                tMaxX = (currentBlockPosition.X + 1 - ray.Position.X) * tDeltaX;
             }
             else if (ray.Direction.X < 0)
             {
                 stepX = -1;
                 tDeltaX = 1 / -ray.Direction.X;
-                tMaxX = (ray.Position.X - startingBlockPosition.X) * tDeltaX;
+                tMaxX = (ray.Position.X - currentBlockPosition.X) * tDeltaX;
             }
             else
             {
@@ -48,13 +46,13 @@ namespace GimpBlocks
             {
                 stepY = 1;
                 tDeltaY = 1 / ray.Direction.Y;
-                tMaxY = (startingBlockPosition.Y + 1 - ray.Position.Y) * tDeltaY;
+                tMaxY = (currentBlockPosition.Y + 1 - ray.Position.Y) * tDeltaY;
             }
             else if (ray.Direction.Y < 0)
             {
                 stepY = -1;
                 tDeltaY = 1 / -ray.Direction.Y;
-                tMaxY = (ray.Position.Y - startingBlockPosition.Y) * tDeltaY;
+                tMaxY = (ray.Position.Y - currentBlockPosition.Y) * tDeltaY;
             }
             else
             {
@@ -67,13 +65,13 @@ namespace GimpBlocks
             {
                 stepZ = 1;
                 tDeltaZ = 1 / ray.Direction.Z;
-                tMaxZ = (startingBlockPosition.Z + 1 - ray.Position.Z) * tDeltaZ;
+                tMaxZ = (currentBlockPosition.Z + 1 - ray.Position.Z) * tDeltaZ;
             }
             else if (ray.Direction.Z < 0)
             {
                 stepZ = -1;
                 tDeltaZ = 1 / -ray.Direction.Z;
-                tMaxZ = (ray.Position.Z - startingBlockPosition.Z) * tDeltaZ;
+                tMaxZ = (ray.Position.Z - currentBlockPosition.Z) * tDeltaZ;
             }
             else
             {
@@ -82,7 +80,6 @@ namespace GimpBlocks
                 tMaxZ = float.MaxValue;
             }
 
-            float currentRayLength;
             Face intersectedFace;
             do
             {
@@ -91,15 +88,13 @@ namespace GimpBlocks
                     if (tMaxX < tMaxZ)
                     {
                         intersectedFace = Face.X;
-                        currentBlockX = currentBlockX + stepX;
-                        currentRayLength = tMaxX;
+                        currentBlockPosition.X += stepX;
                         tMaxX = tMaxX + tDeltaX;
                     }
                     else
                     {
                         intersectedFace = Face.Z;
-                        currentBlockZ = currentBlockZ + stepZ;
-                        currentRayLength = tMaxZ;
+                        currentBlockPosition.Z += stepZ;
                         tMaxZ = tMaxZ + tDeltaZ;
                     }
                 }
@@ -108,38 +103,32 @@ namespace GimpBlocks
                     if (tMaxY < tMaxZ)
                     {
                         intersectedFace = Face.Y;
-                        currentBlockY = currentBlockY + stepY;
-                        currentRayLength = tMaxY;
+                        currentBlockPosition.Y += stepY;
                         tMaxY = tMaxY + tDeltaY;
                     }
                     else
                     {
                         intersectedFace = Face.Z;
-                        currentBlockZ = currentBlockZ + stepZ;
-                        currentRayLength = tMaxZ;
+                        currentBlockPosition.Z += stepZ;
                         tMaxZ = tMaxZ + tDeltaZ;
                     }
                 }
 
-                if (currentRayLength < 4)
+                if (blockArray.IsInBounds(currentBlockPosition))
                 {
-                    var blockPosition = new BlockPosition(currentBlockX, currentBlockY, currentBlockZ);
-                    if (blockArray.IsInBounds(blockPosition))
+                    var blockPrototype = blockArray[currentBlockPosition];
+                    if (blockPrototype.IsSolid)
                     {
-                        var blockPrototype = blockArray[currentBlockX, currentBlockY, currentBlockZ];
-                        if (blockPrototype.IsSolid)
+                        var selectedFaceNormal = GetNormalForIntersectedFace(intersectedFace, stepX, stepY, stepZ);
+                        return new IntersectionResult
                         {
-                            var selectedFaceNormal = GetNormalForIntersectedFace(intersectedFace, stepX, stepY, stepZ);
-                            return new IntersectionResult
-                            {
-                                IntersectedBlock = blockArray.GetAt(blockPosition),
-                                IntersectedFaceNormal = selectedFaceNormal
-                            };
-                        }
+                            IntersectedBlock = blockArray.GetAt(currentBlockPosition),
+                            IntersectedFaceNormal = selectedFaceNormal
+                        };
                     }
                 }
             }
-            while (currentRayLength < 4);
+            while (startingBlockPosition.DistanceSquared(currentBlockPosition) <= 16);
 
             return null;
         }
