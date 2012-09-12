@@ -74,7 +74,7 @@ namespace GimpBlocks
         {
             IsMouseVisible = false;
             Mouse.WindowHandle = Window.Handle;
-            Mouse.SetPosition(Window.ClientBounds.Center.X, Window.ClientBounds.Center.X);
+            Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
             _inputManager = ObjectFactory.GetInstance<InputManager>();
             _inputManager.SetClientBounds(Window.ClientBounds);
@@ -91,9 +91,8 @@ namespace GimpBlocks
             _blockPicker = new BlockPicker(blockArray, _camera);
             _world = new World(_worldRenderer, blockArray, lightArray, prototypeMap, _blockPicker);
 
-            var eventAggregator = ObjectFactory.GetInstance<IEventAggregator>();
-            eventAggregator.AddListener(_blockPicker);
-            eventAggregator.AddListener(_world);
+            EventAggregator.Instance.AddListener(_blockPicker);
+            EventAggregator.Instance.AddListener(_world);
 
             _world.Generate();
 

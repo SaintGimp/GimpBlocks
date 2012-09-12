@@ -57,7 +57,7 @@ namespace GimpBlocks
 
     public class Camera : ICamera
     {
-        // This is a pretty normal three-axis free-flight camera.  Left and right motion are relative
+        // This is a pretty normal six-axis free-flight camera.  Left and right motion are relative
         // to the current camera facing but forward, backward, up, and down are always axis-aligned.
 
         readonly ISettings _settings;

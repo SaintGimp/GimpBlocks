@@ -2,18 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using StructureMap;
 
 namespace GimpBlocks
 {
-    public interface IEventAggregator
-    {
-        void AddListener(object listener);
-
-        void SendMessage<T>(T message);
-    }
-
-    public class EventAggregator : IEventAggregator
+    public class EventAggregator
     {
         readonly object _lockObject = new object();
         readonly List<WeakReference> _listeners = new List<WeakReference>();
@@ -23,7 +15,7 @@ namespace GimpBlocks
             Instance = new EventAggregator();
         }
 
-        public static IEventAggregator Instance { get; set; }
+        public static EventAggregator Instance { get; private set; }
 
         public void SendMessage<T>(T message)
         {
@@ -51,7 +43,8 @@ namespace GimpBlocks
             {
                 // We need to create a strong reference before testing aliveness
                 // so that the GC doesn't yank it out from under us.  Don't convert
-                // this to a LINQ expression because it doesn't guarentee that behavior
+                // this to a LINQ expression, despite what Resharper says, because
+                // a LINQ expression doesn't guarentee that behavior
                 var strongReference = weakReference.Target as IListener<T>;
                 if (strongReference != null)
                 {
@@ -68,14 +61,14 @@ namespace GimpBlocks
             {
                 PruneDeadReferences();
 
-                if (!HasListener(listener))
+                if (!IsRegistered(listener))
                 {
                     _listeners.Add(new WeakReference((listener)));
                 }
             }
         }
 
-        protected bool HasListener(object listener)
+        protected bool IsRegistered(object listener)
         {
             return _listeners.Exists(x => x.Target == listener);
         }

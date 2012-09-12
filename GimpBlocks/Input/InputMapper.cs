@@ -21,15 +21,9 @@ namespace GimpBlocks
 
     public class InputMapper : IInputMapper
     {
-        readonly IEventAggregator _eventAggregator;
         readonly List<KeyEvent> _keyPressEvents = new List<KeyEvent>();
         readonly List<KeyEvent> _keyDownEvents = new List<KeyEvent>();
         readonly List<InputEvent> _generalInputEvents = new List<InputEvent>();
-
-        public InputMapper(IEventAggregator eventAggregator)
-        {
-            _eventAggregator = eventAggregator;
-        }
 
         public void HandleInput(IInputState inputState)
         {
@@ -67,17 +61,17 @@ namespace GimpBlocks
 
         public void AddKeyPressMessage<T>(Keys key) where T : InputMessage, new()
         {
-            _keyPressEvents.Add(new KeyEvent { Key = key, Send = x => _eventAggregator.SendMessage(new T { InputState = x}) });
+            _keyPressEvents.Add(new KeyEvent { Key = key, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x}) });
         }
 
         public void AddKeyDownMessage<T>(Keys key) where T : InputMessage, new()
         {
-            _keyDownEvents.Add(new KeyEvent { Key = key, Send = x => _eventAggregator.SendMessage(new T { InputState = x }) });
+            _keyDownEvents.Add(new KeyEvent { Key = key, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x }) });
         }
 
         public void AddGeneralInputMessage<T>(Func<IInputState, bool> filter) where T : InputMessage, new()
         {
-            _generalInputEvents.Add(new InputEvent { Filter = filter, Send = x => _eventAggregator.SendMessage(new T { InputState = x }) });
+            _generalInputEvents.Add(new InputEvent { Filter = filter, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x }) });
         }
 
         private class KeyEvent

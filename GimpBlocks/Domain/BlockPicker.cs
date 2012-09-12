@@ -33,8 +33,7 @@ namespace GimpBlocks
         {
             var ray = new Ray(_camera.Location, _camera.LookAt);
 
-            var pickDistance = 4;
-            var intersectionResult = ray.Intersects(_blockArray);
+            var intersectionResult = ray.Intersects(_blockArray, 5);
             if (intersectionResult != null)
             {
                 SelectedBlock = intersectionResult.IntersectedBlock;

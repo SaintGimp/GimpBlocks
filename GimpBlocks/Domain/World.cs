@@ -28,9 +28,9 @@ namespace GimpBlocks
 
         public void Generate()
         {
-            //GenerateRandom();
+            GenerateRandom();
 
-            GenerateSlab();
+            //GenerateSlab();
 
             Rebuild();
         }

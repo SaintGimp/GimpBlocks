@@ -9,7 +9,7 @@ namespace GimpBlocks
     {
         public object Process(object target, IContext context)
         {
-            context.GetInstance<IEventAggregator>().AddListener(target);
+            EventAggregator.Instance.AddListener(target);
             return target;
         }
 

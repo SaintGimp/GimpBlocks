@@ -66,8 +66,9 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="mscorlib" />
-    <Reference Include="StructureMap">
-      <HintPath>..\packages\structuremap.2.6.3\lib\StructureMap.dll</HintPath>
+    <Reference Include="StructureMap, Version=2.6.4.0, Culture=neutral, PublicKeyToken=e60ad81abae3c223, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\structuremap.2.6.4.1\lib\net40\StructureMap.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
@@ -118,8 +119,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GimpBlocksContent\GimpBlocksContent.contentproj">
-      <Name>GimpBlocksContent</Name>
+      <Name>GimpBlocksContent %28Content%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
+      <Project>{9EEB39A5-2097-4B46-8296-8BF7B493CB08}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

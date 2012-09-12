@@ -15,9 +15,8 @@ namespace GimpBlocks
             Z
         };
 
-        public static IntersectionResult Intersects(this Ray ray, BlockArray blockArray)
+        public static IntersectionResult Intersects(this Ray ray, BlockArray blockArray, float maximumRayLength)
         {
-            BlockPosition startingBlockPosition = ray.Position;
             BlockPosition currentBlockPosition = ray.Position;
             int stepX, stepY, stepZ;
             float tMaxX, tMaxY, tMaxZ;
@@ -80,6 +79,7 @@ namespace GimpBlocks
                 tMaxZ = float.MaxValue;
             }
 
+            float currentRayLength;
             Face intersectedFace;
             do
             {
@@ -87,12 +87,14 @@ namespace GimpBlocks
                 {
                     if (tMaxX < tMaxZ)
                     {
+                        currentRayLength = tMaxX;
                         intersectedFace = Face.X;
                         currentBlockPosition.X += stepX;
                         tMaxX = tMaxX + tDeltaX;
                     }
                     else
                     {
+                        currentRayLength = tMaxZ;
                         intersectedFace = Face.Z;
                         currentBlockPosition.Z += stepZ;
                         tMaxZ = tMaxZ + tDeltaZ;
@@ -102,19 +104,21 @@ namespace GimpBlocks
                 {
                     if (tMaxY < tMaxZ)
                     {
+                        currentRayLength = tMaxY;
                         intersectedFace = Face.Y;
                         currentBlockPosition.Y += stepY;
                         tMaxY = tMaxY + tDeltaY;
                     }
                     else
                     {
+                        currentRayLength = tMaxZ;
                         intersectedFace = Face.Z;
                         currentBlockPosition.Z += stepZ;
                         tMaxZ = tMaxZ + tDeltaZ;
                     }
                 }
 
-                if (blockArray.IsInBounds(currentBlockPosition))
+                if (currentRayLength < maximumRayLength && blockArray.IsInBounds(currentBlockPosition))
                 {
                     var blockPrototype = blockArray[currentBlockPosition];
                     if (blockPrototype.IsSolid)
@@ -128,7 +132,7 @@ namespace GimpBlocks
                     }
                 }
             }
-            while (startingBlockPosition.DistanceSquared(currentBlockPosition) <= 16);
+            while (currentRayLength < maximumRayLength);
 
             return null;
         }

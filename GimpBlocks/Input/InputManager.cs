@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -11,6 +12,7 @@ namespace GimpBlocks
     public class InputManager
         : IListener<ToggleInputMode>
     {
+        readonly Game _game;
         readonly IInputState _inputState;
         readonly IInputMapper _globalMapper;
         readonly IInputMapper _mouseLookMapper;
@@ -18,8 +20,9 @@ namespace GimpBlocks
         bool _mouseLookMode = true;
         Rectangle _clientBounds;
 
-        public InputManager(IInputState inputState)
+        public InputManager(Game game, IInputState inputState)
         {
+            _game = game;
             _inputState = inputState;
             // TODO: fix this
             _globalMapper = ObjectFactory.GetInstance<IInputMapper>();
@@ -34,7 +37,7 @@ namespace GimpBlocks
             _clientBounds = clientBounds;
             if (_mouseLookMode)
             {
-                SetMouseLookMode();
+                EnableMouseLookMode();
             }
         }
 
@@ -59,6 +62,7 @@ namespace GimpBlocks
             _globalMapper.AddKeyPressMessage<GarbageCollect>(Keys.G);
 
             _globalMapper.AddKeyPressMessage<ToggleInputMode>(Keys.Escape);
+            _normalMapper.AddGeneralInputMessage<ToggleInputMode>(inputState => inputState.IsLeftMouseButtonClicked);
 
             _mouseLookMapper.AddGeneralInputMessage<MouseLook>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
             _mouseLookMapper.AddGeneralInputMessage<PlaceBlock>(inputState => inputState.IsRightMouseButtonClicked);
@@ -68,8 +72,9 @@ namespace GimpBlocks
         public void HandleInput(GameTime gameTime)
         {
             _inputState.Update(gameTime.ElapsedGameTime, Keyboard.GetState(), Mouse.GetState());
-            
-            _globalMapper.HandleInput(_inputState);
+
+            Debug.WriteLine(gameTime.TotalGameTime + ": " + _inputState.MouseX + ", " + _inputState.MouseY);
+
             if (_mouseLookMode)
             {
                 _mouseLookMapper.HandleInput(_inputState);
@@ -79,6 +84,14 @@ namespace GimpBlocks
             {
                 _normalMapper.HandleInput(_inputState);
             }
+
+            // TODO: right now order here is important. The global mapper needs to run after
+            // the others because otherwise we can toggle mouselook first then the mouselook handler
+            // runs with imputs that aren't correct. A better way to fix this might be to have the toggle
+            // mouselook handler queue up an action to be run after all input is handled for this frame,
+            // or something like that.
+
+            _globalMapper.HandleInput(_inputState);
         }
 
         public void Handle(ToggleInputMode message)
@@ -87,25 +100,33 @@ namespace GimpBlocks
 
             if (_mouseLookMode)
             {
-                SetMouseLookMode();
+                EnableMouseLookMode();
             }
             else
             {
-                _inputState.SetAbsoluteMouseMode();
+                DisableMouseLookMode();
             }
         }
 
-        void SetMouseLookMode()
+        void EnableMouseLookMode()
         {
             _inputState.SetRelativeMouseMode(new Point(_clientBounds.Width / 2, _clientBounds.Height / 2));
+            _game.IsMouseVisible = false;
             Mouse.SetPosition(_clientBounds.Width / 2, _clientBounds.Height / 2);
+        }
+
+        void DisableMouseLookMode()
+        {
+            _inputState.SetAbsoluteMouseMode();
+            Mouse.SetPosition(_clientBounds.Width / 2, _clientBounds.Height / 2);
+            _game.IsMouseVisible = true;
         }
 
         public void OnActivated()
         {
             if (_mouseLookMode)
             {
-                SetMouseLookMode();
+                EnableMouseLookMode();
             }
         }
     }

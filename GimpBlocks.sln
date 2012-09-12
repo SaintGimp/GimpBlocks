@@ -3,7 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GimpBlocks", "GimpBlocks\GimpBlocks.csproj", "{95601B41-4E2A-49C6-85FC-8DD7267E316A}"
 EndProject
-Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "GimpBlocksContent", "GimpBlocksContent\GimpBlocksContent.contentproj", "{9EEB39A5-2097-4B46-8296-8BF7B493CB08}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GimpBlocksContent", "GimpBlocksContent\GimpBlocksContent.contentproj", "{9EEB39A5-2097-4B46-8296-8BF7B493CB08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GimpBlocks.Specifications", "GimpBlocks.Specifications\GimpBlocks.Specifications.csproj", "{279F496D-09AC-4A8E-A7C5-622825B4BF5E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{61BE4268-1669-4242-A1A0-858D54118932}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,6 +26,10 @@ Global
 		{95601B41-4E2A-49C6-85FC-8DD7267E316A}.Release|x86.Build.0 = Release|x86
 		{9EEB39A5-2097-4B46-8296-8BF7B493CB08}.Debug|x86.ActiveCfg = Debug|x86
 		{9EEB39A5-2097-4B46-8296-8BF7B493CB08}.Release|x86.ActiveCfg = Release|x86
+		{279F496D-09AC-4A8E-A7C5-622825B4BF5E}.Debug|x86.ActiveCfg = Debug|x86
+		{279F496D-09AC-4A8E-A7C5-622825B4BF5E}.Debug|x86.Build.0 = Debug|x86
+		{279F496D-09AC-4A8E-A7C5-622825B4BF5E}.Release|x86.ActiveCfg = Release|x86
+		{279F496D-09AC-4A8E-A7C5-622825B4BF5E}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

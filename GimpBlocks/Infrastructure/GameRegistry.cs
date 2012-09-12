@@ -20,13 +20,13 @@ namespace GimpBlocks
                 x.WithDefaultConventions();
             });
 
+            MakeSingleton<Game>();
             MakeSingleton<ICamera>();
             MakeSingleton<ICameraController>();
             MakeSingleton<InputManager>();
             MakeSingleton<ISettings>();
             MakeSingleton<Statistics>();
 
-            For<IEventAggregator>().Use(() => EventAggregator.Instance);
             For<IInputState>().Use<XnaInputState>();
 
             RegisterInterceptor(new EventAggregatorTypeInterceptor());

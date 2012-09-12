@@ -39,12 +39,8 @@ namespace GimpBlocks
                             IListener<IncreaseCameraSpeed>,
                             IListener<DecreaseCameraSpeed>
     {
-        readonly IEventAggregator _eventAggregator;
-
-        public Settings(IEventAggregator eventAggregator)
+        public Settings()
         {
-            _eventAggregator = eventAggregator;
-
             ShouldUpdate = true;
             ShouldSingleStep = false;
             ShouldDrawWireframe = false;
@@ -165,7 +161,7 @@ namespace GimpBlocks
             if (!field.Equals(value))
             {
                 field = value;
-                _eventAggregator.SendMessage(new SettingsChanged());
+                EventAggregator.Instance.SendMessage(new SettingsChanged());
             }
         }
     }

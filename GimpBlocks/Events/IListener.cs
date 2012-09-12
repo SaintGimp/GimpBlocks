@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GimpBlocks
 {
-    public interface IListener<T>
+    public interface IListener<in T>
     {
         void Handle(T message);
     }
