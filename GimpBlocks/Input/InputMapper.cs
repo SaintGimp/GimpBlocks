@@ -6,20 +6,9 @@ using Microsoft.Xna.Framework.Input;
 
 namespace GimpBlocks
 {
-    public interface IInputMapper
-    {
-        void AddKeyPressMessage<T>(Keys key) where T : InputMessage, new();
-
-        void AddKeyDownMessage<T>(Keys key) where T : InputMessage, new();
-
-        void AddGeneralInputMessage<T>(Func<IInputState, bool> filter) where T : InputMessage, new();
-
-        void HandleInput(IInputState inputState);
-    }
-
     // TODO: It would be interesting to use the Reactive Framework here
 
-    public class InputMapper : IInputMapper
+    public class InputMapper
     {
         readonly List<KeyEvent> _keyPressEvents = new List<KeyEvent>();
         readonly List<KeyEvent> _keyDownEvents = new List<KeyEvent>();

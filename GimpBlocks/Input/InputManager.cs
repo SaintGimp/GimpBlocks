@@ -14,9 +14,9 @@ namespace GimpBlocks
     {
         readonly Game _game;
         readonly IInputState _inputState;
-        readonly IInputMapper _globalMapper;
-        readonly IInputMapper _mouseLookMapper;
-        readonly IInputMapper _normalMapper;
+        readonly InputMapper _globalMapper = new InputMapper();
+        readonly InputMapper _mouseLookMapper = new InputMapper();
+        readonly InputMapper _normalMapper = new InputMapper();
         bool _mouseLookMode = true;
         Rectangle _clientBounds;
 
@@ -24,10 +24,6 @@ namespace GimpBlocks
         {
             _game = game;
             _inputState = inputState;
-            // TODO: fix this
-            _globalMapper = ObjectFactory.GetInstance<IInputMapper>();
-            _mouseLookMapper = ObjectFactory.GetInstance<IInputMapper>();
-            _normalMapper = ObjectFactory.GetInstance<IInputMapper>();
 
             SetInputBindings();
         }
@@ -72,8 +68,6 @@ namespace GimpBlocks
         public void HandleInput(GameTime gameTime)
         {
             _inputState.Update(gameTime.ElapsedGameTime, Keyboard.GetState(), Mouse.GetState());
-
-            Debug.WriteLine(gameTime.TotalGameTime + ": " + _inputState.MouseX + ", " + _inputState.MouseY);
 
             if (_mouseLookMode)
             {
