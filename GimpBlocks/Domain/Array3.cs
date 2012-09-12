@@ -32,8 +32,13 @@ namespace GimpBlocks
 
         public T this[int x, int y, int z]
         {
-            get { return Buffer[(x * LayerSize) + (y * YDimension) + z]; }
-            set { Buffer[(x * LayerSize) + (y * YDimension) + z] = value; }
+            get { return Buffer[LinearIndex(x, y, z)]; }
+            set { Buffer[LinearIndex(x, y, z)] = value; }
+        }
+
+        protected int LinearIndex(int x, int y, int z)
+        {
+            return (x * LayerSize) + (y * YDimension) + z;
         }
 
         public T this[int i]
@@ -49,8 +54,12 @@ namespace GimpBlocks
 
         public bool IsInBounds(BlockPosition position)
         {
-            return position.X >= 0 && position.X < XDimension && position.Y >= 0 && position.Y < YDimension &&
-                   position.Z >= 0 && position.Z < ZDimension;
+            return IsInBounds(position.X, position.Y, position.Z);
+        }
+
+        public bool IsInBounds(int x, int y, int z)
+        {
+            return x >= 0 && x < XDimension && y >= 0 && y < YDimension && z >= 0 && z < ZDimension;
         }
 
         public void Initialize(Func<int, int, int, T> initializerFunction)

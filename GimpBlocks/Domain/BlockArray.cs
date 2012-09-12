@@ -37,6 +37,12 @@ namespace GimpBlocks
             set { _blockIndexes[x, y, z] = _prototypeMap[value]; }
         }
 
+        public BlockPrototype this[int i]
+        {
+            get { return _prototypeMap[_blockIndexes[i]]; }
+            set { _blockIndexes[i] = _prototypeMap[value]; }
+        }
+
         public BlockPrototype this[BlockPosition location]
         {
             get { return this[location.X, location.Y, location.Z]; }

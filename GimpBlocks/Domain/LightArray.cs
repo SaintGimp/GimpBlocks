@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
 {
@@ -10,6 +10,8 @@ namespace GimpBlocks
     {
         public readonly int MaximumLightLevel = 15;
         readonly BlockArray _blockArray;
+        private int _propogations;
+
 
         public LightArray(int xDimension, int yDimension, int zDimension, BlockArray blockArray)
             : base(xDimension, yDimension, zDimension)
@@ -19,17 +21,12 @@ namespace GimpBlocks
 
         public void Calculate()
         {
-            ResetLight();
-            CastSunlight();
-            ForEach(BeginPropogateLight);
-        }
+            _propogations = 0;
 
-        void ResetLight()
-        {
-            for (int x = 0; x < BufferSize; x++)
-            {
-                this[x] = 0;
-            }
+            CastSunlight();
+            ForEach(BeginPropagateLight);
+
+            Debug.WriteLine("Light propogations: " + _propogations);
         }
 
         void CastSunlight()
@@ -44,11 +41,18 @@ namespace GimpBlocks
                         this[x, y, z] = MaximumLightLevel;
                         y--;
                     }
+
+                    // Anything not in sunlight starts out completely dark
+                    while (y >= 0)
+                    {
+                        this[x, y, z] = 0;
+                        y--;
+                    }
                 }
             }
         }
 
-        void BeginPropogateLight(int lightValue, int x, int y, int z)
+        void BeginPropagateLight(int lightValue, int x, int y, int z)
         {
             if (lightValue < MaximumLightLevel)
             {
@@ -62,50 +66,52 @@ namespace GimpBlocks
 
             var newLightValue = lightValue - 1;
 
-            PropogateLight(newLightValue, x - 1, y, z);
-            PropogateLight(newLightValue, x + 1, y, z);
-            PropogateLight(newLightValue, x, y - 1, z);
-            PropogateLight(newLightValue, x, y + 1, z);
-            PropogateLight(newLightValue, x, y, z - 1);
-            PropogateLight(newLightValue, x, y, z + 1);
+            // At this point we know we're in full sunlight so there's no need to propagate up or down
+            // because both directions are going to be either sunlit or solid
+            PropagateLight(newLightValue, x - 1, y, z);
+            PropagateLight(newLightValue, x + 1, y, z);
+            PropagateLight(newLightValue, x, y, z - 1);
+            PropagateLight(newLightValue, x, y, z + 1);
         }
 
-        void PropogateLight(int lightValue, int x, int y, int z)
+        void PropagateLight(int lightValue, int x, int y, int z)
         {
-            if (x < 0 || x > 15 || y < 0 || y > 15 || z < 0 || z > 15)
+            _propogations++;
+
+            if (!IsInBounds(x, y, z))
             {
                 return;
             }
 
-            if (this[x, y, z] >= lightValue)
+            var linearIndex = LinearIndex(x, y, z);
+
+            if (_blockArray[linearIndex].IsSolid)
             {
                 return;
             }
 
-            if (_blockArray[x, y, z].IsSolid)
+            if (this[linearIndex] >= lightValue)
             {
                 return;
             }
 
-            this[x, y, z] = lightValue;
+            this[linearIndex] = lightValue;
 
             if (lightValue == 1)
             {
                 return;
             }
 
-            // TODO: we want to track sunlight and light sources separately, maybe, and not propogate up or down
-            // if sunlight is full strength
-            // TODO: can we prevent backtracking?
+            // TODO: we want to track sunlight and light sources separately, maybe?
 
             var newLightValue = lightValue - 1;
 
-            PropogateLight(newLightValue, x - 1, y, z);
-            PropogateLight(newLightValue, x + 1, y, z);
-            PropogateLight(newLightValue, x, y - 1, z);
-            PropogateLight(newLightValue, x, y + 1, z);
-            PropogateLight(newLightValue, x, y, z - 1);
-            PropogateLight(newLightValue, x, y, z + 1);
+            PropagateLight(newLightValue, x - 1, y, z);
+            PropagateLight(newLightValue, x + 1, y, z);
+            PropagateLight(newLightValue, x, y - 1, z);
+            PropagateLight(newLightValue, x, y + 1, z);
+            PropagateLight(newLightValue, x, y, z - 1);
+            PropagateLight(newLightValue, x, y, z + 1);
         }
     }
 }

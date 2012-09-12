@@ -52,7 +52,7 @@ namespace GimpBlocks
 
             _blockArray.Initialize((x, y, z) =>
             {
-                if (x > 0 && x < 15 && y > 0 && y < 15 && z > 0 && z < 15)
+                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
                     return random.Next(4) > 0 ? _prototypeMap[0] : _prototypeMap[1];
                 }
@@ -65,27 +65,41 @@ namespace GimpBlocks
 
         void Rebuild()
         {
+            var overallStopWatch = new Stopwatch();
+            overallStopWatch.Start();
+            
             var stopWatch = new Stopwatch();
-            stopWatch.Start();
 
-            _lightArray.Calculate();
+            var lightingTime = stopWatch.Measure(() =>
+            {
+                _lightArray.Calculate();
+            });
 
             var vertexList = new List<VertexPositionColorLighting>();
             var indexList = new List<short>();
 
-            _blockArray.ForEach(block =>
+            var quadTime = stopWatch.Measure(() =>
             {
-                if (block.Prototype.IsSolid)
+                _blockArray.ForEach(block =>
                 {
-                    BuildQuads(vertexList, indexList, block.Position);
-                }
+                    if (block.Prototype.IsSolid)
+                    {
+                        BuildQuads(vertexList, indexList, block.Position);
+                    }
+                });
             });
 
-            _renderer.Initialize(vertexList, indexList);
+            var renderTime = stopWatch.Measure(() =>
+            {
+                _renderer.Initialize(vertexList, indexList);
+            });
 
-            stopWatch.Stop();
-            Debug.WriteLine("Chunk rebuild time: " + stopWatch.ElapsedMilliseconds + " ms");
-
+            overallStopWatch.Stop();
+            Trace.WriteLine("Lighting calcuation time: " + lightingTime + " ms");
+            Trace.WriteLine("Quad building time: " + quadTime + " ms");
+            Trace.WriteLine("Renderer initialization time: " + renderTime + " ms");
+            Trace.WriteLine("Total chunk rebuild time: " + overallStopWatch.ElapsedMilliseconds + " ms");
+            
             EventAggregator.Instance.SendMessage(new ChunkRebuilt());
         }
 
