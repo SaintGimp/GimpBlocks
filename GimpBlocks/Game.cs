@@ -86,8 +86,9 @@ namespace GimpBlocks
             _worldRenderer = new WorldRenderer(_graphics.GraphicsDevice, effect);
             _boundingBoxRenderer = new BoundingBoxRenderer(_graphics.GraphicsDevice);
             var prototypeMap = new BlockPrototypeMap();
-            var blockArray = new BlockArray(prototypeMap, 16, 16, 16);
-            var lightArray = new LightArray(16, 16, 16, blockArray);
+            const int worldSize = 32;
+            var blockArray = new BlockArray(prototypeMap, worldSize, worldSize, worldSize);
+            var lightArray = new LightArray(worldSize, worldSize, worldSize, blockArray);
             _blockPicker = new BlockPicker(blockArray, _camera);
             _world = new World(_worldRenderer, blockArray, lightArray, prototypeMap, _blockPicker);
 

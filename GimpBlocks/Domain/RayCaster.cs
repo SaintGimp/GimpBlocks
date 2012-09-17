@@ -80,9 +80,9 @@ namespace GimpBlocks
             }
 
             float currentRayLength;
-            Face intersectedFace;
             do
             {
+                Face intersectedFace;
                 if (tMaxX < tMaxY)
                 {
                     if (tMaxX < tMaxZ)

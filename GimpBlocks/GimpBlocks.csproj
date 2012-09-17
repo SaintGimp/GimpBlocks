@@ -86,6 +86,7 @@
     <Compile Include="Domain\Block.cs" />
     <Compile Include="Domain\BlockPicker.cs" />
     <Compile Include="Domain\BlockPrototypeMap.cs" />
+    <Compile Include="Domain\Face.cs" />
     <Compile Include="Domain\RayCaster.cs" />
     <Compile Include="Domain\StoneBlock.cs" />
     <Compile Include="Domain\BlockPosition.cs" />

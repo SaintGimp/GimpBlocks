@@ -75,23 +75,28 @@ namespace GimpBlocks
                 _lightArray.Calculate();
             });
 
-            var vertexList = new List<VertexPositionColorLighting>();
-            var indexList = new List<short>();
-
+            var vertexLists = new List<VertexPositionColorLighting>[6];
+            var indexLists = new List<short>[6];
+            for (int x = 0; x < 6; x++)
+            {
+                vertexLists[x] = new List<VertexPositionColorLighting>();
+                indexLists[x] = new List<short>();
+            }
+            
             var quadTime = stopWatch.Measure(() =>
             {
                 _blockArray.ForEach(block =>
                 {
                     if (block.Prototype.IsSolid)
                     {
-                        BuildQuads(vertexList, indexList, block.Position);
+                        BuildQuads(vertexLists, indexLists, block.Position);
                     }
                 });
             });
 
             var renderTime = stopWatch.Measure(() =>
             {
-                _renderer.Initialize(vertexList, indexList);
+                _renderer.Initialize(vertexLists, indexLists);
             });
 
             overallStopWatch.Stop();
@@ -103,14 +108,14 @@ namespace GimpBlocks
             EventAggregator.Instance.SendMessage(new ChunkRebuilt());
         }
 
-        void BuildQuads(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
+        void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition blockPosition)
         {
-            BuildLeftQuad(vertexList, indexList, blockPosition);
-            BuildRightQuad(vertexList, indexList, blockPosition);
-            BuildFrontQuad(vertexList, indexList, blockPosition);
-            BuildBackQuad(vertexList, indexList, blockPosition);
-            BuildTopQuad(vertexList, indexList, blockPosition);
-            BuildBottomQuad(vertexList, indexList, blockPosition);
+            BuildLeftQuad(vertexLists[Face.Left], indexLists[Face.Left], blockPosition);
+            BuildRightQuad(vertexLists[Face.Right], indexLists[Face.Right], blockPosition);
+            BuildFrontQuad(vertexLists[Face.Front], indexLists[Face.Front], blockPosition);
+            BuildBackQuad(vertexLists[Face.Back], indexLists[Face.Back], blockPosition);
+            BuildTopQuad(vertexLists[Face.Top], indexLists[Face.Top], blockPosition);
+            BuildBottomQuad(vertexLists[Face.Bottom], indexLists[Face.Bottom], blockPosition);
         }
 
         void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)

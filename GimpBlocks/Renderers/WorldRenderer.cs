@@ -9,7 +9,7 @@ namespace GimpBlocks
 {
     public interface IWorldRenderer
     {
-        void Initialize(IEnumerable<VertexPositionColorLighting> vertices, IEnumerable<short> indices);
+        void Initialize(IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices);
         void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix);
     }
 
@@ -17,8 +17,8 @@ namespace GimpBlocks
     {
         readonly GraphicsDevice _graphicsDevice;
         readonly Effect _effect;
-        VertexBuffer _vertexBuffer;
-        IndexBuffer _indexBuffer;
+        readonly VertexBuffer[] _vertexBuffers = new VertexBuffer[6];
+        readonly IndexBuffer[] _indexBuffers = new IndexBuffer[6];
 
         public WorldRenderer(GraphicsDevice graphicsDevice, Effect effect)
         {
@@ -26,24 +26,31 @@ namespace GimpBlocks
             _effect = effect;
         }
 
-        public void Initialize(IEnumerable<VertexPositionColorLighting> vertices, IEnumerable<short> indices)
+        public void Initialize(IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices)
         {
-            CreateVertexBuffer(vertices);
-            CreateIndexBuffer(indices);
+            CreateVertexBuffers(vertices);
+            CreateIndexBuffers(indices);
         }
 
-        void CreateVertexBuffer(IEnumerable<VertexPositionColorLighting> vertices)
+        void CreateVertexBuffers(IEnumerable<VertexPositionColorLighting>[] vertices)
         {
-            VertexPositionColorLighting[] vertexArray = vertices.ToArray();
-            _vertexBuffer = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColorLighting), vertexArray.Length, BufferUsage.WriteOnly);
-            _vertexBuffer.SetData(vertexArray);
+            for (int x = 0; x < 6; x++)
+            {
+                VertexPositionColorLighting[] vertexArray = vertices[x].ToArray();
+                _vertexBuffers[x] = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColorLighting), vertexArray.Length,
+                    BufferUsage.WriteOnly);
+                _vertexBuffers[x].SetData(vertexArray);
+            }
         }
 
-        void CreateIndexBuffer(IEnumerable<short> indices)
+        void CreateIndexBuffers(IEnumerable<short>[] indices)
         {
-            short[] indexArray = indices.ToArray();
-            _indexBuffer = new IndexBuffer(_graphicsDevice, IndexElementSize.SixteenBits, indexArray.Length, BufferUsage.WriteOnly);
-            _indexBuffer.SetData(indexArray);
+            for (int x = 0; x < 6; x++)
+            {
+                short[] indexArray = indices[x].ToArray();
+                _indexBuffers[x] = new IndexBuffer(_graphicsDevice, IndexElementSize.SixteenBits, indexArray.Length, BufferUsage.WriteOnly);
+                _indexBuffers[x].SetData(indexArray);
+            }
         }
 
         public void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
@@ -52,14 +59,20 @@ namespace GimpBlocks
             _effect.Parameters["Projection"].SetValue(projectionMatrix);
             _effect.Parameters["World"].SetValue(GetWorldMatrix(Vector3.Zero, cameraLocation));
 
-            foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+            // TODO: we can skip drawing certain face lists if we know that we're not in a position
+            // to be able to see them, i.e. if the camera is higher than the entire chunk then we
+            // don't have to draw the bottom face list.
+            for (int x = 0; x < 6; x++)
             {
-                pass.Apply();
+                foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+                {
+                    pass.Apply();
 
-                _graphicsDevice.Indices = _indexBuffer;
-                _graphicsDevice.SetVertexBuffer(_vertexBuffer);
-                _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _vertexBuffer.VertexCount, 0,
-                                                      _indexBuffer.IndexCount / 3);
+                    _graphicsDevice.Indices = _indexBuffers[x];
+                    _graphicsDevice.SetVertexBuffer(_vertexBuffers[x]);
+                    _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _vertexBuffers[x].VertexCount, 0,
+                        _indexBuffers[x].IndexCount / 3);
+                }
             }
         }
 
