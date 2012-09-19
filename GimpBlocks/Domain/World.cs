@@ -115,23 +115,23 @@ namespace GimpBlocks
                 Seed = 1
             };
 
-            var terrainFilter = new MultiFractal
+            var terrainFilter = new RidgedMultiFractal
             {
                 Primitive3D = primitive,
-                Frequency = 3,
-                Gain = 2f,
+                Frequency = 1,
+                Gain = 3f,
                 Lacunarity = 2,
-                OctaveCount = 2,
+                OctaveCount = 4,
                 Offset = 1,
-                SpectralExponent = 0.9f
+                SpectralExponent = 0.7f
             };
 
             // MultiFractal output seems to vary from 0 to 3ish
             var outputScaler = new ScaleBias
             {
                 SourceModule = terrainFilter,
-                Scale = 2f / 3f,
-                Bias = -1f
+                Scale = 1f,
+                Bias = 0f
             };
 
             // The terrace seems to be useful for smoothing the lower parts while still allowing
@@ -141,9 +141,9 @@ namespace GimpBlocks
             {
                 SourceModule = outputScaler,
             };
-            terrace.AddControlPoint(-1f);
+            terrace.AddControlPoint(-0.5f);
             //terrace.AddControlPoint(-0.5f);
-            //terrace.AddControlPoint(0f);
+            terrace.AddControlPoint(0f);
             //terrace.AddControlPoint(0.5f);
             terrace.AddControlPoint(2f);
             //terrace.AddControlPoint(0.7f, 0.8f);
@@ -186,8 +186,8 @@ namespace GimpBlocks
                         // The smaller the gradient value, the longer it takes to drive
                         // the entire fractal below zero and the more overhang/hole stuff
                         // we get.
-                        //var density = noise - (y / 10f) + 3;
-                        var density = noise - (y / 20f) + 3;
+                        var density = noise - (y / 10f) + 3;
+                        //var density = noise - (y / 20f) + 3;
                         densityMap[x, y, z] = density;
                     }
                 }
