@@ -134,9 +134,23 @@ namespace GimpBlocks
                 Bias = -1f
             };
 
-            var inputScaler = new ScalePoint
+            // The terrace seems to be useful for smoothing the lower parts while still allowing
+            // for dramatic mountains
+
+            var terrace = new Terrace()
             {
                 SourceModule = outputScaler,
+            };
+            terrace.AddControlPoint(-1f);
+            //terrace.AddControlPoint(-0.5f);
+            //terrace.AddControlPoint(0f);
+            //terrace.AddControlPoint(0.5f);
+            terrace.AddControlPoint(2f);
+            //terrace.AddControlPoint(0.7f, 0.8f);
+
+            var inputScaler = new ScalePoint
+            {
+                SourceModule = terrace,
                 XScale = 0.01f,
                 YScale = 0.01f,
                 ZScale = 0.01f
@@ -173,7 +187,7 @@ namespace GimpBlocks
                         // the entire fractal below zero and the more overhang/hole stuff
                         // we get.
                         //var density = noise - (y / 10f) + 3;
-                        var density = noise - (y / 15f) + 2;
+                        var density = noise - (y / 20f) + 3;
                         densityMap[x, y, z] = density;
                     }
                 }
