@@ -25,7 +25,9 @@ namespace GimpBlocks
             YDimension = yDimension;
             ZDimension = zDimension;
 
-            LayerSize = XDimension * YDimension;
+            // TODO: should figure out the most efficient layout for the array so that typical access is sequential for cache coherency
+
+            LayerSize = ZDimension * YDimension;
             BufferSize = XDimension * YDimension * ZDimension;
             Buffer = new T[BufferSize];
         }
@@ -38,7 +40,7 @@ namespace GimpBlocks
 
         protected int LinearIndex(int x, int y, int z)
         {
-            return (x * LayerSize) + (y * YDimension) + z;
+            return (x * LayerSize) + (y * ZDimension) + z;
         }
 
         public T this[int i]

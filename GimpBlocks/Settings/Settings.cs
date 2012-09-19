@@ -44,8 +44,8 @@ namespace GimpBlocks
             ShouldUpdate = true;
             ShouldSingleStep = false;
             ShouldDrawWireframe = false;
-            CameraStartingLocation = Vector3.Backward * 40 + Vector3.Up * 20;
-            CameraStartingLookAt = Vector3.Zero;
+            CameraStartingLocation = Vector3.Up * 64;
+            CameraStartingLookAt = Vector3.Right * 128 + Vector3.Backward * 128;
             CameraMoveSpeedPerSecond = 10;
             CameraMouseLookDamping = 300f;
             MaximumQuadNodeLevel = 19;

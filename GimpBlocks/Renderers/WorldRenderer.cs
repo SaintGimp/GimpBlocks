@@ -36,6 +36,7 @@ namespace GimpBlocks
         {
             for (int x = 0; x < 6; x++)
             {
+                // TODO: need to handle case where there are no vertices at all
                 VertexPositionColorLighting[] vertexArray = vertices[x].ToArray();
                 _vertexBuffers[x] = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColorLighting), vertexArray.Length,
                     BufferUsage.WriteOnly);

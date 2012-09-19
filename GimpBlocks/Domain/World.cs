@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using LibNoise;
+using LibNoise.Filter;
+using LibNoise.Modifier;
+using LibNoise.Primitive;
+using LibNoise.Tranformer;
 using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
@@ -28,11 +33,197 @@ namespace GimpBlocks
 
         public void Generate()
         {
-            GenerateRandom();
-
+            //GenerateRandom();
             //GenerateSlab();
+            //GenerateCaves2();
+            GenerateTerrain1();
 
             Rebuild();
+        }
+
+        private void GenerateCaves1()
+        {
+            var primitive = new SimplexPerlin
+            {
+                Quality = NoiseQuality.Best,
+                Seed = 1
+            };
+
+            var filter = new HeterogeneousMultiFractal()
+            {
+                Primitive3D = primitive,
+                Frequency = 1,
+                Gain = 2,
+                Lacunarity = 2,
+                OctaveCount = 1,
+                Offset = 1,
+                SpectralExponent = 0.9f
+            };
+
+            _blockArray.Initialize((x, y, z) =>
+            {
+                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
+                {
+                    float divisor = 20;
+                    return filter.GetValue(x / divisor, y / divisor, z / divisor) < 1.4 ? _prototypeMap[1] : _prototypeMap[0];
+                }
+                else
+                {
+                    return _prototypeMap[0];
+                }
+            });
+        }
+
+        private void GenerateCaves2()
+        {
+            var primitive = new SimplexPerlin
+            {
+                Quality = NoiseQuality.Best,
+                Seed = 1
+            };
+
+            var filter = new HybridMultiFractal()
+            {
+                Primitive3D = primitive,
+                Frequency = 1,
+                Gain = 2,
+                Lacunarity = 2,
+                OctaveCount = 1,
+                Offset = 1,
+                SpectralExponent = 0.9f
+            };
+
+            _blockArray.Initialize((x, y, z) =>
+            {
+                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
+                {
+                    float divisor = 20;
+                    return filter.GetValue(x / divisor, y / divisor, z / divisor) < 1.5 ? _prototypeMap[1] : _prototypeMap[0];
+                }
+                else
+                {
+                    return _prototypeMap[0];
+                }
+            });
+        }
+
+        private void GenerateTerrain1()
+        {
+            var primitive = new SimplexPerlin
+            {
+                Quality = NoiseQuality.Best,
+                Seed = 1
+            };
+
+            var terrainFilter = new MultiFractal
+            {
+                Primitive3D = primitive,
+                Frequency = 3,
+                Gain = 2f,
+                Lacunarity = 2,
+                OctaveCount = 2,
+                Offset = 1,
+                SpectralExponent = 0.9f
+            };
+
+            // MultiFractal output seems to vary from 0 to 3ish
+            var outputScaler = new ScaleBias
+            {
+                SourceModule = terrainFilter,
+                Scale = 2f / 3f,
+                Bias = -1f
+            };
+
+            var inputScaler = new ScalePoint
+            {
+                SourceModule = outputScaler,
+                XScale = 0.01f,
+                YScale = 0.01f,
+                ZScale = 0.01f
+            };
+
+            // Setting the horizontal sampe rate to 4 smoothes things a bit, 16 smoothes a lot,
+            // looking much more gentle and not very sensitive to detail in the noise.
+
+            var horizontalSampleRate = 4;
+            var verticalSampleRate = 4;
+
+            var maxNoise = float.MinValue;
+            var minNoise = float.MaxValue;
+            var densityMap = new double[_blockArray.XDimension + 1,_blockArray.YDimension + 1,_blockArray.ZDimension + 1];
+            for (int x = 0; x < _blockArray.XDimension; x += horizontalSampleRate)
+            {
+                for (int y = 0; y < _blockArray.YDimension; y += verticalSampleRate)
+                {
+                    for (int z = 0; z < _blockArray.ZDimension; z += horizontalSampleRate)
+                    {
+                        var noise = inputScaler.GetValue(x, y, z);
+
+                        if (noise > maxNoise)
+                        {
+                            maxNoise = noise;
+                        }
+                        if (noise < minNoise)
+                        {
+                            minNoise = noise;
+                        }
+
+                        // This applies a gradient to the noise based on height.
+                        // The smaller the gradient value, the longer it takes to drive
+                        // the entire fractal below zero and the more overhang/hole stuff
+                        // we get.
+                        //var density = noise - (y / 10f) + 3;
+                        var density = noise - (y / 15f) + 2;
+                        densityMap[x, y, z] = density;
+                    }
+                }
+            }
+
+            Debug.WriteLine("Max noise: {0}, min noise: {1}", maxNoise, minNoise);
+
+            _blockArray.Initialize((x, y, z) =>
+            {
+                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
+                {
+                    if (!(x % horizontalSampleRate == 0 && y % verticalSampleRate == 0 && z % horizontalSampleRate == 0))
+                    {
+                        int offsetX = (x / horizontalSampleRate) * horizontalSampleRate;
+                        int offsetY = (y / verticalSampleRate) * verticalSampleRate;
+                        int offsetZ = (z / horizontalSampleRate) * horizontalSampleRate;
+                        densityMap[x,y,z] = TriLerp(x, y, z,
+                            densityMap[offsetX,offsetY,offsetZ],
+                            densityMap[offsetX,verticalSampleRate + offsetY,offsetZ],
+                            densityMap[offsetX,offsetY,offsetZ + horizontalSampleRate],
+                            densityMap[offsetX,offsetY + verticalSampleRate,offsetZ + horizontalSampleRate],
+                            densityMap[horizontalSampleRate + offsetX,offsetY,offsetZ], 
+                            densityMap[horizontalSampleRate + offsetX,offsetY + verticalSampleRate,offsetZ],
+                            densityMap[horizontalSampleRate + offsetX,offsetY,offsetZ + horizontalSampleRate],
+                            densityMap[horizontalSampleRate + offsetX,offsetY + verticalSampleRate,offsetZ + horizontalSampleRate],
+                            offsetX, horizontalSampleRate + offsetX, offsetY, verticalSampleRate + offsetY, offsetZ, offsetZ + horizontalSampleRate);
+                    }
+                    return densityMap[x, y, z] > 0 ? _prototypeMap[1] : _prototypeMap[0];
+                }
+                else
+                {
+                    return _prototypeMap[0];
+                }
+            });
+        }
+
+        public double TriLerp(double x, double y, double z, double q000, double q001, double q010, double q011, double q100, double q101, double q110, double q111, double x1, double x2, double y1, double y2, double z1, double z2)
+        {
+            double x00 = Lerp(x, x1, x2, q000, q100);
+            double x10 = Lerp(x, x1, x2, q010, q110);
+            double x01 = Lerp(x, x1, x2, q001, q101);
+            double x11 = Lerp(x, x1, x2, q011, q111);
+            double r0 = Lerp(y, y1, y2, x00, x01);
+            double r1 = Lerp(y, y1, y2, x10, x11);
+            return Lerp(z, z1, z2, r0, r1);
+        }
+
+        public double Lerp(double x, double x1, double x2, double q00, double q01)
+        {
+            return ((x2 - x) / (x2 - x1)) * q00 + ((x - x1) / (x2 - x1)) * q01;
         }
 
         void GenerateSlab()
