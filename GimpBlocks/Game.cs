@@ -27,8 +27,6 @@ namespace GimpBlocks
         ICamera _camera;
         ICameraController _cameraController;
         World _world;
-        IWorldRenderer _worldRenderer;
-        IBoundingBoxRenderer _boundingBoxRenderer;
         BlockPicker _blockPicker;
 
         public Game()
@@ -83,18 +81,20 @@ namespace GimpBlocks
             _cameraController = ObjectFactory.GetInstance<ICameraController>();
 
             var effect = Content.Load<Effect>("BlockEffect");
-            _worldRenderer = new WorldRenderer(_graphics.GraphicsDevice, effect);
-            _boundingBoxRenderer = new BoundingBoxRenderer(_graphics.GraphicsDevice);
+            var worldRenderer = new WorldRenderer(_graphics.GraphicsDevice, effect);
+            var boundingBoxRenderer = new BoundingBoxRenderer(_graphics.GraphicsDevice);
             var prototypeMap = new BlockPrototypeMap();
             const int worldSizeX = 128;
             const int worldSizeY = 64;
             const int worldSizeZ = 128;
             var blockArray = new BlockArray(prototypeMap, worldSizeX, worldSizeY, worldSizeZ);
             var lightArray = new LightArray(worldSizeX, worldSizeY, worldSizeZ, blockArray);
-            _blockPicker = new BlockPicker(blockArray, _camera);
-            _world = new World(_worldRenderer, blockArray, lightArray, prototypeMap, _blockPicker);
+            var blockPicker = new BlockPicker(blockArray, _camera);
+            var chunkRenderer = new ChunkRenderer(_graphics.GraphicsDevice, effect);
+            var chunk = new Chunk(chunkRenderer, prototypeMap);
+            _world = new World(worldRenderer, chunk, prototypeMap, blockPicker, boundingBoxRenderer);
 
-            EventAggregator.Instance.AddListener(_blockPicker);
+            EventAggregator.Instance.AddListener(blockPicker);
             EventAggregator.Instance.AddListener(_world);
 
             _world.Generate();
@@ -140,18 +140,8 @@ namespace GimpBlocks
             GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            _worldRenderer.Draw(Vector3.Zero, _camera.Location, _camera.OriginBasedViewTransformation,
-                                _camera.ProjectionTransformation);
+            _world.Draw(Vector3.Zero, _camera.Location, _camera.OriginBasedViewTransformation, _camera.ProjectionTransformation);
             
-            if (_blockPicker.SelectedBlock != null)
-            {
-                var boundingBox = _blockPicker.SelectedBlock.BoundingBox;
-                var offset = new Vector3(0.003f);
-                var selectionBox = new BoundingBox(boundingBox.Min - offset, boundingBox.Max + offset);
-                _boundingBoxRenderer.Draw(selectionBox, _camera.Location,
-                                _camera.OriginBasedViewTransformation, _camera.ProjectionTransformation);
-            }
-
             _spriteBatch.Begin();
             var crossHairPosition = new Vector2(Window.ClientBounds.Width / 2 - _crosshairTexture.Width / 2, Window.ClientBounds.Height / 2 - _crosshairTexture.Height / 2);
             _spriteBatch.Draw(_crosshairTexture, crossHairPosition, Color.White);
