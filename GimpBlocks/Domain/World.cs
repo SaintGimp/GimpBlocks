@@ -16,6 +16,14 @@ namespace GimpBlocks
         : IListener<PlaceBlock>,
         IListener<DestroyBlock>
     {
+        // Design tradeoffs: We could have one array of structs that contain all block information.  The advantage there
+        // is that if we need to access multiple pieces of information about a block simultaneously, we only need to do one
+        // array lookup.  Or we could store each type of information in a separate array which requires a separate array
+        // lookup for each piece of information, but in the case where we need to iterate a lot over one type of information,
+        // we would get fewer cache misses.  With that approach we could also optimize storage for each type of information separately, so
+        // something that's usually sparse could be stored in a sparse octtree where something else that varies a lot could
+        // be an an array.  It's not clear which strategy is best in the long term.
+
         readonly IWorldRenderer _renderer;
         readonly BlockArray _blockArray;
         readonly LightArray _lightArray;
@@ -115,7 +123,7 @@ namespace GimpBlocks
                 Seed = 1
             };
 
-            var terrainFilter = new RidgedMultiFractal
+            var terrainFilter = new MultiFractal
             {
                 Primitive3D = primitive,
                 Frequency = 1,
@@ -123,15 +131,15 @@ namespace GimpBlocks
                 Lacunarity = 2,
                 OctaveCount = 4,
                 Offset = 1,
-                SpectralExponent = 0.7f
+                SpectralExponent = 0.25f
             };
 
             // MultiFractal output seems to vary from 0 to 3ish
             var outputScaler = new ScaleBias
             {
                 SourceModule = terrainFilter,
-                Scale = 1f,
-                Bias = 0f
+                Scale = 2/3f,
+                Bias = -1f
             };
 
             // The terrace seems to be useful for smoothing the lower parts while still allowing
@@ -141,9 +149,9 @@ namespace GimpBlocks
             {
                 SourceModule = outputScaler,
             };
-            terrace.AddControlPoint(-0.5f);
+            terrace.AddControlPoint(-1f);
             //terrace.AddControlPoint(-0.5f);
-            terrace.AddControlPoint(0f);
+            //terrace.AddControlPoint(0f);
             //terrace.AddControlPoint(0.5f);
             terrace.AddControlPoint(2f);
             //terrace.AddControlPoint(0.7f, 0.8f);
