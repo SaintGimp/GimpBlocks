@@ -17,7 +17,7 @@ namespace GimpBlocks
 
         public static IntersectionResult Intersects(this Ray ray, BlockArray blockArray, float maximumRayLength)
         {
-            BlockPosition currentBlockPosition = ray.Position;
+            ChunkBlockPosition currentBlockPosition = ray.Position;
             int stepX, stepY, stepZ;
             float tMaxX, tMaxY, tMaxZ;
             float tDeltaX, tDeltaY, tDeltaZ;

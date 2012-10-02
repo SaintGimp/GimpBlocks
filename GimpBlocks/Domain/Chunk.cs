@@ -25,29 +25,28 @@ namespace GimpBlocks
         // left-right
         public const int XDimension = 32;
         // up-down
-        public const int YDimension = 128;
+        public const int YDimension = 64;
         // in-out (positive toward viewer)
         public const int ZDimension = 32;
 
+        readonly int _chunkX;
+        readonly int _chunkZ;
         readonly IChunkRenderer _renderer;
         readonly BlockArray _blockArray;
         readonly LightArray _lightArray;
         readonly BlockPrototypeMap _prototypeMap;
 
-        public Chunk(IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
+        public Chunk(int chunkX, int chunkZ, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
+            _chunkX = chunkX;
+            _chunkZ = chunkZ;
             _renderer = renderer;
             _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
             _lightArray = new LightArray(XDimension, YDimension, ZDimension, _blockArray);
             _prototypeMap = prototypeMap;
         }
 
-        public void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
-        {
-            _renderer.Draw(location, cameraLocation, originBasedViewMatrix, projectionMatrix);
-        }
-
-        public void SetBlock(BlockPosition position, BlockPrototype prototype)
+        public void SetBlock(ChunkBlockPosition position, BlockPrototype prototype)
         {
             _blockArray[position] = prototype;
         }
@@ -83,7 +82,10 @@ namespace GimpBlocks
                 if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
                     float divisor = 20;
-                    return filter.GetValue(x / divisor, y / divisor, z / divisor) < 1.4 ? _prototypeMap[1] : _prototypeMap[0];
+                    float filterX = (XDimension * _chunkX + x) / divisor;
+                    float filterY = y / divisor;
+                    float filterZ = (ZDimension * _chunkZ + z) / divisor;
+                    return filter.GetValue(filterX, filterY, filterZ) < 1.4 ? _prototypeMap[1] : _prototypeMap[0];
                 }
                 else
                 {
@@ -116,7 +118,10 @@ namespace GimpBlocks
                 if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
                     float divisor = 20;
-                    return filter.GetValue(x / divisor, y / divisor, z / divisor) < 1.5 ? _prototypeMap[1] : _prototypeMap[0];
+                    float filterX = (XDimension * _chunkX + x) / divisor;
+                    float filterY = y / divisor;
+                    float filterZ = (ZDimension * _chunkZ + z) / divisor;
+                    return filter.GetValue(filterX, filterY, filterZ) < 1.5 ? _prototypeMap[1] : _prototypeMap[0];
                 }
                 else
                 {
@@ -189,7 +194,10 @@ namespace GimpBlocks
                 {
                     for (int z = 0; z < _blockArray.ZDimension; z += horizontalSampleRate)
                     {
-                        var noise = inputScaler.GetValue(x, y, z);
+                        float worldX = (XDimension * _chunkX + x);
+                        float worldY = y;
+                        float worldZ = (ZDimension * _chunkZ + z);
+                        var noise = inputScaler.GetValue(worldX, worldY, worldZ);
 
                         if (noise > maxNoise)
                         {
@@ -272,7 +280,7 @@ namespace GimpBlocks
 
         public void CalculateInternalLighting()
         {
-            _lightArray.Calculate();
+            _lightArray.Calculate(this);
         }
 
         public void BuildGeometry()
@@ -293,10 +301,11 @@ namespace GimpBlocks
                 }
             });
 
-            _renderer.Initialize(vertexLists, indexLists);
+            var worldLocation = new Vector3(XDimension * _chunkX, 0, ZDimension * _chunkZ);
+            _renderer.Initialize(worldLocation, vertexLists, indexLists);
         }
 
-        void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition blockPosition)
+        void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, ChunkBlockPosition blockPosition)
         {
             BuildLeftQuad(vertexLists[Face.Left], indexLists[Face.Left], blockPosition);
             BuildRightQuad(vertexLists[Face.Right], indexLists[Face.Right], blockPosition);
@@ -306,7 +315,7 @@ namespace GimpBlocks
             BuildBottomQuad(vertexLists[Face.Bottom], indexLists[Face.Bottom], blockPosition);
         }
 
-        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
+        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
         {
             if (_blockArray[blockPosition.Left].IsSolid)
             {
@@ -353,7 +362,7 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
+        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
         {
             if (_blockArray[blockPosition.Right].IsSolid)
             {
@@ -400,7 +409,7 @@ namespace GimpBlocks
             indexList.Add(bottomRightFrontIndex);
         }
 
-        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
+        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
         {
             if (_blockArray[blockPosition.Back].IsSolid)
             {
@@ -447,7 +456,7 @@ namespace GimpBlocks
             indexList.Add(bottomRightBackIndex);
         }
 
-        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
+        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
         {
             if (_blockArray[blockPosition.Front].IsSolid)
             {
@@ -494,7 +503,7 @@ namespace GimpBlocks
             indexList.Add(bottomLeftFrontIndex);
         }
 
-        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
+        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
         {
             if (_blockArray[blockPosition.Up].IsSolid)
             {
@@ -541,7 +550,7 @@ namespace GimpBlocks
             indexList.Add(topLeftFrontIndex);
         }
 
-        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition blockPosition)
+        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
         {
             if (_blockArray[blockPosition.Down].IsSolid)
             {
@@ -591,7 +600,7 @@ namespace GimpBlocks
         // Light propogation between chunks: once the chunk has its internal lighting calculated, we can take all of the edge blocks in a chunk
         // and just propogate that current light level over to the neighboring chunk. The recursion will be naturally limited by the light level.
 
-        Vector3 AverageLightingOver(BlockPosition adjacent, BlockPosition edge1, BlockPosition edge2, BlockPosition diagonal, float limit)
+        Vector3 AverageLightingOver(ChunkBlockPosition adjacent, ChunkBlockPosition edge1, ChunkBlockPosition edge2, ChunkBlockPosition diagonal, float limit)
         {
             // For each vertex we examine four voxels grouped around the vertex in the plane of the face that the vertex belongs to.
             // The voxels we're interested in for a particular vertex are:
@@ -617,5 +626,24 @@ namespace GimpBlocks
             return new Vector3(percentage);
         }
 
+        public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
+        {
+            _renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
+        }
+
+        public bool IsSolid(ChunkBlockPosition blockPosition)
+        {
+            return _blockArray[blockPosition].IsSolid;
+        }
+
+        public int GetLightLevel(ChunkBlockPosition blockPosition)
+        {
+            return _lightArray[blockPosition];
+        }
+
+        public void SetLightLevel(ChunkBlockPosition blockPosition, int lightLevel)
+        {
+            _lightArray[blockPosition] = lightLevel;
+        }
     }
 }

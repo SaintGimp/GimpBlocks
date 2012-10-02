@@ -43,13 +43,13 @@ namespace GimpBlocks
             set { _blockIndexes[i] = _prototypeMap[value]; }
         }
 
-        public BlockPrototype this[BlockPosition location]
+        public BlockPrototype this[ChunkBlockPosition location]
         {
             get { return this[location.X, location.Y, location.Z]; }
             set { _blockIndexes[location.X, location.Y, location.Z] = _prototypeMap[value]; }
         }
 
-        public bool IsInBounds(BlockPosition position)
+        public bool IsInBounds(ChunkBlockPosition position)
         {
             return _blockIndexes.IsInBounds(position);
         }
@@ -61,16 +61,16 @@ namespace GimpBlocks
 
         public void ForEach(Action<Block> action)
         {
-            _blockIndexes.ForEach((index, x, y, z) => action(new Block(_prototypeMap[index], new BlockPosition(x, y, z))));
+            _blockIndexes.ForEach((index, x, y, z) => action(new Block(_prototypeMap[index], new ChunkBlockPosition(x, y, z))));
         }
 
-        public void ForEachInVolume(BlockPosition lowerBound, BlockPosition upperBound, Action<Block> action)
+        public void ForEachInVolume(ChunkBlockPosition lowerBound, ChunkBlockPosition upperBound, Action<Block> action)
         {
             _blockIndexes.ForEachInVolume(lowerBound.X, lowerBound.Y, lowerBound.Z, upperBound.X, upperBound.Y, upperBound.Z,
-                (index, x, y, z) => action(new Block(_prototypeMap[index], new BlockPosition(x, y, z))));
+                (index, x, y, z) => action(new Block(_prototypeMap[index], new ChunkBlockPosition(x, y, z))));
         }
 
-        public Block GetAt(BlockPosition blockPosition)
+        public Block GetAt(ChunkBlockPosition blockPosition)
         {
             return new Block(this[blockPosition], blockPosition);
         }

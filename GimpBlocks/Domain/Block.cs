@@ -9,9 +9,9 @@ namespace GimpBlocks
     public class Block
     {
         public BlockPrototype Prototype;
-        public BlockPosition Position;
+        public ChunkBlockPosition Position;
 
-        public Block(BlockPrototype prototype, BlockPosition position)
+        public Block(BlockPrototype prototype, ChunkBlockPosition position)
         {
             Prototype = prototype;
             Position = position;

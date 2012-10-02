@@ -9,6 +9,7 @@ using LibNoise.Modifier;
 using LibNoise.Primitive;
 using LibNoise.Tranformer;
 using Microsoft.Xna.Framework;
+using StructureMap;
 
 namespace GimpBlocks
 {
@@ -25,15 +26,16 @@ namespace GimpBlocks
         // be an an array.  It's not clear which strategy is best in the long term.
 
         readonly IWorldRenderer _renderer;
+        readonly Func<int, int, Chunk> _chunkFactory;
         readonly BlockPrototypeMap _prototypeMap;
         readonly BlockPicker _blockPicker;
         readonly BoundingBoxRenderer _boundingBoxRenderer;
-        readonly Chunk _chunk;
+        Chunk[,] _chunks = new Chunk[4,4];
 
-        public World(IWorldRenderer renderer, Chunk chunk, BlockPrototypeMap prototypeMap, BlockPicker blockPicker, BoundingBoxRenderer boundingBoxRenderer)
+        public World(IWorldRenderer renderer, Func<int, int, Chunk> chunkFactory, BlockPrototypeMap prototypeMap, BlockPicker blockPicker, BoundingBoxRenderer boundingBoxRenderer)
         {
             _renderer = renderer;
-            _chunk = chunk;
+            _chunkFactory = chunkFactory;
             _prototypeMap = prototypeMap;
             _blockPicker = blockPicker;
             _boundingBoxRenderer = boundingBoxRenderer;
@@ -41,24 +43,40 @@ namespace GimpBlocks
 
         public void Generate()
         {
-            _chunk.Generate();
+            for (int x = 0; x <= _chunks.GetUpperBound(0); x++)
+            {
+                for (int z = 0; z <= _chunks.GetUpperBound(1); z++)
+                {
+                    var chunk = _chunkFactory(x, z);
+                    chunk.Generate();
+                    _chunks[x, z] = chunk;
+                }
+                
+            }
+
             Rebuild();
         }
 
         void Rebuild()
         {
-            _chunk.CalculateInternalLighting();
-            _chunk.BuildGeometry();
+            foreach (var chunk in _chunks)
+            {
+                chunk.CalculateInternalLighting();
+                chunk.BuildGeometry();
+            }
             
             EventAggregator.Instance.SendMessage(new ChunkRebuilt());
         }
 
 
-        public void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
+        public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
-            _renderer.Draw(location, cameraLocation, originBasedViewMatrix, projectionMatrix);
+            _renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
 
-            _chunk.Draw(location, cameraLocation, originBasedViewMatrix, projectionMatrix);
+            foreach (var chunk in _chunks)
+            {
+                chunk.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
+            }
 
             if (_blockPicker.SelectedBlock != null)
             {
@@ -71,22 +89,22 @@ namespace GimpBlocks
 
         public void Handle(PlaceBlock message)
         {
-            if (_blockPicker.SelectedBlock != null)
-            {
-                _chunk.SetBlock(_blockPicker.SelectedPlacePosition, _prototypeMap[1]);
+            //if (_blockPicker.SelectedBlock != null)
+            //{
+            //    _chunk.SetBlock(_blockPicker.SelectedPlacePosition, _prototypeMap[1]);
 
-                Rebuild();
-            }
+            //    Rebuild();
+            //}
         }
 
         public void Handle(DestroyBlock message)
         {
-            if (_blockPicker.SelectedBlock != null)
-            {
-                _chunk.SetBlock(_blockPicker.SelectedPlacePosition, _prototypeMap[0]);
+            //if (_blockPicker.SelectedBlock != null)
+            //{
+            //    _chunk.SetBlock(_blockPicker.SelectedPlacePosition, _prototypeMap[0]);
 
-                Rebuild();
-            }
+            //    Rebuild();
+            //}
         }
     }
 }

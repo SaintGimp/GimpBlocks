@@ -10,8 +10,6 @@ namespace GimpBlocks
     {
         public readonly int MaximumLightLevel = 15;
         readonly BlockArray _blockArray;
-        private int _propogations;
-
 
         public LightArray(int xDimension, int yDimension, int zDimension, BlockArray blockArray)
             : base(xDimension, yDimension, zDimension)
@@ -19,14 +17,23 @@ namespace GimpBlocks
             _blockArray = blockArray;
         }
 
-        public void Calculate()
+        public void Calculate(Chunk chunk)
         {
-            _propogations = 0;
-
             CastSunlight();
-            ForEach(BeginPropagateLight);
+            var propogator = new LightPropagator();
+            ForEach((lightLevel, x, y, z) =>
+            {
+                // TODO: we don't need to propogate light from blocks that contain only light that's already
+                // been propogated from elsewhere. For now we can propogate only if the light is full strength,
+                // but that won't work for light sources that are less than full strength.  Maybe have a source
+                // and destination light map so we don't have to deal with half-calculated data?
 
-            Debug.WriteLine("Light propogations: " + _propogations);
+                var blockPosition = new ChunkBlockPosition(x, y, z);
+                if (chunk.GetLightLevel(blockPosition) == MaximumLightLevel)
+                {
+                    propogator.PropagateLightFromChunk(chunk, blockPosition);
+                }
+            });
         }
 
         void CastSunlight()
@@ -52,66 +59,6 @@ namespace GimpBlocks
             }
         }
 
-        void BeginPropagateLight(int lightValue, int x, int y, int z)
-        {
-            if (lightValue < MaximumLightLevel)
-            {
-                return;
-            }
 
-            if (_blockArray[x, y, z].IsSolid)
-            {
-                return;
-            }
-
-            var newLightValue = lightValue - 1;
-
-            // At this point we know we're in full sunlight so there's no need to propagate up or down
-            // because both directions are going to be either sunlit or solid
-            PropagateLight(newLightValue, x - 1, y, z);
-            PropagateLight(newLightValue, x + 1, y, z);
-            PropagateLight(newLightValue, x, y, z - 1);
-            PropagateLight(newLightValue, x, y, z + 1);
-        }
-
-        void PropagateLight(int lightValue, int x, int y, int z)
-        {
-            _propogations++;
-
-            if (!IsInBounds(x, y, z))
-            {
-                return;
-            }
-
-            var linearIndex = LinearIndex(x, y, z);
-
-            if (_blockArray[linearIndex].IsSolid)
-            {
-                return;
-            }
-
-            if (this[linearIndex] >= lightValue)
-            {
-                return;
-            }
-
-            this[linearIndex] = lightValue;
-
-            if (lightValue == 1)
-            {
-                return;
-            }
-
-            // TODO: we want to track sunlight and light sources separately, maybe?
-
-            var newLightValue = lightValue - 1;
-
-            PropagateLight(newLightValue, x - 1, y, z);
-            PropagateLight(newLightValue, x + 1, y, z);
-            PropagateLight(newLightValue, x, y - 1, z);
-            PropagateLight(newLightValue, x, y + 1, z);
-            PropagateLight(newLightValue, x, y, z - 1);
-            PropagateLight(newLightValue, x, y, z + 1);
-        }
     }
 }

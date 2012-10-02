@@ -9,8 +9,8 @@ namespace GimpBlocks
 {
     public interface IChunkRenderer
     {
-        void Initialize(IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices);
-        void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix);
+        void Initialize(Vector3 worldLocation, IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices);
+        void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix);
     }
 
     public class ChunkRenderer : IChunkRenderer
@@ -19,6 +19,7 @@ namespace GimpBlocks
         readonly Effect _effect;
         readonly VertexBuffer[] _vertexBuffers = new VertexBuffer[6];
         readonly IndexBuffer[] _indexBuffers = new IndexBuffer[6];
+        Vector3 _worldLocation;
 
         public ChunkRenderer(GraphicsDevice graphicsDevice, Effect effect)
         {
@@ -26,8 +27,9 @@ namespace GimpBlocks
             _effect = effect;
         }
 
-        public void Initialize(IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices)
+        public void Initialize(Vector3 worldLocation, IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices)
         {
+            _worldLocation = worldLocation;
             CreateVertexBuffers(vertices);
             CreateIndexBuffers(indices);
         }
@@ -54,11 +56,11 @@ namespace GimpBlocks
             }
         }
 
-        public void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
+        public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
             _effect.Parameters["View"].SetValue(originBasedViewMatrix);
             _effect.Parameters["Projection"].SetValue(projectionMatrix);
-            _effect.Parameters["World"].SetValue(GetWorldMatrix(Vector3.Zero, cameraLocation));
+            _effect.Parameters["World"].SetValue(GetWorldMatrix(cameraLocation));
 
             // TODO: we can skip drawing certain face lists if we know that we're not in a position
             // to be able to see them, i.e. if the camera is higher than the entire chunk then we
@@ -77,9 +79,9 @@ namespace GimpBlocks
             }
         }
 
-        Matrix GetWorldMatrix(Vector3 location, Vector3 cameraLocation)
+        Matrix GetWorldMatrix(Vector3 cameraLocation)
         {
-            var locationRelativeToCamera = location - cameraLocation;
+            var locationRelativeToCamera = _worldLocation - cameraLocation;
 
             Matrix scaleMatrix = Matrix.Identity;
             Matrix translationMatrix = Matrix.CreateTranslation(locationRelativeToCamera);

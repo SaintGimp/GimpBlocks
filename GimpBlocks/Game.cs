@@ -90,9 +90,12 @@ namespace GimpBlocks
             var blockArray = new BlockArray(prototypeMap, worldSizeX, worldSizeY, worldSizeZ);
             var lightArray = new LightArray(worldSizeX, worldSizeY, worldSizeZ, blockArray);
             var blockPicker = new BlockPicker(blockArray, _camera);
-            var chunkRenderer = new ChunkRenderer(_graphics.GraphicsDevice, effect);
-            var chunk = new Chunk(chunkRenderer, prototypeMap);
-            _world = new World(worldRenderer, chunk, prototypeMap, blockPicker, boundingBoxRenderer);
+            Func<int, int, Chunk> chunkFactory = (chunkX, chunkZ) =>
+            {
+                var chunkRenderer = new ChunkRenderer(_graphics.GraphicsDevice, effect);
+                return new Chunk(chunkX, chunkZ, chunkRenderer, prototypeMap);
+            };
+            _world = new World(worldRenderer, chunkFactory, prototypeMap, blockPicker, boundingBoxRenderer);
 
             EventAggregator.Instance.AddListener(blockPicker);
             EventAggregator.Instance.AddListener(_world);
@@ -140,7 +143,7 @@ namespace GimpBlocks
             GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            _world.Draw(Vector3.Zero, _camera.Location, _camera.OriginBasedViewTransformation, _camera.ProjectionTransformation);
+            _world.Draw(_camera.Location, _camera.OriginBasedViewTransformation, _camera.ProjectionTransformation);
             
             _spriteBatch.Begin();
             var crossHairPosition = new Vector2(Window.ClientBounds.Width / 2 - _crosshairTexture.Width / 2, Window.ClientBounds.Height / 2 - _crosshairTexture.Height / 2);

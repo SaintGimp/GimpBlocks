@@ -9,7 +9,7 @@ namespace GimpBlocks
 {
     public interface IWorldRenderer
     {
-        void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix);
+        void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix);
     }
 
     public class WorldRenderer : IWorldRenderer
@@ -23,11 +23,11 @@ namespace GimpBlocks
             _effect = effect;
         }
 
-        public void Draw(Vector3 location, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
+        public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
             _effect.Parameters["View"].SetValue(originBasedViewMatrix);
             _effect.Parameters["Projection"].SetValue(projectionMatrix);
-            _effect.Parameters["World"].SetValue(GetWorldMatrix(Vector3.Zero, cameraLocation));
+            _effect.Parameters["World"].SetValue(GetWorldMatrix(cameraLocation));
 
             foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
             {
@@ -35,9 +35,9 @@ namespace GimpBlocks
             }
         }
 
-        Matrix GetWorldMatrix(Vector3 location, Vector3 cameraLocation)
+        Matrix GetWorldMatrix(Vector3 cameraLocation)
         {
-            var locationRelativeToCamera = location - cameraLocation;
+            var locationRelativeToCamera = Vector3.Zero - cameraLocation;
 
             Matrix scaleMatrix = Matrix.Identity;
             Matrix translationMatrix = Matrix.CreateTranslation(locationRelativeToCamera);

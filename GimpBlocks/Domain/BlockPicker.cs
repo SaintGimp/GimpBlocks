@@ -22,7 +22,7 @@ namespace GimpBlocks
         }
 
         public Block SelectedBlock;
-        public BlockPosition SelectedPlacePosition;
+        public ChunkBlockPosition SelectedPlacePosition;
 
         public void Handle(CameraMoved message)
         {
