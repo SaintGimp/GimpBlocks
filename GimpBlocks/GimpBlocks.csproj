@@ -108,7 +108,6 @@
     <Compile Include="Input\InputManager.cs" />
     <Compile Include="Input\InputMapper.cs" />
     <Compile Include="Input\XNAInputState.cs" />
-    <Compile Include="Domain\LightArray.cs" />
     <Compile Include="Math\GimpMath.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />

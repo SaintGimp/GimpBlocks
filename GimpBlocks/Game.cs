@@ -88,7 +88,6 @@ namespace GimpBlocks
             const int worldSizeY = 64;
             const int worldSizeZ = 128;
             var blockArray = new BlockArray(prototypeMap, worldSizeX, worldSizeY, worldSizeZ);
-            var lightArray = new LightArray(worldSizeX, worldSizeY, worldSizeZ, blockArray);
             var blockPicker = new BlockPicker(blockArray, _camera);
             Func<int, int, Chunk> chunkFactory = (chunkX, chunkZ) =>
             {

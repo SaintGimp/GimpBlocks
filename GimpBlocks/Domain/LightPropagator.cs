@@ -9,14 +9,29 @@ namespace GimpBlocks
     {
         public readonly int MaximumLightLevel = 15;
 
-        public void PropagateLightFromChunk(Chunk chunk, ChunkBlockPosition blockPosition)
+        public void SetAndPropagateLightInChunk(Chunk chunk, ChunkBlockPosition blockPosition, byte lightLevel)
         {
             if (chunk.IsSolid(blockPosition))
             {
                 return;
             }
 
-            var newLightValue = chunk.GetLightLevel(blockPosition) - 1;
+            var existingLightValue = chunk.GetLightLevel(blockPosition);
+            if (existingLightValue < lightLevel)
+            {
+                chunk.SetLightLevel(blockPosition, lightLevel);
+                PropagateLightInChunk(chunk, blockPosition);
+            }
+        }
+
+        public void PropagateLightInChunk(Chunk chunk, ChunkBlockPosition blockPosition)
+        {
+            if (chunk.IsSolid(blockPosition))
+            {
+                return;
+            }
+
+            var newLightValue = (byte)(chunk.GetLightLevel(blockPosition) - 1);
 
             RecursivelyPropagateLight(chunk, blockPosition.Left, newLightValue);
             RecursivelyPropagateLight(chunk, blockPosition.Right, newLightValue);
@@ -26,14 +41,14 @@ namespace GimpBlocks
             RecursivelyPropagateLight(chunk, blockPosition.Back, newLightValue);
         }
 
-        public void RecursivelyPropagateLight(Chunk chunk, ChunkBlockPosition blockPosition, int lightValue)
+        void RecursivelyPropagateLight(Chunk chunk, ChunkBlockPosition blockPosition, byte incomingLightValue)
         {
             if (!blockPosition.IsInBounds())
             {
                 return;
             }
 
-            if (chunk.GetLightLevel(blockPosition) >= lightValue)
+            if (chunk.GetLightLevel(blockPosition) >= incomingLightValue)
             {
                 return;
             }
@@ -43,21 +58,21 @@ namespace GimpBlocks
                 return;
             }
 
-            if (lightValue <= 1)
+            if (incomingLightValue <= 1)
             {
                 return;
             }
 
-            chunk.SetLightLevel(blockPosition, lightValue);
+            chunk.SetLightLevel(blockPosition, incomingLightValue);
 
-            var newLightValue = lightValue - 1;
+            var outgoingLightLevel = (byte)(incomingLightValue - 1);
 
-            RecursivelyPropagateLight(chunk, blockPosition.Left, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Right, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Up, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Down, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Front, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Back, newLightValue);
+            RecursivelyPropagateLight(chunk, blockPosition.Left, outgoingLightLevel);
+            RecursivelyPropagateLight(chunk, blockPosition.Right, outgoingLightLevel);
+            RecursivelyPropagateLight(chunk, blockPosition.Up, outgoingLightLevel);
+            RecursivelyPropagateLight(chunk, blockPosition.Down, outgoingLightLevel);
+            RecursivelyPropagateLight(chunk, blockPosition.Front, outgoingLightLevel);
+            RecursivelyPropagateLight(chunk, blockPosition.Back, outgoingLightLevel);
         }
     }
 }

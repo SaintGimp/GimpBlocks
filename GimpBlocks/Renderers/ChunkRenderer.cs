@@ -62,9 +62,14 @@ namespace GimpBlocks
             _effect.Parameters["Projection"].SetValue(projectionMatrix);
             _effect.Parameters["World"].SetValue(GetWorldMatrix(cameraLocation));
 
+            SetFillMode();
+
             // TODO: we can skip drawing certain face lists if we know that we're not in a position
             // to be able to see them, i.e. if the camera is higher than the entire chunk then we
             // don't have to draw the bottom face list.
+
+            // TODO: when we get to textures, take a look at spritesheets
+
             for (int x = 0; x < 6; x++)
             {
                 foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
@@ -88,5 +93,18 @@ namespace GimpBlocks
 
             return scaleMatrix * translationMatrix;
         }
+
+        void SetFillMode()
+        {
+            //if (_settings.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.WireFrame)
+            //{
+                _graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
+            //}
+            //else if (!_settings.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.Solid)
+            //{
+            //    _graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.Solid };
+            //}
+        }
+
     }
 }

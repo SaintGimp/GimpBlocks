@@ -10,6 +10,9 @@ namespace GimpBlocks
     // to write and reason about.  The resulting code could be transformed into something
     // better once it's stable.
 
+    // TODO: if the chunk size is a power of two in each dimension, then we can store both
+    // the chunk id and the relative block coord in an int by just bit masking/shifting
+
     public struct ChunkBlockPosition
     {
         public int X;

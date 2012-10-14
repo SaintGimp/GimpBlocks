@@ -22,18 +22,25 @@ namespace GimpBlocks
         // something that's usually sparse could be stored in a sparse octtree where something else that varies a lot could
         // be an an array.  It's not clear which strategy is best in the long term.
 
+        // TODO: I read a rumor that the XNA Vector3 class is able to use SSE instructions to operate on all three fields
+        // simultaneously.  If that's true, could we take advantage of that in any way? Maybe in noise generation?
+        // http://techcraft.codeplex.com/discussions/253344
+
+
         // left-right
-        public const int XDimension = 32;
+        public static readonly int XDimension = 32;
         // up-down
-        public const int YDimension = 64;
+        public static readonly int YDimension = 64;
         // in-out (positive toward viewer)
-        public const int ZDimension = 32;
+        public static readonly int ZDimension = 32;
+
+        public static readonly byte MaximumLightLevel = 15;
 
         readonly int _chunkX;
         readonly int _chunkZ;
         readonly IChunkRenderer _renderer;
         readonly BlockArray _blockArray;
-        readonly LightArray _lightArray;
+        readonly Array3<byte> _lightArray;
         readonly BlockPrototypeMap _prototypeMap;
 
         public Chunk(int chunkX, int chunkZ, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
@@ -42,7 +49,7 @@ namespace GimpBlocks
             _chunkZ = chunkZ;
             _renderer = renderer;
             _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
-            _lightArray = new LightArray(XDimension, YDimension, ZDimension, _blockArray);
+            _lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
             _prototypeMap = prototypeMap;
         }
 
@@ -278,11 +285,6 @@ namespace GimpBlocks
             });
         }
 
-        public void CalculateInternalLighting()
-        {
-            _lightArray.Calculate(this);
-        }
-
         public void BuildGeometry()
         {
             var vertexLists = new List<VertexPositionColorLighting>[6];
@@ -293,6 +295,11 @@ namespace GimpBlocks
                 indexLists[x] = new List<short>();
             }
 
+            // TODO: we could save iteration by only doing a slice of the chunk bounded at the top
+            // by the highest solid block and at the bottom by the lowest non-solid block minus one. Anything
+            // above or below that isnt going to have geometry.  Could also use a variation on that for lighting
+            // calcuations.  If we want to burn extra memory in order to optimize this even more aggressively,
+            // we could keep track of lowest/highest for each colum in the chunk.
             _blockArray.ForEach(block =>
             {
                 if (block.Prototype.IsSolid)
@@ -314,6 +321,8 @@ namespace GimpBlocks
             BuildTopQuad(vertexLists[Face.Top], indexLists[Face.Top], blockPosition);
             BuildBottomQuad(vertexLists[Face.Bottom], indexLists[Face.Bottom], blockPosition);
         }
+
+        // TODO: could maybe generalize these six methods into one once we're happy with the behavior
 
         void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
         {
@@ -621,13 +630,16 @@ namespace GimpBlocks
                 average = (_lightArray[adjacent] + _lightArray[edge1] + _lightArray[edge2] + _lightArray[diagonal]) / 4f;
             }
 
-            var percentage = Math.Min(average / _lightArray.MaximumLightLevel, limit);
+            var percentage = Math.Min(average / MaximumLightLevel, limit);
 
             return new Vector3(percentage);
         }
 
         public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
+            // TODO: frustum culling, and also skipping face VBs that are situation such that they
+            // can never be seen from the current camera position.
+
             _renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
         }
 
@@ -636,14 +648,56 @@ namespace GimpBlocks
             return _blockArray[blockPosition].IsSolid;
         }
 
-        public int GetLightLevel(ChunkBlockPosition blockPosition)
+        public byte GetLightLevel(ChunkBlockPosition blockPosition)
         {
             return _lightArray[blockPosition];
         }
 
-        public void SetLightLevel(ChunkBlockPosition blockPosition, int lightLevel)
+        public void SetLightLevel(ChunkBlockPosition blockPosition, byte lightLevel)
         {
             _lightArray[blockPosition] = lightLevel;
+        }
+
+        public void CalculateInternalLighting()
+        {
+            CastSunlight();
+            var propogator = new LightPropagator();
+            _lightArray.ForEach((lightLevel, x, y, z) =>
+            {
+                // TODO: we don't need to propogate light from blocks that contain only light that's already
+                // been propogated from elsewhere. For now we can propogate only if the light is full strength,
+                // but that won't work for light sources that are less than full strength.  Maybe have a source
+                // and destination light map so we don't have to deal with half-calculated data?
+
+                var blockPosition = new ChunkBlockPosition(x, y, z);
+                if (GetLightLevel(blockPosition) == MaximumLightLevel)
+                {
+                    propogator.PropagateLightInChunk(this, blockPosition);
+                }
+            });
+        }
+
+        void CastSunlight()
+        {
+            for (int x = 0; x < XDimension; x++)
+            {
+                for (int z = 0; z < ZDimension; z++)
+                {
+                    int y = YDimension - 1;
+                    while (y >= 0 && !_blockArray[x, y, z].IsSolid)
+                    {
+                        _lightArray[x, y, z] = MaximumLightLevel;
+                        y--;
+                    }
+
+                    // Anything not in sunlight starts out completely dark
+                    while (y >= 0)
+                    {
+                        _lightArray[x, y, z] = 0;
+                        y--;
+                    }
+                }
+            }
         }
     }
 }

@@ -30,7 +30,7 @@ namespace GimpBlocks
         readonly BlockPrototypeMap _prototypeMap;
         readonly BlockPicker _blockPicker;
         readonly BoundingBoxRenderer _boundingBoxRenderer;
-        Chunk[,] _chunks = new Chunk[4,4];
+        readonly Chunk[,] _chunks = new Chunk[4,4];
 
         public World(IWorldRenderer renderer, Func<int, int, Chunk> chunkFactory, BlockPrototypeMap prototypeMap, BlockPicker blockPicker, BoundingBoxRenderer boundingBoxRenderer)
         {
