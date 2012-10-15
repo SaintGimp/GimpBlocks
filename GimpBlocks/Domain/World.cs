@@ -45,6 +45,9 @@ namespace GimpBlocks
 
         public void Generate()
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             for (int x = 0; x <= _chunks.GetUpperBound(0); x++)
             {
                 for (int z = 0; z <= _chunks.GetUpperBound(1); z++)
@@ -53,10 +56,12 @@ namespace GimpBlocks
                     chunk.Generate();
                     _chunks[x, z] = chunk;
                 }
-                
             }
 
             Rebuild();
+
+            stopwatch.Stop();
+            Trace.WriteLine(string.Format("Generated world in {0}ms", stopwatch.ElapsedMilliseconds));
         }
 
         void Rebuild()
