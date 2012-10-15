@@ -12,14 +12,11 @@ namespace GimpBlocks
 
     // TODO: experiment with MethodImplOptions.AggressiveInlining in CLR 4.5
 	
-    // TODO: if the chunk size is a power of two in each dimension, then we can store both
-    // the chunk id and the relative block coord in an int by just bit masking/shifting
-
     public struct BlockPosition
     {
-        public int X;
-        public int Y;
-        public int Z;
+        public readonly int X;
+        public readonly int Y;
+        public readonly int Z;
 
         public BlockPosition(int x, int y, int z)
         {

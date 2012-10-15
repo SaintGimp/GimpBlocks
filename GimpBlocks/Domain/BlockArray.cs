@@ -43,11 +43,6 @@ namespace GimpBlocks
             set { _blockIndexes[location.X, location.Y, location.Z] = _prototypeMap[value]; }
         }
 
-        public bool IsInBounds(BlockPosition position)
-        {
-            return _blockIndexes.IsInBounds(position);
-        }
-
         public void Initialize(Func<int, int, int, BlockPrototype> initializerFunction)
         {
             _blockIndexes.Initialize((x, y, z) => _prototypeMap[initializerFunction(x, y, z)]);

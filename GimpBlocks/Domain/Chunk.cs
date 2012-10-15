@@ -267,7 +267,7 @@ namespace GimpBlocks
                         densityMap[horizontalSampleRate + offsetX, offsetY + verticalSampleRate, offsetZ + horizontalSampleRate],
                         offsetX, horizontalSampleRate + offsetX, offsetY, verticalSampleRate + offsetY, offsetZ, offsetZ + horizontalSampleRate);
                 }
-                return densityMap[x, y, z] > 0 ? _prototypeMap[1] : _prototypeMap[0];
+                return densityMap[x, y, z] > 0 ? BlockPrototype.StoneBlock : BlockPrototype.AirBlock;
             });
         }
 
@@ -277,7 +277,7 @@ namespace GimpBlocks
             {
                 for (int z = 1; z < _blockArray.ZDimension - 1; z++)
                 {
-                    _blockArray[x, 1, z] = _prototypeMap[1];
+                    _blockArray[x, 1, z] = BlockPrototype.StoneBlock;
                 }
             }
         }
@@ -290,7 +290,7 @@ namespace GimpBlocks
             {
                 if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
-                    return random.Next(4) > 0 ? _prototypeMap[0] : _prototypeMap[1];
+                    return random.Next(4) > 0 ? BlockPrototype.StoneBlock : BlockPrototype.AirBlock;
                 }
                 else
                 {
@@ -299,7 +299,7 @@ namespace GimpBlocks
             });
         }
 
-        public void BuildGeometry()
+        public void Tessellate()
         {
             // TODO: I guess DX9 can be CPU-bound by the number of draw calls so we might
             // want to switch back to a single VB/IB per chunk.
@@ -745,9 +745,17 @@ namespace GimpBlocks
         // and not constrain light propogation the boundaries of chunks - just let it go
         // where it may.
 
+        public void SetInitialLighting()
+        {
+            // This is separate from the calculate step because right now we create
+            // an array of chunks and initialize them all at once.  In that case we
+            // don't want light calculations from one chunk to spill over into a completely
+            // unlighted chunk because there will be a lot of unnecessary recursion.
+            CastSunlight();
+        }
+
         public void CalculateLighting()
         {
-            CastSunlight();
             var propagator = new LightPropagator();
             _lightArray.ForEach((lightLevel, x, y, z) =>
             {
@@ -760,7 +768,11 @@ namespace GimpBlocks
                 {
                     propagator.PropagateLightFromBlock(_world, BlockPositionFor(x, y, z));
                 }
+                
+                //Trace.WriteLine(string.Format("Number of light propogation recursions for block {1},{2},{3}: {0}", propagator.NumberOfRecursions, x, y, z));
             });
+
+
         }
 
         BlockPosition BlockPositionFor(int x, int y, int z)

@@ -48,6 +48,8 @@ namespace GimpBlocks
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            var generateTimer = new Stopwatch();
+            generateTimer.Start();
             for (int x = 0; x <= _chunks.GetUpperBound(0); x++)
             {
                 for (int z = 0; z <= _chunks.GetUpperBound(1); z++)
@@ -57,24 +59,46 @@ namespace GimpBlocks
                     _chunks[x, z] = chunk;
                 }
             }
+            Trace.WriteLine(string.Format("chunk terrain: {0} ms", generateTimer.ElapsedMilliseconds));
 
             Rebuild();
 
             stopwatch.Stop();
             Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
+            Trace.WriteLine(string.Format("World retrieved {0} blocks", NumberOfBlocksRetrieved));
+            Trace.WriteLine(string.Format("Light propagations recursed {0} times", LightPropagator.TotalNumberOfRecursions));
         }
 
         void Rebuild()
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            foreach (var chunk in _chunks)
+            {
+                chunk.SetInitialLighting();
+            }
+
+            stopwatch.Stop();
+            Trace.WriteLine(string.Format("initialize lighting: {0} ms", stopwatch.ElapsedMilliseconds));
+            stopwatch.Restart();
+
             foreach (var chunk in _chunks)
             {
                 chunk.CalculateLighting();
             }
 
+            stopwatch.Stop();
+            Trace.WriteLine(string.Format("calculate lighting: {0} ms", stopwatch.ElapsedMilliseconds));
+            stopwatch.Restart();
+
             foreach (var chunk in _chunks)
             {
-                chunk.BuildGeometry();
+                chunk.Tessellate();
             }
+
+            stopwatch.Stop();
+            Trace.WriteLine(string.Format("tessellation: {0} ms", stopwatch.ElapsedMilliseconds));
         }
 
 
@@ -120,7 +144,6 @@ namespace GimpBlocks
 
         Chunk GetChunkFor(BlockPosition blockPosition)
         {
-            // TODO: optimize
             if (blockPosition.Y < 0 || blockPosition.Y >= Chunk.YDimension)
             {
                 return null;
@@ -139,7 +162,6 @@ namespace GimpBlocks
 
         public void SetLightLevel(BlockPosition blockPosition, byte lightLevel)
         {
-            // TODO optimize me
             var chunk = GetChunkFor(blockPosition);
             var relativeX = (blockPosition.X & Chunk.BitMaskX);
             var relativeZ = (blockPosition.Z & Chunk.BitMaskZ);
@@ -149,7 +171,8 @@ namespace GimpBlocks
 
         public Block GetBlockAt(BlockPosition blockPosition)
         {
-            // TODO optimize me
+            NumberOfBlocksRetrieved++;
+
             var chunk = GetChunkFor(blockPosition);
 
             if (chunk != null)
@@ -166,5 +189,7 @@ namespace GimpBlocks
                 return new Block(BlockPrototype.VoidBlock, blockPosition, 8);
             }
         }
+
+        public int NumberOfBlocksRetrieved;
     }
 }
