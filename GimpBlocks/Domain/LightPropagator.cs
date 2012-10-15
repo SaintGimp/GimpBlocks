@@ -11,15 +11,14 @@ namespace GimpBlocks
 
         public void PropagateLightFromBlock(World world, BlockPosition blockPosition)
         {
-            // TODO: if we get a block with all of our needed properties, we won't have
-            // to go back to the world multiple times
+            var block = world.GetBlockAt(blockPosition);
 
-            if (!world.CanPropagateLight(blockPosition))
+            if (!block.CanPropagateLight)
             {
                 return;
             }
 
-            var newLightValue = (byte)(world.GetLightLevel(blockPosition) - 1);
+            var newLightValue = (byte)(block.LightLevel - 1);
 
             RecursivelyPropagateLight(world, blockPosition.Left, newLightValue);
             RecursivelyPropagateLight(world, blockPosition.Right, newLightValue);
@@ -31,12 +30,14 @@ namespace GimpBlocks
 
         void RecursivelyPropagateLight(World world, BlockPosition blockPosition, byte incomingLightValue)
         {
-            if (world.GetLightLevel(blockPosition) >= incomingLightValue)
+            var block = world.GetBlockAt(blockPosition);
+
+            if (block.LightLevel >= incomingLightValue)
             {
                 return;
             }
 
-            if (!world.CanPropagateLight(blockPosition))
+            if (!block.CanPropagateLight)
             {
                 return;
             }

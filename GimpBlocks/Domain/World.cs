@@ -118,21 +118,6 @@ namespace GimpBlocks
             //}
         }
 
-        public bool CanPropagateLight(BlockPosition blockPosition)
-        {
-            return GetBlockPrototypeAt(blockPosition).CanPropagateLight;
-        }
-
-        public bool CanBeSeenThrough(BlockPosition blockPosition)
-        {
-            return GetBlockPrototypeAt(blockPosition).CanBeSeenThrough;
-        }
-
-        public bool CanBeSelected(BlockPosition blockPosition)
-        {
-            return GetBlockPrototypeAt(blockPosition).CanBeSelected;
-        }
-
         public byte GetLightLevel(BlockPosition blockPosition)
         {
             // TODO optimize me
@@ -222,9 +207,22 @@ namespace GimpBlocks
 
         public Block GetBlockAt(BlockPosition blockPosition)
         {
-            var prototype = GetBlockPrototypeAt(blockPosition);
-            var lightLevel = GetLightLevel(blockPosition);
-            return new Block(prototype, blockPosition, lightLevel);
+            // TODO optimize me
+            var chunk = GetChunkFor(blockPosition);
+
+            if (chunk != null)
+            {
+                var relativeX = blockPosition.X >= 0 ? blockPosition.X % Chunk.XDimension : Chunk.XDimension - blockPosition.X % Chunk.XDimension;
+                var relativeZ = blockPosition.Z >= 0 ? blockPosition.Z % Chunk.ZDimension : Chunk.ZDimension - blockPosition.Z % Chunk.ZDimension;
+                var prototype = chunk.GetBlockPrototype(relativeX, blockPosition.Y, relativeZ);
+                var lightLevel = chunk.GetLightLevel(relativeX, blockPosition.Y, relativeZ);
+
+                return new Block(prototype, blockPosition, lightLevel);
+            }
+            else
+            {
+                return new Block(new VoidBlock(), blockPosition, 8);
+            }
         }
     }
 }
