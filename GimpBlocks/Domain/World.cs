@@ -30,7 +30,7 @@ namespace GimpBlocks
         readonly BlockPicker _blockPicker;
         readonly BoundingBoxRenderer _boundingBoxRenderer;
         readonly Chunk[,] _chunks;
-        readonly int _worldSizeInChunks = 10;
+        readonly int _worldSizeInChunks = 4;
 
         public World(IWorldRenderer renderer, Func<World, int, int, Chunk> chunkFactory, BlockPicker blockPicker, BoundingBoxRenderer boundingBoxRenderer)
         {
@@ -115,17 +115,17 @@ namespace GimpBlocks
 
         public bool CanPropagateLight(BlockPosition blockPosition)
         {
-            return GetBlockPrototype(blockPosition).CanPropagateLight;
+            return GetBlockPrototypeAt(blockPosition).CanPropagateLight;
         }
 
         public bool CanBeSeenThrough(BlockPosition blockPosition)
         {
-            return GetBlockPrototype(blockPosition).CanBeSeenThrough;
+            return GetBlockPrototypeAt(blockPosition).CanBeSeenThrough;
         }
 
         public bool CanBeSelected(BlockPosition blockPosition)
         {
-            return GetBlockPrototype(blockPosition).CanBeSelected;
+            return GetBlockPrototypeAt(blockPosition).CanBeSelected;
         }
 
         public byte GetLightLevel(BlockPosition blockPosition)
@@ -198,7 +198,7 @@ namespace GimpBlocks
             chunk.SetLightLevel(relativeX, blockPosition.Y, relativeZ, lightLevel);
         }
 
-        BlockPrototype GetBlockPrototype(BlockPosition blockPosition)
+        BlockPrototype GetBlockPrototypeAt(BlockPosition blockPosition)
         {
             // TODO optimize me
             var chunk = GetChunkFor(blockPosition);
@@ -213,6 +213,13 @@ namespace GimpBlocks
             {
                 return new VoidBlock();
             }
+        }
+
+        public Block GetBlockAt(BlockPosition blockPosition)
+        {
+            var prototype = GetBlockPrototypeAt(blockPosition);
+            var lightLevel = GetLightLevel(blockPosition);
+            return new Block(prototype, blockPosition, lightLevel);
         }
     }
 }

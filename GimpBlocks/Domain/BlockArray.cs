@@ -57,10 +57,5 @@ namespace GimpBlocks
         {
             _blockIndexes.ForEach((index, x, y, z) => action(_prototypeMap[index], x, y, z));
         }
-
-        public Block GetAt(BlockPosition blockPosition)
-        {
-            return new Block(this[blockPosition], blockPosition);
-        }
     }
 }
