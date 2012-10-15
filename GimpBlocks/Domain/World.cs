@@ -163,7 +163,7 @@ namespace GimpBlocks
             }
             else
             {
-                return new Block(new VoidBlock(), blockPosition, 8);
+                return new Block(BlockPrototype.VoidBlock, blockPosition, 8);
             }
         }
     }

@@ -13,9 +13,9 @@ namespace GimpBlocks
         public BlockPrototypeMap()
         {
             _blockPrototypes = new BlockPrototype[256];
-            _blockPrototypes[0] = new AirBlock();
-            _blockPrototypes[1] = new StoneBlock();
-            _blockPrototypes[2] = new VoidBlock();
+            _blockPrototypes[0] = BlockPrototype.AirBlock;
+            _blockPrototypes[1] = BlockPrototype.StoneBlock;
+            _blockPrototypes[2] = BlockPrototype.VoidBlock;
 
             byte index = 0;
             _blockIndexes = _blockPrototypes.Where(block => block != null).ToDictionary(block => block, block => index++);

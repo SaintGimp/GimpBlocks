@@ -7,6 +7,10 @@ namespace GimpBlocks
 {
     public abstract class BlockPrototype
     {
+        public static BlockPrototype AirBlock = new AirBlock();
+        public static BlockPrototype StoneBlock = new StoneBlock();
+        public static BlockPrototype VoidBlock = new VoidBlock();
+
         // Can light propogate through this block to other blocks?
         public bool CanPropagateLight { get; protected set; }
 

@@ -13,6 +13,9 @@ namespace GimpBlocks
         public BlockPosition Position;
         public byte LightLevel;
 
+        // TODO: we can knock 100 ms off the time to completely generate 16 chunks if we eliminate
+        // Position.  It's used for a few things but not essential.
+
         public Block(BlockPrototype prototype, BlockPosition position, byte lightLevel)
         {
             LightLevel = lightLevel;
