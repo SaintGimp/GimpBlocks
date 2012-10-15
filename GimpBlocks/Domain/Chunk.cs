@@ -28,11 +28,19 @@ namespace GimpBlocks
 
 
         // left-right
-        public static readonly int XDimension = 32;
+        public const int XDimension = 32;
+        public const int Log2X = 5;
+        public const int BitMaskX = XDimension - 1;
+        
         // up-down
-        public static readonly int YDimension = 64;
+        public const int YDimension = 64;
+        public const int Log2Y = 6;
+        public const int BitmaskY = YDimension - 1;
+
         // in-out (positive toward viewer)
-        public static readonly int ZDimension = 32;
+        public const int ZDimension = 32;
+        public const int Log2Z = 5;
+        public const int BitMaskZ = ZDimension - 1;
 
         public static readonly byte MaximumLightLevel = 15;
 
