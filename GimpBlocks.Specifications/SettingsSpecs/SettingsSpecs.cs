@@ -14,13 +14,13 @@ namespace GimpBlocks.Specifications.SettingsSpecs
         static public bool _oldValue;
 
         Establish context = () =>
-            _oldValue = _settings.ShouldDrawWireframe;
+            _oldValue = Settings.Instance.ShouldDrawWireframe;
 
         Because of = () =>
-            _settings.Handle(new ToggleDrawWireframeSetting());
+            Settings.Instance.Handle(new ToggleDrawWireframeSetting());
 
         It should_toggle_the_draw_wireframe_setting = () =>
-            _settings.ShouldDrawWireframe.ShouldNotEqual(_oldValue);
+            Settings.Instance.ShouldDrawWireframe.ShouldNotEqual(_oldValue);
     }
 
     [Subject(typeof(Settings))]
@@ -29,13 +29,13 @@ namespace GimpBlocks.Specifications.SettingsSpecs
         static public bool _oldValue;
 
         Establish context = () =>
-            _oldValue = _settings.ShouldUpdate;
+            _oldValue = Settings.Instance.ShouldUpdate;
 
         Because of = () =>
-            _settings.Handle(new ToggleUpdateSetting());
+            Settings.Instance.Handle(new ToggleUpdateSetting());
 
         It should_toggle_the_update_setting = () =>
-            _settings.ShouldUpdate.ShouldNotEqual(_oldValue);
+            Settings.Instance.ShouldUpdate.ShouldNotEqual(_oldValue);
     }
 
     [Subject(typeof(Settings))]
@@ -44,13 +44,13 @@ namespace GimpBlocks.Specifications.SettingsSpecs
         static public bool _oldValue;
 
         Establish context = () =>
-            _oldValue = _settings.ShouldSingleStep;
+            _oldValue = Settings.Instance.ShouldSingleStep;
 
         Because of = () =>
-            _settings.Handle(new ToggleSingleStepSetting());
+            Settings.Instance.Handle(new ToggleSingleStepSetting());
 
         It should_toggle_the_single_step_setting = () =>
-            _settings.ShouldSingleStep.ShouldNotEqual(_oldValue);
+            Settings.Instance.ShouldSingleStep.ShouldNotEqual(_oldValue);
     }
 
     // TODO: test that changes to all settings raises a SettingsChanged event,
@@ -58,11 +58,8 @@ namespace GimpBlocks.Specifications.SettingsSpecs
 
     public class SettingsContext
     {
-        public static Settings _settings;
-
         Establish context = () =>
         {
-            _settings = new Settings();
         };
     }
 }

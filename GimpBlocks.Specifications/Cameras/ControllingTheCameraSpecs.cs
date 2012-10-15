@@ -112,7 +112,7 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
     public class when_the_camera_speed_is_increased : ControllingTheCameraContext
     {
         Establish context = () =>
-            _settings.Handle(new IncreaseCameraSpeed());
+            Settings.Instance.Handle(new IncreaseCameraSpeed());
 
         Because of = () =>
             _controller.Handle(new MoveForward { InputState = _input });
@@ -125,7 +125,7 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
     public class when_the_camera_speed_is_decreased : ControllingTheCameraContext
     {
         Establish context = () =>
-            _settings.Handle(new DecreaseCameraSpeed());
+            Settings.Instance.Handle(new DecreaseCameraSpeed());
 
         Because of = () =>
             _controller.Handle(new MoveForward { InputState = _input });
@@ -138,8 +138,6 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
     {
         public static ICamera _camera;
 
-        public static Settings _settings;
-        
         public static IInputState _input;
         public static float _expectedDistance;
         public static float _expectedPitch;
@@ -150,9 +148,8 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
         {
             _camera = Substitute.For<ICamera>();
 
-            _settings = new Settings();
-            _settings.CameraMoveSpeedPerSecond = 10;
-            _settings.CameraMouseLookDamping = 300f;
+            Settings.Instance.CameraMoveSpeedPerSecond = 10;
+            Settings.Instance.CameraMouseLookDamping = 300f;
 
             _input = Substitute.For<IInputState>();
             _input.ElapsedTime.Returns(new TimeSpan(0, 0, 0, 0, 500));
@@ -163,7 +160,7 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
             _expectedYaw = -100 / 300.0f;
             _expectedPitch = -150 / 300.0f;
 
-            _controller = new CameraController(_camera, _settings);
+            _controller = new CameraController(_camera);
         };
     }
 }

@@ -89,12 +89,12 @@ namespace GimpBlocks
             const int worldSizeZ = 128;
             var blockArray = new BlockArray(prototypeMap, worldSizeX, worldSizeY, worldSizeZ);
             var blockPicker = new BlockPicker(blockArray, _camera);
-            Func<int, int, Chunk> chunkFactory = (chunkX, chunkZ) =>
+            Func<World, int, int, Chunk> chunkFactory = (world, chunkX, chunkZ) =>
             {
                 var chunkRenderer = new ChunkRenderer(_graphics.GraphicsDevice, effect);
-                return new Chunk(chunkX, chunkZ, chunkRenderer, prototypeMap);
+                return new Chunk(chunkX, chunkZ, world, chunkRenderer, prototypeMap);
             };
-            _world = new World(worldRenderer, chunkFactory, prototypeMap, blockPicker, boundingBoxRenderer);
+            _world = new World(worldRenderer, chunkFactory, blockPicker, boundingBoxRenderer);
 
             EventAggregator.Instance.AddListener(blockPicker);
             EventAggregator.Instance.AddListener(_world);

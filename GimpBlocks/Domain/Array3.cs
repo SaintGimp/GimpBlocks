@@ -49,13 +49,13 @@ namespace GimpBlocks
             set { Buffer[i] = value; }
         }
 
-        public T this[ChunkBlockPosition position]
+        public T this[BlockPosition position]
         {
             get { return this[position.X, position.Y, position.Z]; }
             set { this[position.X, position.Y, position.Z] = value; }
         }
 
-        public bool IsInBounds(ChunkBlockPosition position)
+        public bool IsInBounds(BlockPosition position)
         {
             return IsInBounds(position.X, position.Y, position.Z);
         }

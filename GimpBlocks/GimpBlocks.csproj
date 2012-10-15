@@ -81,7 +81,7 @@
     <Reference Include="System.Net" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Domain\AirBlock.cs" />
+    <Compile Include="Domain\Blocks\AirBlock.cs" />
     <Compile Include="Domain\BlockPrototype.cs" />
     <Compile Include="Domain\BlockArray.cs" />
     <Compile Include="Cameras\Camera.cs" />
@@ -89,12 +89,14 @@
     <Compile Include="Domain\Block.cs" />
     <Compile Include="Domain\BlockPicker.cs" />
     <Compile Include="Domain\BlockPrototypeMap.cs" />
+    <Compile Include="Domain\Blocks\VoidBlock.cs" />
     <Compile Include="Domain\Chunk.cs" />
+    <Compile Include="Domain\ChunkBlockPosition.cs" />
     <Compile Include="Domain\Face.cs" />
     <Compile Include="Domain\LightPropagator.cs" />
     <Compile Include="Domain\RayCaster.cs" />
-    <Compile Include="Domain\StoneBlock.cs" />
-    <Compile Include="Domain\ChunkBlockPosition.cs" />
+    <Compile Include="Domain\Blocks\StoneBlock.cs" />
+    <Compile Include="Domain\BlockPosition.cs" />
     <Compile Include="Domain\World.cs" />
     <Compile Include="Events\EventAggregator.cs" />
     <Compile Include="Events\EventAggregatorTypeInterceptor.cs" />

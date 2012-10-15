@@ -9,7 +9,9 @@ namespace GimpBlocks
     {
         public AirBlock()
         {
-            IsSolid = false;
+            CanPropagateLight = true;
+            CanBeSeenThrough = true;
+            CanBeSelected = false;
         }
     }
 }

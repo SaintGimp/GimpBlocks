@@ -21,55 +21,53 @@ namespace GimpBlocks
                                     IListener<ZoomOut>
     {
         readonly ICamera _camera;
-        readonly ISettings _settings;
 
-        public CameraController(ICamera camera, ISettings settings)
+        public CameraController(ICamera camera)
         {
             _camera = camera;
-            _settings = settings;
         }
 
         public void Handle(MoveForward message)
         {
-            _camera.MoveForwardHorizontally(_settings.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
+            _camera.MoveForwardHorizontally(Settings.Instance.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
         }
 
         public void Handle(MoveBackward message)
         {
-            _camera.MoveBackwardHorizontally(_settings.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
+            _camera.MoveBackwardHorizontally(Settings.Instance.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
         }
 
         public void Handle(MoveLeft message)
         {
-            _camera.MoveLeft(_settings.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
+            _camera.MoveLeft(Settings.Instance.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
         }
 
         public void Handle(MoveRight message)
         {
-            _camera.MoveRight(_settings.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
+            _camera.MoveRight(Settings.Instance.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
         }
 
         public void Handle(MoveUp message)
         {
-            _camera.MoveUp(_settings.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
+            _camera.MoveUp(Settings.Instance.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
         }
 
         public void Handle(MoveDown message)
         {
-            _camera.MoveDown(_settings.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
+            _camera.MoveDown(Settings.Instance.CameraMoveSpeedPerSecond * (float)message.InputState.ElapsedTime.TotalSeconds);
         }
 
         public void Handle(MouseLook message)
         {
             if (message.InputState.MouseDeltaX != 0)
             {
-                float changeInYaw = -(float)(message.InputState.MouseDeltaX) / _settings.CameraMouseLookDamping;
+                float changeInYaw = -(float)(message.InputState.MouseDeltaX) / Settings.Instance.CameraMouseLookDamping;
                 _camera.ChangeYaw(changeInYaw);
             }
 
             if (message.InputState.MouseDeltaY != 0)
             {
-                float changeInPitch = -(float)(message.InputState.MouseDeltaY) / _settings.CameraMouseLookDamping;
+                float changeInPitch = -(float)(message.InputState.MouseDeltaY) / Settings.Instance.CameraMouseLookDamping;
                 _camera.ChangePitch(changeInPitch);
             }
         }

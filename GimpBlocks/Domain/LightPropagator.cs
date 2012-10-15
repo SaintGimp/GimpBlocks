@@ -9,51 +9,34 @@ namespace GimpBlocks
     {
         public readonly int MaximumLightLevel = 15;
 
-        public void SetAndPropagateLightInChunk(Chunk chunk, ChunkBlockPosition blockPosition, byte lightLevel)
+        public void PropagateLightFromBlock(World world, BlockPosition blockPosition)
         {
-            if (chunk.IsSolid(blockPosition))
+            // TODO: if we get a block with all of our needed properties, we won't have
+            // to go back to the world multiple times
+
+            if (!world.CanPropagateLight(blockPosition))
             {
                 return;
             }
 
-            var existingLightValue = chunk.GetLightLevel(blockPosition);
-            if (existingLightValue < lightLevel)
-            {
-                chunk.SetLightLevel(blockPosition, lightLevel);
-                PropagateLightInChunk(chunk, blockPosition);
-            }
+            var newLightValue = (byte)(world.GetLightLevel(blockPosition) - 1);
+
+            RecursivelyPropagateLight(world, blockPosition.Left, newLightValue);
+            RecursivelyPropagateLight(world, blockPosition.Right, newLightValue);
+            RecursivelyPropagateLight(world, blockPosition.Up, newLightValue);
+            RecursivelyPropagateLight(world, blockPosition.Down, newLightValue);
+            RecursivelyPropagateLight(world, blockPosition.Front, newLightValue);
+            RecursivelyPropagateLight(world, blockPosition.Back, newLightValue);
         }
 
-        public void PropagateLightInChunk(Chunk chunk, ChunkBlockPosition blockPosition)
+        void RecursivelyPropagateLight(World world, BlockPosition blockPosition, byte incomingLightValue)
         {
-            if (chunk.IsSolid(blockPosition))
+            if (world.GetLightLevel(blockPosition) >= incomingLightValue)
             {
                 return;
             }
 
-            var newLightValue = (byte)(chunk.GetLightLevel(blockPosition) - 1);
-
-            RecursivelyPropagateLight(chunk, blockPosition.Left, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Right, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Up, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Down, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Front, newLightValue);
-            RecursivelyPropagateLight(chunk, blockPosition.Back, newLightValue);
-        }
-
-        void RecursivelyPropagateLight(Chunk chunk, ChunkBlockPosition blockPosition, byte incomingLightValue)
-        {
-            if (!blockPosition.IsInBounds())
-            {
-                return;
-            }
-
-            if (chunk.GetLightLevel(blockPosition) >= incomingLightValue)
-            {
-                return;
-            }
-
-            if (chunk.IsSolid(blockPosition))
+            if (!world.CanPropagateLight(blockPosition))
             {
                 return;
             }
@@ -63,16 +46,16 @@ namespace GimpBlocks
                 return;
             }
 
-            chunk.SetLightLevel(blockPosition, incomingLightValue);
+            world.SetLightLevel(blockPosition, incomingLightValue);
 
             var outgoingLightLevel = (byte)(incomingLightValue - 1);
 
-            RecursivelyPropagateLight(chunk, blockPosition.Left, outgoingLightLevel);
-            RecursivelyPropagateLight(chunk, blockPosition.Right, outgoingLightLevel);
-            RecursivelyPropagateLight(chunk, blockPosition.Up, outgoingLightLevel);
-            RecursivelyPropagateLight(chunk, blockPosition.Down, outgoingLightLevel);
-            RecursivelyPropagateLight(chunk, blockPosition.Front, outgoingLightLevel);
-            RecursivelyPropagateLight(chunk, blockPosition.Back, outgoingLightLevel);
+            RecursivelyPropagateLight(world, blockPosition.Left, outgoingLightLevel);
+            RecursivelyPropagateLight(world, blockPosition.Right, outgoingLightLevel);
+            RecursivelyPropagateLight(world, blockPosition.Up, outgoingLightLevel);
+            RecursivelyPropagateLight(world, blockPosition.Down, outgoingLightLevel);
+            RecursivelyPropagateLight(world, blockPosition.Front, outgoingLightLevel);
+            RecursivelyPropagateLight(world, blockPosition.Back, outgoingLightLevel);
         }
     }
 }

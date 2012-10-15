@@ -24,7 +24,6 @@ namespace GimpBlocks
             MakeSingleton<ICamera>();
             MakeSingleton<ICameraController>();
             MakeSingleton<InputManager>();
-            MakeSingleton<ISettings>();
             MakeSingleton<Statistics>();
 
             For<IInputState>().Use<XnaInputState>();

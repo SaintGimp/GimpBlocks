@@ -9,7 +9,9 @@ namespace GimpBlocks
     {
         public StoneBlock()
         {
-            IsSolid = true;
+            CanPropagateLight = false;
+            CanBeSeenThrough = false;
+            CanBeSelected = true;
         }
     }
 }

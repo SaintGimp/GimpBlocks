@@ -6,41 +6,23 @@ using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
 {
-    // TODO: it's not clear this is needed
-    public interface ISettings
-    {
-        bool ShouldUpdate { get; set; }
-
-        bool ShouldSingleStep { get; set; }
-
-        bool ShouldDrawWireframe { get; set; }
-
-        Vector3 CameraStartingLocation { get; set; }
-
-        Vector3 CameraStartingLookAt { get; set; }
-
-        float CameraMoveSpeedPerSecond { get; set; }
-
-        float CameraMouseLookDamping { get; set; }
-
-        int MaximumQuadNodeLevel { get; set; }
-
-        bool ShowQuadBoundaries { get; set; }
-
-        float FarClippingPlaneDistance { get; set; }
-
-        bool ShouldDrawMeshBoundingBoxes { get; set; }
-    }
-
-    public class Settings : ISettings,
-                            IListener<ToggleDrawWireframeSetting>,
+    public class Settings : IListener<ToggleDrawWireframeSetting>,
                             IListener<ToggleUpdateSetting>,
                             IListener<ToggleSingleStepSetting>,
                             IListener<IncreaseCameraSpeed>,
                             IListener<DecreaseCameraSpeed>
     {
+        static Settings()
+        {
+            Instance = new Settings();
+        }
+
+        public static Settings Instance { get; private set; }
+
         public Settings()
         {
+            EventAggregator.Instance.AddListener(this);
+
             ShouldUpdate = true;
             ShouldSingleStep = false;
             ShouldDrawWireframe = false;
@@ -48,10 +30,7 @@ namespace GimpBlocks
             CameraStartingLookAt = Vector3.Right * 128 + Vector3.Backward * 128;
             CameraMoveSpeedPerSecond = 10;
             CameraMouseLookDamping = 300f;
-            MaximumQuadNodeLevel = 19;
-            ShowQuadBoundaries = true;
             FarClippingPlaneDistance = 10000000;
-            ShouldDrawMeshBoundingBoxes = false;
         }
 
         bool _shouldUpdate;
@@ -103,32 +82,11 @@ namespace GimpBlocks
             set { SetFieldValue(ref _cameraMouseLookDamping, value); }
         }
 
-        int _maximumQuadNodeLevel;
-        public int MaximumQuadNodeLevel
-        {
-            get { return _maximumQuadNodeLevel; }
-            set { SetFieldValue(ref _maximumQuadNodeLevel, value); }
-        }
-
-        bool _showQuadBoundaries;
-        public bool ShowQuadBoundaries
-        {
-            get { return _showQuadBoundaries; }
-            set { SetFieldValue(ref _showQuadBoundaries, value); }
-        }
-
         float _farClippingPlaneDistance;
         public float FarClippingPlaneDistance
         {
             get { return _farClippingPlaneDistance; }
             set { SetFieldValue(ref _farClippingPlaneDistance, value); }
-        }
-
-        bool _shouldDrawMeshBoundingBoxes;
-        public bool ShouldDrawMeshBoundingBoxes
-        {
-            get { return _shouldDrawMeshBoundingBoxes; }
-            set { SetFieldValue(ref _shouldDrawMeshBoundingBoxes, value); }
         }
 
         public void Handle(ToggleDrawWireframeSetting message)

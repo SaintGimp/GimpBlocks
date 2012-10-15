@@ -219,15 +219,15 @@ namespace GimpBlocks.Specifications.Cameras
     {
         Establish context = () =>
         {
-            _settings.CameraStartingLocation = Vector3.Up;
-            _settings.CameraStartingLookAt = Vector3.Up;
+            Settings.Instance.CameraStartingLocation = Vector3.Up;
+            Settings.Instance.CameraStartingLookAt = Vector3.Up;
         };
 
         Because of = () =>
             _camera.Reset();
 
         It should_go_to_the_default_location = () =>
-            _camera.Location.ShouldEqual(_settings.CameraStartingLocation);
+            _camera.Location.ShouldEqual(Settings.Instance.CameraStartingLocation);
 
         It should_have_no_roll = () =>
             _camera.Roll.ShouldEqual(0);
@@ -247,15 +247,15 @@ namespace GimpBlocks.Specifications.Cameras
     {
         Establish context = () =>
         {
-            _settings.CameraStartingLocation = Vector3.Right;
-            _settings.CameraStartingLookAt = Vector3.Up;
+            Settings.Instance.CameraStartingLocation = Vector3.Right;
+            Settings.Instance.CameraStartingLookAt = Vector3.Up;
         };
 
         Because of = () =>
             _camera.Reset();
 
         It should_go_to_the_default_location = () =>
-            _camera.Location.ShouldEqual(_settings.CameraStartingLocation);
+            _camera.Location.ShouldEqual(Settings.Instance.CameraStartingLocation);
 
         It should_have_no_roll = () =>
             _camera.Roll.ShouldEqual(0);
@@ -440,14 +440,12 @@ namespace GimpBlocks.Specifications.Cameras
      
     public class CameraContext
     {
-        public static ISettings _settings;
         public static Camera _camera;
 
         Establish context = () =>
         {
-            _settings = Substitute.For<ISettings>();
-            _settings.FarClippingPlaneDistance = 50000.0f;
-            _camera = new Camera(_settings);
+            Settings.Instance.FarClippingPlaneDistance = 50000.0f;
+            _camera = new Camera();
         };
 
         public static Matrix GenerateOriginBasedViewMatrix(Vector3 location, float yaw, float pitch, float roll)

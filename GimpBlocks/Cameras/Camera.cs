@@ -60,8 +60,6 @@ namespace GimpBlocks
         // This is a pretty normal six-axis free-flight camera.  Left and right motion are relative
         // to the current camera facing but forward, backward, up, and down are always axis-aligned.
 
-        readonly ISettings _settings;
-
         // Attributes for view matrix
         Vector3 _cameraLocation;
         float _cameraYaw;
@@ -84,24 +82,23 @@ namespace GimpBlocks
         // View frustum
         readonly BoundingFrustum _originBasedViewFrustum = new BoundingFrustum(Matrix.Identity);
 
-        public Camera(ISettings settings)
+        public Camera()
         {
-            _settings = settings;
             Reset();
         }
 
         public void Reset()
         {
-            if (_settings.CameraStartingLocation != _settings.CameraStartingLookAt)
+            if (Settings.Instance.CameraStartingLocation != Settings.Instance.CameraStartingLookAt)
             {
-                SetViewParameters(_settings.CameraStartingLocation, _settings.CameraStartingLookAt);
+                SetViewParameters(Settings.Instance.CameraStartingLocation, Settings.Instance.CameraStartingLookAt);
             }
             else
             {
-                SetViewParameters(_settings.CameraStartingLocation, 0.0f, 0.0f, 0.0f);
+                SetViewParameters(Settings.Instance.CameraStartingLocation, 0.0f, 0.0f, 0.0f);
             }
 
-            SetProjectionParameters(MathHelper.Pi / 4, 1.0f, 1.0f, 1.0f, (float)_settings.FarClippingPlaneDistance);
+            SetProjectionParameters(MathHelper.Pi / 4, 1.0f, 1.0f, 1.0f, (float)Settings.Instance.FarClippingPlaneDistance);
         }
 
         public void SetViewParameters(Vector3 location, Vector3 lookAt)

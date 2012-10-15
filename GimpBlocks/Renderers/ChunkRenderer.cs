@@ -40,9 +40,12 @@ namespace GimpBlocks
             {
                 // TODO: need to handle case where there are no vertices at all
                 VertexPositionColorLighting[] vertexArray = vertices[x].ToArray();
-                _vertexBuffers[x] = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColorLighting), vertexArray.Length,
-                    BufferUsage.WriteOnly);
-                _vertexBuffers[x].SetData(vertexArray);
+                if (vertexArray.Length > 0)
+                {
+                    _vertexBuffers[x] = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColorLighting), vertexArray.Length,
+                        BufferUsage.WriteOnly);
+                    _vertexBuffers[x].SetData(vertexArray);
+                }
             }
         }
 
@@ -51,8 +54,12 @@ namespace GimpBlocks
             for (int x = 0; x < 6; x++)
             {
                 short[] indexArray = indices[x].ToArray();
-                _indexBuffers[x] = new IndexBuffer(_graphicsDevice, IndexElementSize.SixteenBits, indexArray.Length, BufferUsage.WriteOnly);
-                _indexBuffers[x].SetData(indexArray);
+                if (indexArray.Length > 0)
+                {
+                    _indexBuffers[x] = new IndexBuffer(_graphicsDevice, IndexElementSize.SixteenBits, indexArray.Length,
+                        BufferUsage.WriteOnly);
+                    _indexBuffers[x].SetData(indexArray);
+                }
             }
         }
 
@@ -70,16 +77,22 @@ namespace GimpBlocks
 
             // TODO: when we get to textures, take a look at spritesheets
 
+            // TODO: we need to generate the meshes for each chunk centered at the origin, then translate them
+            // at render time to where they need to be.  Same technique as in GenesisEngine.
+
             for (int x = 0; x < 6; x++)
             {
-                foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+                if (_vertexBuffers[x] != null && _indexBuffers[x] != null)
                 {
-                    pass.Apply();
+                    foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
 
-                    _graphicsDevice.Indices = _indexBuffers[x];
-                    _graphicsDevice.SetVertexBuffer(_vertexBuffers[x]);
-                    _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _vertexBuffers[x].VertexCount, 0,
-                        _indexBuffers[x].IndexCount / 3);
+                        _graphicsDevice.Indices = _indexBuffers[x];
+                        _graphicsDevice.SetVertexBuffer(_vertexBuffers[x]);
+                        _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _vertexBuffers[x].VertexCount, 0,
+                            _indexBuffers[x].IndexCount / 3);
+                    }
                 }
             }
         }
@@ -96,14 +109,14 @@ namespace GimpBlocks
 
         void SetFillMode()
         {
-            //if (_settings.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.WireFrame)
-            //{
+            if (Settings.Instance.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.WireFrame)
+            {
                 _graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
-            //}
-            //else if (!_settings.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.Solid)
-            //{
-            //    _graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.Solid };
-            //}
+            }
+            else if (!Settings.Instance.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.Solid)
+            {
+                _graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.Solid };
+            }
         }
 
     }

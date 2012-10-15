@@ -6,9 +6,11 @@ using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
 {
-    // TODO: This isn't the most performant way to navigate around a 3D array but it's easy
+    // TODO: This isn't the most performant way to navigate around a 3D world but it's easy
     // to write and reason about.  The resulting code could be transformed into something
     // better once it's stable.
+
+    // TODO: experiment with MethodImplOptions.AggressiveInlining in CLR 4.5
 
     // TODO: if the chunk size is a power of two in each dimension, then we can store both
     // the chunk id and the relative block coord in an int by just bit masking/shifting
@@ -26,8 +28,6 @@ namespace GimpBlocks
             Z = z;
         }
 
-        // TODO: Is it better to have these create new objects or to mutate
-        // the existing object?  Tradeoff between immutability benefits and performance.
         public ChunkBlockPosition Left
         {
             get { return new ChunkBlockPosition(X - 1, Y, Z); }
@@ -58,11 +58,6 @@ namespace GimpBlocks
             get { return new ChunkBlockPosition(X, Y - 1, Z); }
         }
 
-        public BoundingBox BoundingBox
-        {
-            get { return new BoundingBox(new Vector3(X, Y, Z), new Vector3(X + 1, Y + 1, Z + 1)); }
-        }
-
         public static implicit operator Vector3(ChunkBlockPosition location)
         {
             return new Vector3(location.X, location.Y, location.Z);
@@ -71,27 +66,6 @@ namespace GimpBlocks
         public static implicit operator ChunkBlockPosition(Vector3 location)
         {
             return new ChunkBlockPosition((int)location.X, (int)location.Y, (int)location.Z);
-        }
-
-        public static ChunkBlockPosition operator +(ChunkBlockPosition first, Vector3 second)
-        {
-            return new ChunkBlockPosition(first.X + (int)second.X, first.Y + (int)second.Y, first.Z + (int)second.Z);
-        }
-
-        public int DistanceSquared(ChunkBlockPosition otherPosition)
-        {
-            int deltaX = this.X - otherPosition.X;
-            int deltaY = this.Y - otherPosition.Y;
-            int deltaZ = this.Z - otherPosition.Z;
-
-            return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
-        }
-
-        public bool IsInBounds()
-        {
-            return X >= 0 && X < Chunk.XDimension &&
-                Y >= 0 && Y < Chunk.YDimension &&
-                Z >= 0 && Z < Chunk.ZDimension;
         }
     }
 }

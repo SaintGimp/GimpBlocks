@@ -38,22 +38,35 @@ namespace GimpBlocks
 
         readonly int _chunkX;
         readonly int _chunkZ;
+        readonly World _world;
         readonly IChunkRenderer _renderer;
+        readonly BlockPrototypeMap _prototypeMap;
+        
         readonly BlockArray _blockArray;
         readonly Array3<byte> _lightArray;
-        readonly BlockPrototypeMap _prototypeMap;
+        readonly int _baseBlockX;
+        readonly int _baseBlockZ;
 
-        public Chunk(int chunkX, int chunkZ, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
+        public Chunk(int chunkX, int chunkZ, World world, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
             _chunkX = chunkX;
             _chunkZ = chunkZ;
+            _world = world;
             _renderer = renderer;
+            _prototypeMap = prototypeMap;
+
             _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
             _lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
-            _prototypeMap = prototypeMap;
+            _baseBlockX = _chunkX * XDimension;
+            _baseBlockZ = _chunkZ * ZDimension;
         }
 
-        public void SetBlock(ChunkBlockPosition position, BlockPrototype prototype)
+        public BlockPrototype GetBlockPrototype(int x, int y, int z)
+        {
+            return _blockArray[x, y, z];
+        }
+
+        public void SetBlockPrototype(BlockPosition position, BlockPrototype prototype)
         {
             _blockArray[position] = prototype;
         }
@@ -195,11 +208,11 @@ namespace GimpBlocks
             var maxNoise = float.MinValue;
             var minNoise = float.MaxValue;
             var densityMap = new double[_blockArray.XDimension + 1, _blockArray.YDimension + 1, _blockArray.ZDimension + 1];
-            for (int x = 0; x < _blockArray.XDimension; x += horizontalSampleRate)
+            for (int x = 0; x <= _blockArray.XDimension; x += horizontalSampleRate)
             {
-                for (int y = 0; y < _blockArray.YDimension; y += verticalSampleRate)
+                for (int y = 0; y <= _blockArray.YDimension; y += verticalSampleRate)
                 {
-                    for (int z = 0; z < _blockArray.ZDimension; z += horizontalSampleRate)
+                    for (int z = 0; z <= _blockArray.ZDimension; z += horizontalSampleRate)
                     {
                         float worldX = (XDimension * _chunkX + x);
                         float worldY = y;
@@ -230,30 +243,23 @@ namespace GimpBlocks
 
             _blockArray.Initialize((x, y, z) =>
             {
-                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
+                if (!(x % horizontalSampleRate == 0 && y % verticalSampleRate == 0 && z % horizontalSampleRate == 0))
                 {
-                    if (!(x % horizontalSampleRate == 0 && y % verticalSampleRate == 0 && z % horizontalSampleRate == 0))
-                    {
-                        int offsetX = (x / horizontalSampleRate) * horizontalSampleRate;
-                        int offsetY = (y / verticalSampleRate) * verticalSampleRate;
-                        int offsetZ = (z / horizontalSampleRate) * horizontalSampleRate;
-                        densityMap[x, y, z] = GimpMath.TriLerp(x, y, z,
-                            densityMap[offsetX, offsetY, offsetZ],
-                            densityMap[offsetX, verticalSampleRate + offsetY, offsetZ],
-                            densityMap[offsetX, offsetY, offsetZ + horizontalSampleRate],
-                            densityMap[offsetX, offsetY + verticalSampleRate, offsetZ + horizontalSampleRate],
-                            densityMap[horizontalSampleRate + offsetX, offsetY, offsetZ],
-                            densityMap[horizontalSampleRate + offsetX, offsetY + verticalSampleRate, offsetZ],
-                            densityMap[horizontalSampleRate + offsetX, offsetY, offsetZ + horizontalSampleRate],
-                            densityMap[horizontalSampleRate + offsetX, offsetY + verticalSampleRate, offsetZ + horizontalSampleRate],
-                            offsetX, horizontalSampleRate + offsetX, offsetY, verticalSampleRate + offsetY, offsetZ, offsetZ + horizontalSampleRate);
-                    }
-                    return densityMap[x, y, z] > 0 ? _prototypeMap[1] : _prototypeMap[0];
+                    int offsetX = (x / horizontalSampleRate) * horizontalSampleRate;
+                    int offsetY = (y / verticalSampleRate) * verticalSampleRate;
+                    int offsetZ = (z / horizontalSampleRate) * horizontalSampleRate;
+                    densityMap[x, y, z] = GimpMath.TriLerp(x, y, z,
+                        densityMap[offsetX, offsetY, offsetZ],
+                        densityMap[offsetX, verticalSampleRate + offsetY, offsetZ],
+                        densityMap[offsetX, offsetY, offsetZ + horizontalSampleRate],
+                        densityMap[offsetX, offsetY + verticalSampleRate, offsetZ + horizontalSampleRate],
+                        densityMap[horizontalSampleRate + offsetX, offsetY, offsetZ],
+                        densityMap[horizontalSampleRate + offsetX, offsetY + verticalSampleRate, offsetZ],
+                        densityMap[horizontalSampleRate + offsetX, offsetY, offsetZ + horizontalSampleRate],
+                        densityMap[horizontalSampleRate + offsetX, offsetY + verticalSampleRate, offsetZ + horizontalSampleRate],
+                        offsetX, horizontalSampleRate + offsetX, offsetY, verticalSampleRate + offsetY, offsetZ, offsetZ + horizontalSampleRate);
                 }
-                else
-                {
-                    return _prototypeMap[0];
-                }
+                return densityMap[x, y, z] > 0 ? _prototypeMap[1] : _prototypeMap[0];
             });
         }
 
@@ -287,6 +293,8 @@ namespace GimpBlocks
 
         public void BuildGeometry()
         {
+            // TODO: I guess DX9 can be CPU-bound by the number of draw calls so we might
+            // want to switch back to a single VB/IB per chunk.
             var vertexLists = new List<VertexPositionColorLighting>[6];
             var indexLists = new List<short>[6];
             for (int x = 0; x < 6; x++)
@@ -300,33 +308,39 @@ namespace GimpBlocks
             // above or below that isnt going to have geometry.  Could also use a variation on that for lighting
             // calcuations.  If we want to burn extra memory in order to optimize this even more aggressively,
             // we could keep track of lowest/highest for each colum in the chunk.
-            _blockArray.ForEach(block =>
+            _blockArray.ForEach((prototype, x, y, z) =>
             {
-                if (block.Prototype.IsSolid)
+                if (!prototype.CanBeSeenThrough)
                 {
-                    BuildQuads(vertexLists, indexLists, block.Position);
+                    var worldBlockPosition = BlockPositionFor(x, y, z);
+                    var relativeBlockPosition = new ChunkBlockPosition(x, y, z);
+                    BuildQuads(vertexLists, indexLists, worldBlockPosition, relativeBlockPosition);
                 }
             });
 
             var worldLocation = new Vector3(XDimension * _chunkX, 0, ZDimension * _chunkZ);
+            // TODO: is the conversion causing extra work here?
             _renderer.Initialize(worldLocation, vertexLists, indexLists);
         }
 
-        void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, ChunkBlockPosition blockPosition)
+        void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
         {
-            BuildLeftQuad(vertexLists[Face.Left], indexLists[Face.Left], blockPosition);
-            BuildRightQuad(vertexLists[Face.Right], indexLists[Face.Right], blockPosition);
-            BuildFrontQuad(vertexLists[Face.Front], indexLists[Face.Front], blockPosition);
-            BuildBackQuad(vertexLists[Face.Back], indexLists[Face.Back], blockPosition);
-            BuildTopQuad(vertexLists[Face.Top], indexLists[Face.Top], blockPosition);
-            BuildBottomQuad(vertexLists[Face.Bottom], indexLists[Face.Bottom], blockPosition);
+            BuildLeftQuad(vertexLists[Face.Left], indexLists[Face.Left], worldBlockPosition, relativeBlockPosition);
+            BuildRightQuad(vertexLists[Face.Right], indexLists[Face.Right], worldBlockPosition, relativeBlockPosition);
+            BuildFrontQuad(vertexLists[Face.Front], indexLists[Face.Front], worldBlockPosition, relativeBlockPosition);
+            BuildBackQuad(vertexLists[Face.Back], indexLists[Face.Back], worldBlockPosition, relativeBlockPosition);
+            BuildTopQuad(vertexLists[Face.Top], indexLists[Face.Top], worldBlockPosition, relativeBlockPosition);
+            BuildBottomQuad(vertexLists[Face.Bottom], indexLists[Face.Bottom], worldBlockPosition, relativeBlockPosition);
         }
 
         // TODO: could maybe generalize these six methods into one once we're happy with the behavior
 
-        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
+        // TODO: could maybe collapse these methods into one and lookup all neighboring blocks in one shot so
+        // we don't duplicate lookups.
+
+        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
         {
-            if (_blockArray[blockPosition.Left].IsSolid)
+            if (!_world.CanBeSeenThrough(worldBlockPosition.Left))
             {
                 return;
             }
@@ -334,33 +348,33 @@ namespace GimpBlocks
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up,
+                Position = relativeBlockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Up, blockPosition.Left.Back, blockPosition.Left.Up.Back, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Left, worldBlockPosition.Left.Up, worldBlockPosition.Left.Back, worldBlockPosition.Left.Up.Back, 0.85f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up.Front,
+                Position = relativeBlockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Up, blockPosition.Left.Front, blockPosition.Left.Up.Front, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Left, worldBlockPosition.Left.Up, worldBlockPosition.Left.Front, worldBlockPosition.Left.Up.Front, 0.85f)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Front,
+                Position = relativeBlockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Down, blockPosition.Left.Front, blockPosition.Left.Down.Front, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Left, worldBlockPosition.Left.Down, worldBlockPosition.Left.Front, worldBlockPosition.Left.Down.Front, 0.85f)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition,
+                Position = relativeBlockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Left, blockPosition.Left.Down, blockPosition.Left.Back, blockPosition.Left.Down.Back, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Left, worldBlockPosition.Left.Down, worldBlockPosition.Left.Back, worldBlockPosition.Left.Down.Back, 0.85f)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -371,9 +385,9 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
+        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
         {
-            if (_blockArray[blockPosition.Right].IsSolid)
+            if (!_world.CanBeSeenThrough(worldBlockPosition.Right))
             {
                 return;
             }
@@ -381,33 +395,33 @@ namespace GimpBlocks
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up.Right.Front,
+                Position = relativeBlockPosition.Up.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Up, blockPosition.Right.Front, blockPosition.Right.Up.Front, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Right, worldBlockPosition.Right.Up, worldBlockPosition.Right.Front, worldBlockPosition.Right.Up.Front, 0.85f)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up.Right,
+                Position = relativeBlockPosition.Up.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Up, blockPosition.Right.Back, blockPosition.Right.Up.Back, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Right, worldBlockPosition.Right.Up, worldBlockPosition.Right.Back, worldBlockPosition.Right.Up.Back, 0.85f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right,
+                Position = relativeBlockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Down, blockPosition.Right.Back, blockPosition.Right.Down.Back, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Right, worldBlockPosition.Right.Down, worldBlockPosition.Right.Back, worldBlockPosition.Right.Down.Back, 0.85f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right.Front,
+                Position = relativeBlockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Right, blockPosition.Right.Down, blockPosition.Right.Front, blockPosition.Right.Down.Front, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Right, worldBlockPosition.Right.Down, worldBlockPosition.Right.Front, worldBlockPosition.Right.Down.Front, 0.85f)
             });
 
             indexList.Add(topRightFrontIndex);
@@ -418,9 +432,9 @@ namespace GimpBlocks
             indexList.Add(bottomRightFrontIndex);
         }
 
-        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
+        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
         {
-            if (_blockArray[blockPosition.Back].IsSolid)
+            if (!_world.CanBeSeenThrough(worldBlockPosition.Back))
             {
                 return;
             }
@@ -428,33 +442,33 @@ namespace GimpBlocks
             var topRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right.Up,
+                Position = relativeBlockPosition.Right.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Up, blockPosition.Back.Right, blockPosition.Back.Up.Right, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Back, worldBlockPosition.Back.Up, worldBlockPosition.Back.Right, worldBlockPosition.Back.Up.Right, 0.85f)
             });
 
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up,
+                Position = relativeBlockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Up, blockPosition.Back.Left, blockPosition.Back.Up.Left, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Back, worldBlockPosition.Back.Up, worldBlockPosition.Back.Left, worldBlockPosition.Back.Up.Left, 0.85f)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition,
+                Position = relativeBlockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Down, blockPosition.Back.Left, blockPosition.Back.Down.Left, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Back, worldBlockPosition.Back.Down, worldBlockPosition.Back.Left, worldBlockPosition.Back.Down.Left, 0.85f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right,
+                Position = relativeBlockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Back, blockPosition.Back.Down, blockPosition.Back.Right, blockPosition.Back.Down.Right, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Back, worldBlockPosition.Back.Down, worldBlockPosition.Back.Right, worldBlockPosition.Back.Down.Right, 0.85f)
             });
 
             indexList.Add(topRightBackIndex);
@@ -465,9 +479,9 @@ namespace GimpBlocks
             indexList.Add(bottomRightBackIndex);
         }
 
-        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
+        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
         {
-            if (_blockArray[blockPosition.Front].IsSolid)
+            if (!_world.CanBeSeenThrough(worldBlockPosition.Front))
             {
                 return;
             }
@@ -475,33 +489,33 @@ namespace GimpBlocks
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up.Front,
+                Position = relativeBlockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Up, blockPosition.Front.Left, blockPosition.Front.Up.Left, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Front, worldBlockPosition.Front.Up, worldBlockPosition.Front.Left, worldBlockPosition.Front.Up.Left, 0.85f)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right.Up.Front,
+                Position = relativeBlockPosition.Right.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Up, blockPosition.Front.Right, blockPosition.Front.Up.Right, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Front, worldBlockPosition.Front.Up, worldBlockPosition.Front.Right, worldBlockPosition.Front.Up.Right, 0.85f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right.Front,
+                Position = relativeBlockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Down, blockPosition.Front.Right, blockPosition.Front.Down.Right, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Front, worldBlockPosition.Front.Down, worldBlockPosition.Front.Right, worldBlockPosition.Front.Down.Right, 0.85f)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Front,
+                Position = relativeBlockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Front, blockPosition.Front.Down, blockPosition.Front.Left, blockPosition.Front.Down.Left, 0.85f)
+                Lighting = AverageLightingOver(worldBlockPosition.Front, worldBlockPosition.Front.Down, worldBlockPosition.Front.Left, worldBlockPosition.Front.Down.Left, 0.85f)
             });
 
             indexList.Add(topLeftFrontIndex);
@@ -512,9 +526,9 @@ namespace GimpBlocks
             indexList.Add(bottomLeftFrontIndex);
         }
 
-        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
+        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
         {
-            if (_blockArray[blockPosition.Up].IsSolid)
+            if (!_world.CanBeSeenThrough(worldBlockPosition.Up))
             {
                 return;
             }
@@ -522,33 +536,33 @@ namespace GimpBlocks
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up,
+                Position = relativeBlockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Left, blockPosition.Up.Back, blockPosition.Up.Left.Back, 1f)
+                Lighting = AverageLightingOver(worldBlockPosition.Up, worldBlockPosition.Up.Left, worldBlockPosition.Up.Back, worldBlockPosition.Up.Left.Back, 1f)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right.Up,
+                Position = relativeBlockPosition.Right.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Right, blockPosition.Up.Back, blockPosition.Up.Right.Back, 1f)
+                Lighting = AverageLightingOver(worldBlockPosition.Up, worldBlockPosition.Up.Right, worldBlockPosition.Up.Back, worldBlockPosition.Up.Right.Back, 1f)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right.Up.Front,
+                Position = relativeBlockPosition.Right.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Right, blockPosition.Up.Front, blockPosition.Up.Right.Front, 1f)
+                Lighting = AverageLightingOver(worldBlockPosition.Up, worldBlockPosition.Up.Right, worldBlockPosition.Up.Front, worldBlockPosition.Up.Right.Front, 1f)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Up.Front,
+                Position = relativeBlockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Up, blockPosition.Up.Left, blockPosition.Up.Front, blockPosition.Up.Left.Front, 1f)
+                Lighting = AverageLightingOver(worldBlockPosition.Up, worldBlockPosition.Up.Left, worldBlockPosition.Up.Front, worldBlockPosition.Up.Left.Front, 1f)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -559,9 +573,9 @@ namespace GimpBlocks
             indexList.Add(topLeftFrontIndex);
         }
 
-        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, ChunkBlockPosition blockPosition)
+        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
         {
-            if (_blockArray[blockPosition.Down].IsSolid)
+            if (!_world.CanBeSeenThrough(worldBlockPosition.Down))
             {
                 return;
             }
@@ -569,33 +583,33 @@ namespace GimpBlocks
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Front,
+                Position = relativeBlockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Left, blockPosition.Down.Front, blockPosition.Down.Left.Front, 0.70f)
+                Lighting = AverageLightingOver(worldBlockPosition.Down, worldBlockPosition.Down.Left, worldBlockPosition.Down.Front, worldBlockPosition.Down.Left.Front, 0.70f)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right.Front,
+                Position = relativeBlockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Right, blockPosition.Down.Front, blockPosition.Down.Right.Front, 0.70f)
+                Lighting = AverageLightingOver(worldBlockPosition.Down, worldBlockPosition.Down.Right, worldBlockPosition.Down.Front, worldBlockPosition.Down.Right.Front, 0.70f)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition.Right,
+                Position = relativeBlockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Right, blockPosition.Down.Back, blockPosition.Down.Right.Back, 0.70f)
+                Lighting = AverageLightingOver(worldBlockPosition.Down, worldBlockPosition.Down.Right, worldBlockPosition.Down.Back, worldBlockPosition.Down.Right.Back, 0.70f)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
             {
-                Position = blockPosition,
+                Position = relativeBlockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(blockPosition.Down, blockPosition.Down.Left, blockPosition.Down.Back, blockPosition.Down.Left.Back, 0.70f)
+                Lighting = AverageLightingOver(worldBlockPosition.Down, worldBlockPosition.Down.Left, worldBlockPosition.Down.Back, worldBlockPosition.Down.Left.Back, 0.70f)
             });
 
             indexList.Add(bottomLeftFrontIndex);
@@ -609,7 +623,7 @@ namespace GimpBlocks
         // Light propogation between chunks: once the chunk has its internal lighting calculated, we can take all of the edge blocks in a chunk
         // and just propogate that current light level over to the neighboring chunk. The recursion will be naturally limited by the light level.
 
-        Vector3 AverageLightingOver(ChunkBlockPosition adjacent, ChunkBlockPosition edge1, ChunkBlockPosition edge2, ChunkBlockPosition diagonal, float limit)
+        Vector3 AverageLightingOver(BlockPosition adjacent, BlockPosition edge1, BlockPosition edge2, BlockPosition diagonal, float limit)
         {
             // For each vertex we examine four voxels grouped around the vertex in the plane of the face that the vertex belongs to.
             // The voxels we're interested in for a particular vertex are:
@@ -619,15 +633,15 @@ namespace GimpBlocks
             //   The voxel diagonal to the face we're calculating
 
             float average;
-            if (_blockArray[edge1].IsSolid && _blockArray[edge2].IsSolid)
+            if (!_world.CanPropagateLight(edge1) && !_world.CanPropagateLight(edge2))
             {
-                // If the two edge voxels are solid then light can't get from the diagonal to the vertex we're calculating
+                // If the two edge voxels are not transparent then light can't get from the diagonal to the vertex we're calculating
                 // so we don't include it in the average
-                average = (_lightArray[adjacent] + _lightArray[edge1] + _lightArray[edge2]) / 3f;
+                average = (_world.GetLightLevel(adjacent) + _world.GetLightLevel(edge1) + _world.GetLightLevel(edge2)) / 3f;
             }
             else
             {
-                average = (_lightArray[adjacent] + _lightArray[edge1] + _lightArray[edge2] + _lightArray[diagonal]) / 4f;
+                average = (_world.GetLightLevel(adjacent) + _world.GetLightLevel(edge1) + _world.GetLightLevel(edge2) + _world.GetLightLevel(diagonal)) / 4f;
             }
 
             var percentage = Math.Min(average / MaximumLightLevel, limit);
@@ -643,25 +657,29 @@ namespace GimpBlocks
             _renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
         }
 
-        public bool IsSolid(ChunkBlockPosition blockPosition)
+        public byte GetLightLevel(int x, int y, int z)
         {
-            return _blockArray[blockPosition].IsSolid;
+            return _lightArray[x, y, z];
         }
 
-        public byte GetLightLevel(ChunkBlockPosition blockPosition)
+        public void SetLightLevel(int x, int y, int z, byte lightLevel)
         {
-            return _lightArray[blockPosition];
+            _lightArray[x, y, z] = lightLevel;
         }
 
-        public void SetLightLevel(ChunkBlockPosition blockPosition, byte lightLevel)
-        {
-            _lightArray[blockPosition] = lightLevel;
-        }
+        // TODO: we should only generate lighting once all neighbor chunks have geometry
 
-        public void CalculateInternalLighting()
+        // TODO: we could use a hybrid system where we use an internal chunk position
+        // to traverse the interior of the chunk then switch to a world position
+        // to do the edges of the chunk, which can easily travel to other chunks at the
+        // expense of slower perf.  Maybe.  Or we could just use world position everywhere
+        // and not constrain light propogation the boundaries of chunks - just let it go
+        // where it may.
+
+        public void CalculateLighting()
         {
             CastSunlight();
-            var propogator = new LightPropagator();
+            var propagator = new LightPropagator();
             _lightArray.ForEach((lightLevel, x, y, z) =>
             {
                 // TODO: we don't need to propogate light from blocks that contain only light that's already
@@ -669,12 +687,16 @@ namespace GimpBlocks
                 // but that won't work for light sources that are less than full strength.  Maybe have a source
                 // and destination light map so we don't have to deal with half-calculated data?
 
-                var blockPosition = new ChunkBlockPosition(x, y, z);
-                if (GetLightLevel(blockPosition) == MaximumLightLevel)
+                if (GetLightLevel(x, y, z) == MaximumLightLevel)
                 {
-                    propogator.PropagateLightInChunk(this, blockPosition);
+                    propagator.PropagateLightFromBlock(_world, BlockPositionFor(x, y, z));
                 }
             });
+        }
+
+        BlockPosition BlockPositionFor(int x, int y, int z)
+        {
+            return new BlockPosition(_baseBlockX + x, y, _baseBlockZ + z);
         }
 
         void CastSunlight()
@@ -684,7 +706,7 @@ namespace GimpBlocks
                 for (int z = 0; z < ZDimension; z++)
                 {
                     int y = YDimension - 1;
-                    while (y >= 0 && !_blockArray[x, y, z].IsSolid)
+                    while (y >= 0 && _blockArray[x, y, z].CanPropagateLight)
                     {
                         _lightArray[x, y, z] = MaximumLightLevel;
                         y--;
