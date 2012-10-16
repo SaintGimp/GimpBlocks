@@ -12,17 +12,14 @@ namespace GimpBlocks
         : IListener<CameraMoved>,
         IListener<ChunkRebuilt>
     {
-        readonly BlockArray _blockArray;
+        readonly World _world;
         readonly ICamera _camera;
 
-        public BlockPicker(BlockArray blockArray, ICamera camera)
+        public BlockPicker(World world, ICamera camera)
         {
-            _blockArray = blockArray;
+            _world = world;
             _camera = camera;
         }
-
-        public Block SelectedBlock;
-        public BlockPosition SelectedPlacePosition;
 
         public void Handle(CameraMoved message)
         {
@@ -33,17 +30,26 @@ namespace GimpBlocks
         {
             var ray = new Ray(_camera.Location, _camera.LookAt);
 
-            var intersectionResult = ray.Intersects(_blockArray, 5);
+            var intersectionResult = ray.Intersects(_world, 5);
+
+            Block selectedBlock;
+            BlockPosition selectedPlacePosition = new BlockPosition();
             if (intersectionResult != null)
             {
-                SelectedBlock = intersectionResult.IntersectedBlock;
-                SelectedPlacePosition = intersectionResult.IntersectedBlock.Position +
-                                        intersectionResult.IntersectedFaceNormal;
+                selectedBlock = intersectionResult.IntersectedBlock;
+                selectedPlacePosition = intersectionResult.IntersectedBlock.Position +
+                    intersectionResult.IntersectedFaceNormal;
             }
             else
             {
-                SelectedBlock = null;
+                selectedBlock = null;
             }
+
+            EventAggregator.Instance.SendMessage(new BlockSelectionChanged
+            {
+                SelectedBlock = selectedBlock,
+                SelectedPlacePosition = selectedPlacePosition
+            });
         }
 
         public void Handle(ChunkRebuilt message)

@@ -72,11 +72,11 @@ namespace GimpBlocks
         public const float MinimumPitch = (float) -Math.PI / 2 + 0.01f;
 
         // Attributes for projection matrix
-        float _fieldOfView;
-        float _zoomLevel;
-        float _aspectRatio;
-        float _nearPlane;
-        float _farPlane;
+        float _fieldOfView = MathHelper.Pi / 4;
+        float _zoomLevel = 1.0f;
+        float _aspectRatio = 640f / 480f;
+        float _nearPlane = 0.01f;
+        float _farPlane = Settings.Instance.FarClippingPlaneDistance;
         Matrix _projectionMatrix;
 
         // View frustum
@@ -97,8 +97,9 @@ namespace GimpBlocks
             {
                 SetViewParameters(Settings.Instance.CameraStartingLocation, 0.0f, 0.0f, 0.0f);
             }
-
-            SetProjectionParameters(MathHelper.Pi / 4, 1.0f, 1.0f, 1.0f, (float)Settings.Instance.FarClippingPlaneDistance);
+            _zoomLevel = 1.0f;
+            
+            SetProjectionParameters(_fieldOfView, _zoomLevel, _aspectRatio, _nearPlane, Settings.Instance.FarClippingPlaneDistance);
         }
 
         public void SetViewParameters(Vector3 location, Vector3 lookAt)

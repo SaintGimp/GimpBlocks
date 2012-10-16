@@ -14,15 +14,25 @@ namespace GimpBlocks
 	
     public struct BlockPosition
     {
-        public readonly int X;
-        public readonly int Y;
-        public readonly int Z;
+        // TODO: do we want to make this immutable all the time? Right now we
+        // use it both ways (mutable and immutable)
+
+        public int X;
+        public int Y;
+        public int Z;
 
         public BlockPosition(int x, int y, int z)
         {
             X = x;
             Y = y;
             Z = z;
+        }
+
+        public BlockPosition(Vector3 vector)
+        {
+            X = (int)vector.X;
+            Y = (int)vector.Y;
+            Z = (int)vector.Z;
         }
 
         public BlockPosition Left
@@ -67,6 +77,11 @@ namespace GimpBlocks
             int deltaZ = this.Z - otherPosition.Z;
 
             return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("({0}, {1}, {2}", X, Y, Z);
         }
     }
 }

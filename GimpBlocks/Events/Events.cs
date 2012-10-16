@@ -62,15 +62,15 @@ namespace GimpBlocks
     {
     }
 
-    public class GoToGround : InputMessage
-    {
-    }
-
     public class ZoomIn : InputMessage
     {
     }
 
     public class ZoomOut : InputMessage
+    {
+    }
+
+    public class ResetCamera : InputMessage
     {
     }
 
@@ -96,9 +96,16 @@ namespace GimpBlocks
 
     public class ChunkRebuilt
     {
+        public Chunk Chunk;
     }
 
     public class CameraMoved
     {
+    }
+
+    public class BlockSelectionChanged
+    {
+        public Block SelectedBlock;
+        public BlockPosition SelectedPlacePosition;
     }
 }

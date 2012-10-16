@@ -18,7 +18,8 @@ namespace GimpBlocks
                                     IListener<MoveDown>,
                                     IListener<MouseLook>,
                                     IListener<ZoomIn>,
-                                    IListener<ZoomOut>
+                                    IListener<ZoomOut>,
+                                    IListener<ResetCamera>
     {
         readonly ICamera _camera;
 
@@ -80,6 +81,11 @@ namespace GimpBlocks
         public void Handle(ZoomOut message)
         {
             _camera.ZoomLevel /= 1.5f;
+        }
+
+        public void Handle(ResetCamera message)
+        {
+            _camera.Reset();
         }
     }
 }

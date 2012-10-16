@@ -15,7 +15,8 @@ namespace GimpBlocks
 {
     public class World
         : IListener<PlaceBlock>,
-        IListener<DestroyBlock>
+        IListener<DestroyBlock>,
+        IListener<BlockSelectionChanged>
     {
         // Design tradeoffs: We could have one array of structs that contain all block information.  The advantage there
         // is that if we need to access multiple pieces of information about a block simultaneously, we only need to do one
@@ -27,16 +28,17 @@ namespace GimpBlocks
 
         readonly IWorldRenderer _renderer;
         readonly Func<World, int, int, Chunk> _chunkFactory;
-        readonly BlockPicker _blockPicker;
         readonly BoundingBoxRenderer _boundingBoxRenderer;
         readonly Chunk[,] _chunks;
         readonly int _worldSizeInChunks = 4;
 
-        public World(IWorldRenderer renderer, Func<World, int, int, Chunk> chunkFactory, BlockPicker blockPicker, BoundingBoxRenderer boundingBoxRenderer)
+        Block _selectedBlock;
+        BlockPosition _selectedBlockPlacePosition;
+
+        public World(IWorldRenderer renderer, Func<World, int, int, Chunk> chunkFactory, BoundingBoxRenderer boundingBoxRenderer)
         {
             _renderer = renderer;
             _chunkFactory = chunkFactory;
-            _blockPicker = blockPicker;
             _boundingBoxRenderer = boundingBoxRenderer;
             _chunks = new Chunk[_worldSizeInChunks,_worldSizeInChunks];
         }
@@ -61,7 +63,7 @@ namespace GimpBlocks
             }
             Trace.WriteLine(string.Format("chunk terrain: {0} ms", generateTimer.ElapsedMilliseconds));
 
-            Rebuild();
+            RebuildChunks(AllChunks);
 
             stopwatch.Stop();
             Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
@@ -69,12 +71,31 @@ namespace GimpBlocks
             Trace.WriteLine(string.Format("Light propagations recursed {0} times", LightPropagator.TotalNumberOfRecursions));
         }
 
-        void Rebuild()
+        IEnumerable<Chunk> AllChunks
+        {
+            get
+            {
+                // TODO: how can we more easily convert T[,] into IEnumerable<T>?
+                var chunkList = new List<Chunk>();
+                foreach (var chunk in _chunks)
+                {
+                    chunkList.Add(chunk);
+                }
+                return chunkList;
+            }
+        }
+
+        void RebuildChunks(Chunk chunk)
+        {
+            RebuildChunks(new [] { chunk });
+        }
+
+        void RebuildChunks(IEnumerable<Chunk> chunks)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            foreach (var chunk in _chunks)
+            foreach (var chunk in chunks)
             {
                 chunk.SetInitialLighting();
             }
@@ -83,7 +104,7 @@ namespace GimpBlocks
             Trace.WriteLine(string.Format("initialize lighting: {0} ms", stopwatch.ElapsedMilliseconds));
             stopwatch.Restart();
 
-            foreach (var chunk in _chunks)
+            foreach (var chunk in chunks)
             {
                 chunk.CalculateLighting();
             }
@@ -92,13 +113,18 @@ namespace GimpBlocks
             Trace.WriteLine(string.Format("calculate lighting: {0} ms", stopwatch.ElapsedMilliseconds));
             stopwatch.Restart();
 
-            foreach (var chunk in _chunks)
+            foreach (var chunk in chunks)
             {
                 chunk.Tessellate();
             }
 
             stopwatch.Stop();
             Trace.WriteLine(string.Format("tessellation: {0} ms", stopwatch.ElapsedMilliseconds));
+
+            foreach (var chunk in chunks)
+            {
+                EventAggregator.Instance.SendMessage(new ChunkRebuilt { Chunk = chunk });
+            }
         }
 
 
@@ -113,9 +139,9 @@ namespace GimpBlocks
                 chunk.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
             }
 
-            if (_blockPicker.SelectedBlock != null)
+            if (_selectedBlock != null)
             {
-                var boundingBox = _blockPicker.SelectedBlock.BoundingBox;
+                var boundingBox = _selectedBlock.BoundingBox;
                 var offset = new Vector3(0.003f);
                 var selectionBox = new BoundingBox(boundingBox.Min - offset, boundingBox.Max + offset);
                 _boundingBoxRenderer.Draw(selectionBox, cameraLocation, originBasedViewMatrix, projectionMatrix);
@@ -124,22 +150,29 @@ namespace GimpBlocks
 
         public void Handle(PlaceBlock message)
         {
-            //if (_blockPicker.SelectedBlock != null)
-            //{
-            //    _chunk.SetBlockPrototype(_blockPicker.SelectedPlacePosition, _prototypeMap[1]);
+            if (_selectedBlock != null)
+            {
+                // TODO: this will crash if we try to place a block outside of the loaded
+                // chunks. In the long run this won't be an issue because the user shouldn't ever
+                // be close to the edge of the loaded world.
+                SetBlockPrototype(_selectedBlockPlacePosition, BlockPrototype.StoneBlock);
 
-            //    Rebuild();
-            //}
+                // We need to figure out which chunks could possibly be effected and rebuild them all
+                var chunk = GetChunkFor(_selectedBlock.Position);
+                RebuildChunks(chunk);
+            }
         }
 
         public void Handle(DestroyBlock message)
         {
-            //if (_blockPicker.SelectedBlock != null)
-            //{
-            //    _chunk.SetBlockPrototype(_blockPicker.SelectedPlacePosition, _prototypeMap[0]);
+            if (_selectedBlock != null)
+            {
+                SetBlockPrototype(_selectedBlock.Position, BlockPrototype.AirBlock);
 
-            //    Rebuild();
-            //}
+                // We need to figure out which chunks could possibly be effected and rebuild them all
+                var chunk = GetChunkFor(_selectedBlock.Position);
+                RebuildChunks(chunk);
+            }
         }
 
         Chunk GetChunkFor(BlockPosition blockPosition)
@@ -169,6 +202,15 @@ namespace GimpBlocks
             chunk.SetLightLevel(relativeX, blockPosition.Y, relativeZ, lightLevel);
         }
 
+        public void SetBlockPrototype(BlockPosition blockPosition, BlockPrototype prototype)
+        {
+            var chunk = GetChunkFor(blockPosition);
+            var relativeX = (blockPosition.X & Chunk.BitMaskX);
+            var relativeZ = (blockPosition.Z & Chunk.BitMaskZ);
+
+            chunk.SetBlockPrototype(relativeX, blockPosition.Y, relativeZ, prototype);
+        }
+
         public Block GetBlockAt(BlockPosition blockPosition)
         {
             NumberOfBlocksRetrieved++;
@@ -191,5 +233,11 @@ namespace GimpBlocks
         }
 
         public int NumberOfBlocksRetrieved;
+
+        public void Handle(BlockSelectionChanged message)
+        {
+            _selectedBlock = message.SelectedBlock;
+            _selectedBlockPlacePosition = message.SelectedPlacePosition;
+        }
     }
 }

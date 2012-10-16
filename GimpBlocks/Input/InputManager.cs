@@ -49,8 +49,7 @@ namespace GimpBlocks
             _globalMapper.AddKeyPressMessage<DecreaseCameraSpeed>(Keys.OemMinus);
             _globalMapper.AddKeyPressMessage<ZoomIn>(Keys.OemPeriod);
             _globalMapper.AddKeyPressMessage<ZoomOut>(Keys.OemComma);
-            _globalMapper.AddKeyDownMessage<GoToGround>(Keys.Z);
-
+            _globalMapper.AddKeyPressMessage<ResetCamera>(Keys.R);
             _globalMapper.AddKeyPressMessage<ToggleDrawWireframeSetting>(Keys.F);
             _globalMapper.AddKeyPressMessage<ToggleUpdateSetting>(Keys.U);
             _globalMapper.AddKeyPressMessage<ToggleSingleStepSetting>(Keys.P);

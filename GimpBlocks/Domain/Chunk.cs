@@ -74,9 +74,9 @@ namespace GimpBlocks
             return _blockArray[x, y, z];
         }
 
-        public void SetBlockPrototype(BlockPosition position, BlockPrototype prototype)
+        public void SetBlockPrototype(int x, int y, int z, BlockPrototype prototype)
         {
-            _blockArray[position] = prototype;
+            _blockArray[x, y, z] = prototype;
         }
 
         public void Generate()
@@ -759,20 +759,20 @@ namespace GimpBlocks
             var propagator = new LightPropagator();
             _lightArray.ForEach((lightLevel, x, y, z) =>
             {
-                // TODO: we don't need to propogate light from blocks that contain only light that's already
-                // been propogated from elsewhere. For now we can propogate only if the light is full strength,
+                // TODO: For now we can propogate only if the light is full strength,
                 // but that won't work for light sources that are less than full strength.  Maybe have a source
                 // and destination light map so we don't have to deal with half-calculated data?
 
+                propagator.NumberOfRecursions = 0;
                 if (GetLightLevel(x, y, z) == MaximumLightLevel)
                 {
-                    propagator.PropagateLightFromBlock(_world, BlockPositionFor(x, y, z));
+                    // TODO: when propagating sunlight, we actually only need to do x/z layers from the highest solid
+                    // block down to the lowest sunlit block, plus all sunlit blocks on the outside edges regardless
+                    // of y height (because they might be adjacent to an overhang on the next chunk over).
+                    propagator.PropagateSunlightFromBlock(_world, BlockPositionFor(x, y, z));
                 }
-                
                 //Trace.WriteLine(string.Format("Number of light propogation recursions for block {1},{2},{3}: {0}", propagator.NumberOfRecursions, x, y, z));
             });
-
-
         }
 
         BlockPosition BlockPositionFor(int x, int y, int z)
