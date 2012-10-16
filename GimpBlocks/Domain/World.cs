@@ -157,10 +157,31 @@ namespace GimpBlocks
                 // be close to the edge of the loaded world.
                 SetBlockPrototype(_selectedBlockPlacePosition, BlockPrototype.StoneBlock);
 
-                // We need to figure out which chunks could possibly be effected and rebuild them all
-                var chunk = GetChunkFor(_selectedBlock.Position);
-                RebuildChunks(chunk);
+                RebuildAffectedChunks();
             }
+        }
+
+        void RebuildAffectedChunks()
+        {
+            var affectedVolume = new BlockVolume(_selectedBlock.Position, 15);
+            var chunks = GetChunksIntersectingVolume(affectedVolume);
+            RebuildChunks(chunks);
+        }
+
+        IEnumerable<Chunk> GetChunksIntersectingVolume(BlockVolume affectedVolume)
+        {
+            // TODO: need a GetChunkCoordinates method
+            int minimumChunkX = affectedVolume.Minimum.X >> Chunk.Log2X;
+            int minimumChunkZ = affectedVolume.Minimum.Z >> Chunk.Log2Z;
+            int maximumChunkX = affectedVolume.Maximum.X >> Chunk.Log2X;
+            int maximumChunkZ = affectedVolume.Maximum.Z >> Chunk.Log2Z;
+
+            return AllChunks.Where(chunk =>
+                chunk.X >= minimumChunkX &&
+                chunk.X <= maximumChunkX &&
+                chunk.Z >= minimumChunkZ &&
+                chunk.Z <= maximumChunkZ
+                ).ToList();
         }
 
         public void Handle(DestroyBlock message)

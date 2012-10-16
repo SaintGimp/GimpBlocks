@@ -44,8 +44,11 @@ namespace GimpBlocks
 
         public static readonly byte MaximumLightLevel = 15;
 
-        readonly int _chunkX;
-        readonly int _chunkZ;
+        // TODO: Need ChunkPosition struct
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public int Z { get; private set; }
+
         readonly World _world;
         readonly IChunkRenderer _renderer;
         readonly BlockPrototypeMap _prototypeMap;
@@ -55,18 +58,19 @@ namespace GimpBlocks
         readonly int _baseBlockX;
         readonly int _baseBlockZ;
 
-        public Chunk(int chunkX, int chunkZ, World world, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
+        public Chunk(int x, int z, World world, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
-            _chunkX = chunkX;
-            _chunkZ = chunkZ;
+            X = x;
+            Y = 0;
+            Z = z;
             _world = world;
             _renderer = renderer;
             _prototypeMap = prototypeMap;
 
             _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
             _lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
-            _baseBlockX = _chunkX * XDimension;
-            _baseBlockZ = _chunkZ * ZDimension;
+            _baseBlockX = X * XDimension;
+            _baseBlockZ = Z * ZDimension;
         }
 
         public BlockPrototype GetBlockPrototype(int x, int y, int z)
@@ -110,9 +114,9 @@ namespace GimpBlocks
                 if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
                     float divisor = 20;
-                    float filterX = (XDimension * _chunkX + x) / divisor;
+                    float filterX = (XDimension * X + x) / divisor;
                     float filterY = y / divisor;
-                    float filterZ = (ZDimension * _chunkZ + z) / divisor;
+                    float filterZ = (ZDimension * Z + z) / divisor;
                     return filter.GetValue(filterX, filterY, filterZ) < 1.4 ? _prototypeMap[1] : _prototypeMap[0];
                 }
                 else
@@ -146,9 +150,9 @@ namespace GimpBlocks
                 if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
                     float divisor = 20;
-                    float filterX = (XDimension * _chunkX + x) / divisor;
+                    float filterX = (XDimension * X + x) / divisor;
                     float filterY = y / divisor;
-                    float filterZ = (ZDimension * _chunkZ + z) / divisor;
+                    float filterZ = (ZDimension * Z + z) / divisor;
                     return filter.GetValue(filterX, filterY, filterZ) < 1.5 ? _prototypeMap[1] : _prototypeMap[0];
                 }
                 else
@@ -222,9 +226,9 @@ namespace GimpBlocks
                 {
                     for (int z = 0; z <= _blockArray.ZDimension; z += horizontalSampleRate)
                     {
-                        float worldX = (XDimension * _chunkX + x);
+                        float worldX = (XDimension * X + x);
                         float worldY = y;
-                        float worldZ = (ZDimension * _chunkZ + z);
+                        float worldZ = (ZDimension * Z + z);
                         var noise = inputScaler.GetValue(worldX, worldY, worldZ);
 
                         if (noise > maxNoise)
@@ -326,7 +330,7 @@ namespace GimpBlocks
                 }
             });
 
-            var worldLocation = new Vector3(XDimension * _chunkX, 0, ZDimension * _chunkZ);
+            var worldLocation = new Vector3(XDimension * X, 0, ZDimension * Z);
             // TODO: is the conversion causing extra work here?
             _renderer.Initialize(worldLocation, vertexLists, indexLists);
         }
@@ -736,15 +740,6 @@ namespace GimpBlocks
             _lightArray[x, y, z] = lightLevel;
         }
 
-        // TODO: we should only generate lighting once all neighbor chunks have geometry
-
-        // TODO: we could use a hybrid system where we use an internal chunk position
-        // to traverse the interior of the chunk then switch to a world position
-        // to do the edges of the chunk, which can easily travel to other chunks at the
-        // expense of slower perf.  Maybe.  Or we could just use world position everywhere
-        // and not constrain light propogation the boundaries of chunks - just let it go
-        // where it may.
-
         public void SetInitialLighting()
         {
             // This is separate from the calculate step because right now we create
@@ -753,6 +748,9 @@ namespace GimpBlocks
             // unlighted chunk because there will be a lot of unnecessary recursion.
             CastSunlight();
         }
+
+        // TODO: we should only calculate lighting once all neighbor chunks have geometry
+        // and have sunlight casted
 
         public void CalculateLighting()
         {
@@ -782,6 +780,13 @@ namespace GimpBlocks
 
         void CastSunlight()
         {
+            // TODO: would it be useful to keep track of everywhere that we
+            // set sunlight and then just iterate over that list later when
+            // we calculate light?  Maybe we could even then trace out the
+            // edges of that volume and propogate sunlight from only those
+            // blocks. Maybe more trouble than it's worth, but should think
+            // about it.
+
             for (int x = 0; x < XDimension; x++)
             {
                 for (int z = 0; z < ZDimension; z++)
