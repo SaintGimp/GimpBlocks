@@ -177,10 +177,7 @@ namespace GimpBlocks
             int maximumChunkZ = affectedVolume.Maximum.Z >> Chunk.Log2Z;
 
             return AllChunks.Where(chunk =>
-                chunk.X >= minimumChunkX &&
-                chunk.X <= maximumChunkX &&
-                chunk.Z >= minimumChunkZ &&
-                chunk.Z <= maximumChunkZ
+                chunk.Position.Between(affectedVolume.Minimum.ChunkPosition, affectedVolume.Maximum.ChunkPosition)
                 ).ToList();
         }
 
@@ -198,38 +195,34 @@ namespace GimpBlocks
 
         Chunk GetChunkFor(BlockPosition blockPosition)
         {
-            if (blockPosition.Y < 0 || blockPosition.Y >= Chunk.YDimension)
+            var chunkPosition = blockPosition.ChunkPosition;
+
+            // TODO: maybe support multi-chunk vertically later
+            if (chunkPosition.Y != 0)
             {
                 return null;
             }
 
-            int chunkX = blockPosition.X >> Chunk.Log2X;
-            int chunkZ = blockPosition.Z >> Chunk.Log2Z;
-            
-            return IsLoaded(chunkX, chunkZ) ? _chunks[chunkX, chunkZ] : null;
+            return IsLoaded(chunkPosition) ? _chunks[chunkPosition.X, chunkPosition.Z] : null;
         }
 
-        bool IsLoaded(int chunkX, int chunkZ)
+        bool IsLoaded(ChunkPosition chunkPosition)
         {
-            return (chunkX >= 0 && chunkX < _worldSizeInChunks && chunkZ >= 0 && chunkZ < _worldSizeInChunks);
+            return (chunkPosition.X >= 0 && chunkPosition.X < _worldSizeInChunks && chunkPosition.Z >= 0 && chunkPosition.Z < _worldSizeInChunks);
         }
 
         public void SetLightLevel(BlockPosition blockPosition, byte lightLevel)
         {
             var chunk = GetChunkFor(blockPosition);
-            var relativeX = (blockPosition.X & Chunk.BitMaskX);
-            var relativeZ = (blockPosition.Z & Chunk.BitMaskZ);
 
-            chunk.SetLightLevel(relativeX, blockPosition.Y, relativeZ, lightLevel);
+            chunk.SetLightLevel(blockPosition.RelativeBlockPosition, lightLevel);
         }
 
         public void SetBlockPrototype(BlockPosition blockPosition, BlockPrototype prototype)
         {
             var chunk = GetChunkFor(blockPosition);
-            var relativeX = (blockPosition.X & Chunk.BitMaskX);
-            var relativeZ = (blockPosition.Z & Chunk.BitMaskZ);
 
-            chunk.SetBlockPrototype(relativeX, blockPosition.Y, relativeZ, prototype);
+            chunk.SetBlockPrototype(blockPosition.RelativeBlockPosition, prototype);
         }
 
         public Block GetBlockAt(BlockPosition blockPosition)
@@ -240,10 +233,8 @@ namespace GimpBlocks
 
             if (chunk != null)
             {
-                var relativeX = (blockPosition.X & Chunk.BitMaskX);
-                var relativeZ = (blockPosition.Z & Chunk.BitMaskZ);
-                var prototype = chunk.GetBlockPrototype(relativeX, blockPosition.Y, relativeZ);
-                var lightLevel = chunk.GetLightLevel(relativeX, blockPosition.Y, relativeZ);
+                var prototype = chunk.GetBlockPrototype(blockPosition.RelativeBlockPosition);
+                var lightLevel = chunk.GetLightLevel(blockPosition.RelativeBlockPosition);
 
                 return new Block(prototype, blockPosition, lightLevel);
             }

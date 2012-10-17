@@ -35,6 +35,35 @@ namespace GimpBlocks
             Z = (int)vector.Z;
         }
 
+        public BlockPosition(ChunkPosition chunkPosition, RelativeBlockPosition relativeBlockPosition)
+        {
+            X = chunkPosition.X * Chunk.XDimension + relativeBlockPosition.X;
+            Y = chunkPosition.Y * Chunk.YDimension + relativeBlockPosition.Y;
+            Z = chunkPosition.Z * Chunk.XDimension + relativeBlockPosition.Z;
+        }
+
+        public ChunkPosition ChunkPosition
+        {
+            get
+            {
+                int chunkX = X >> Chunk.Log2X;
+                int chunkY = Y >> Chunk.Log2Y;
+                int chunkZ = Z >> Chunk.Log2Z;
+                return new ChunkPosition(chunkX, chunkY, chunkZ);
+            }
+        }
+
+        public RelativeBlockPosition RelativeBlockPosition
+        {
+            get
+            {
+                var relativeX = X & Chunk.BitmaskX;
+                var relativeY = Y & Chunk.BitmaskY;
+                var relativeZ = Z & Chunk.BitmaskZ;
+                return new RelativeBlockPosition(relativeX, relativeY, relativeZ);
+            }
+        }
+
         public BlockPosition Left
         {
             get { return new BlockPosition(X - 1, Y, Z); }

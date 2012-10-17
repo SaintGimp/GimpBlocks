@@ -92,7 +92,8 @@
     <Compile Include="Domain\Blocks\VoidBlock.cs" />
     <Compile Include="Domain\BlockVolume.cs" />
     <Compile Include="Domain\Chunk.cs" />
-    <Compile Include="Domain\ChunkBlockPosition.cs" />
+    <Compile Include="Domain\RelativeBlockPosition.cs" />
+    <Compile Include="Domain\ChunkPosition.cs" />
     <Compile Include="Domain\Face.cs" />
     <Compile Include="Domain\LightPropagator.cs" />
     <Compile Include="Domain\RayCaster.cs" />

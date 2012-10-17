@@ -48,9 +48,9 @@ namespace GimpBlocks
             _blockIndexes.Initialize((x, y, z) => _prototypeMap[initializerFunction(x, y, z)]);
         }
 
-        public void ForEach(Action<BlockPrototype, int, int, int> action)
+        public void ForEach(Action<BlockPrototype, RelativeBlockPosition> action)
         {
-            _blockIndexes.ForEach((index, x, y, z) => action(_prototypeMap[index], x, y, z));
+            _blockIndexes.ForEach((index, x, y, z) => action(_prototypeMap[index], new RelativeBlockPosition(x, y, z)));
         }
     }
 }

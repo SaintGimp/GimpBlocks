@@ -87,7 +87,8 @@ namespace GimpBlocks
             Func<World, int, int, Chunk> chunkFactory = (world, chunkX, chunkZ) =>
             {
                 var chunkRenderer = new ChunkRenderer(_graphics.GraphicsDevice, effect);
-                return new Chunk(chunkX, chunkZ, world, chunkRenderer, prototypeMap);
+                var position = new ChunkPosition(chunkX, 0, chunkZ);
+                return new Chunk(world, position, chunkRenderer, prototypeMap);
             };
             _world = new World(worldRenderer, chunkFactory, boundingBoxRenderer);
             _blockPicker = new BlockPicker(_world, _camera);

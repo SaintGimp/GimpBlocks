@@ -30,7 +30,7 @@ namespace GimpBlocks
         // left-right
         public const int XDimension = 32;
         public const int Log2X = 5;
-        public const int BitMaskX = XDimension - 1;
+        public const int BitmaskX = XDimension - 1;
         
         // up-down
         public const int YDimension = 64;
@@ -40,14 +40,12 @@ namespace GimpBlocks
         // in-out (positive toward viewer)
         public const int ZDimension = 32;
         public const int Log2Z = 5;
-        public const int BitMaskZ = ZDimension - 1;
+        public const int BitmaskZ = ZDimension - 1;
 
         public static readonly byte MaximumLightLevel = 15;
 
         // TODO: Need ChunkPosition struct
-        public int X { get; private set; }
-        public int Y { get; private set; }
-        public int Z { get; private set; }
+        public ChunkPosition Position { get; private set; }
 
         readonly World _world;
         readonly IChunkRenderer _renderer;
@@ -55,32 +53,26 @@ namespace GimpBlocks
         
         readonly BlockArray _blockArray;
         readonly Array3<byte> _lightArray;
-        readonly int _baseBlockX;
-        readonly int _baseBlockZ;
 
-        public Chunk(int x, int z, World world, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
+        public Chunk(World world, ChunkPosition position, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
-            X = x;
-            Y = 0;
-            Z = z;
+            Position = position;
             _world = world;
             _renderer = renderer;
             _prototypeMap = prototypeMap;
 
             _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
             _lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
-            _baseBlockX = X * XDimension;
-            _baseBlockZ = Z * ZDimension;
         }
 
-        public BlockPrototype GetBlockPrototype(int x, int y, int z)
+        public BlockPrototype GetBlockPrototype(RelativeBlockPosition position)
         {
-            return _blockArray[x, y, z];
+            return _blockArray[position.X, position.Y, position.Z];
         }
 
-        public void SetBlockPrototype(int x, int y, int z, BlockPrototype prototype)
+        public void SetBlockPrototype(RelativeBlockPosition position, BlockPrototype prototype)
         {
-            _blockArray[x, y, z] = prototype;
+            _blockArray[position.X, position.Y, position.Z] = prototype;
         }
 
         public void Generate()
@@ -114,9 +106,9 @@ namespace GimpBlocks
                 if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
                     float divisor = 20;
-                    float filterX = (XDimension * X + x) / divisor;
+                    float filterX = (XDimension * Position.X + x) / divisor;
                     float filterY = y / divisor;
-                    float filterZ = (ZDimension * Z + z) / divisor;
+                    float filterZ = (ZDimension * Position.Z + z) / divisor;
                     return filter.GetValue(filterX, filterY, filterZ) < 1.4 ? _prototypeMap[1] : _prototypeMap[0];
                 }
                 else
@@ -150,9 +142,9 @@ namespace GimpBlocks
                 if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
                 {
                     float divisor = 20;
-                    float filterX = (XDimension * X + x) / divisor;
+                    float filterX = (XDimension * Position.X + x) / divisor;
                     float filterY = y / divisor;
-                    float filterZ = (ZDimension * Z + z) / divisor;
+                    float filterZ = (ZDimension * Position.Z + z) / divisor;
                     return filter.GetValue(filterX, filterY, filterZ) < 1.5 ? _prototypeMap[1] : _prototypeMap[0];
                 }
                 else
@@ -226,9 +218,9 @@ namespace GimpBlocks
                 {
                     for (int z = 0; z <= _blockArray.ZDimension; z += horizontalSampleRate)
                     {
-                        float worldX = (XDimension * X + x);
+                        float worldX = (XDimension * Position.X + x);
                         float worldY = y;
-                        float worldZ = (ZDimension * Z + z);
+                        float worldZ = (ZDimension * Position.Z + z);
                         var noise = inputScaler.GetValue(worldX, worldY, worldZ);
 
                         if (noise > maxNoise)
@@ -320,22 +312,21 @@ namespace GimpBlocks
             // above or below that isnt going to have geometry.  Could also use a variation on that for lighting
             // calcuations.  If we want to burn extra memory in order to optimize this even more aggressively,
             // we could keep track of lowest/highest for each colum in the chunk.
-            _blockArray.ForEach((prototype, x, y, z) =>
+            _blockArray.ForEach((prototype, relativeBlockPosition) =>
             {
                 if (!prototype.CanBeSeenThrough)
                 {
-                    var worldBlockPosition = BlockPositionFor(x, y, z);
-                    var relativeBlockPosition = new ChunkBlockPosition(x, y, z);
+                    var worldBlockPosition = new BlockPosition(Position, relativeBlockPosition);
                     BuildQuads(vertexLists, indexLists, worldBlockPosition, relativeBlockPosition);
                 }
             });
 
-            var worldLocation = new Vector3(XDimension * X, 0, ZDimension * Z);
+            var worldLocation = new Vector3(XDimension * Position.X, 0, ZDimension * Position.Z);
             // TODO: is the conversion causing extra work here?
             _renderer.Initialize(worldLocation, vertexLists, indexLists);
         }
 
-        void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
+        void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
             BuildLeftQuad(vertexLists[Face.Left], indexLists[Face.Left], worldBlockPosition, relativeBlockPosition);
             BuildRightQuad(vertexLists[Face.Right], indexLists[Face.Right], worldBlockPosition, relativeBlockPosition);
@@ -351,7 +342,7 @@ namespace GimpBlocks
         // we don't duplicate lookups.  We're looking up many of these multiple times, maybe with different names.
 
 
-        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
+        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
             var leftBlock = _world.GetBlockAt(worldBlockPosition.Left);
             if (!leftBlock.CanBeSeenThrough)
@@ -408,7 +399,7 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
+        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
             var rightBlock = _world.GetBlockAt(worldBlockPosition.Right);
             if (!rightBlock.CanBeSeenThrough)
@@ -465,7 +456,7 @@ namespace GimpBlocks
             indexList.Add(bottomRightFrontIndex);
         }
 
-        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
+        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
             var backBlock = _world.GetBlockAt(worldBlockPosition.Back);
             if (!backBlock.CanBeSeenThrough)
@@ -522,7 +513,7 @@ namespace GimpBlocks
             indexList.Add(bottomRightBackIndex);
         }
 
-        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
+        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
             var frontBlock = _world.GetBlockAt(worldBlockPosition.Front);
             if (!frontBlock.CanBeSeenThrough)
@@ -579,7 +570,7 @@ namespace GimpBlocks
             indexList.Add(bottomLeftFrontIndex);
         }
 
-        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
+        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
             var upBlock = _world.GetBlockAt(worldBlockPosition.Up);
             if (!upBlock.CanBeSeenThrough)
@@ -636,7 +627,7 @@ namespace GimpBlocks
             indexList.Add(topLeftFrontIndex);
         }
 
-        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, ChunkBlockPosition relativeBlockPosition)
+        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
             var downBlock = _world.GetBlockAt(worldBlockPosition.Down);
             if (!downBlock.CanBeSeenThrough)
@@ -730,14 +721,14 @@ namespace GimpBlocks
             _renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
         }
 
-        public byte GetLightLevel(int x, int y, int z)
+        public byte GetLightLevel(RelativeBlockPosition position)
         {
-            return _lightArray[x, y, z];
+            return _lightArray[position.X, position.Y, position.Z];
         }
 
-        public void SetLightLevel(int x, int y, int z, byte lightLevel)
+        public void SetLightLevel(RelativeBlockPosition position, byte lightLevel)
         {
-            _lightArray[x, y, z] = lightLevel;
+            _lightArray[position.X, position.Y, position.Z] = lightLevel;
         }
 
         public void SetInitialLighting()
@@ -762,20 +753,16 @@ namespace GimpBlocks
                 // and destination light map so we don't have to deal with half-calculated data?
 
                 propagator.NumberOfRecursions = 0;
-                if (GetLightLevel(x, y, z) == MaximumLightLevel)
+                var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
+                if (GetLightLevel(relativeBlockPosition) == MaximumLightLevel)
                 {
                     // TODO: when propagating sunlight, we actually only need to do x/z layers from the highest solid
                     // block down to the lowest sunlit block, plus all sunlit blocks on the outside edges regardless
                     // of y height (because they might be adjacent to an overhang on the next chunk over).
-                    propagator.PropagateSunlightFromBlock(_world, BlockPositionFor(x, y, z));
+                    propagator.PropagateSunlightFromBlock(_world, new BlockPosition(Position, relativeBlockPosition));
                 }
                 //Trace.WriteLine(string.Format("Number of light propogation recursions for block {1},{2},{3}: {0}", propagator.NumberOfRecursions, x, y, z));
             });
-        }
-
-        BlockPosition BlockPositionFor(int x, int y, int z)
-        {
-            return new BlockPosition(_baseBlockX + x, y, _baseBlockZ + z);
         }
 
         void CastSunlight()
