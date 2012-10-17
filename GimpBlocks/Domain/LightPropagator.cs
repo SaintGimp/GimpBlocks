@@ -8,8 +8,6 @@ namespace GimpBlocks
 {
     public class LightPropagator
     {
-        public const int MaximumLightLevel = 15;
-        
         public static int TotalNumberOfRecursions = 0;
         public int NumberOfRecursions = 0;
 

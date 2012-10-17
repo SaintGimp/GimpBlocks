@@ -10,6 +10,10 @@ namespace GimpBlocks
     // to write and reason about.  The resulting code could be transformed into something
     // better once it's stable.
 
+    // Creating structs all the time in order to pass around sets of numbers might
+    // have a small adverse impact on performance (on the order of maybe 2% in release build). Right now
+    // we're favoring readable code over extreme performance, though.
+
     // TODO: experiment with MethodImplOptions.AggressiveInlining in CLR 4.5
 	
     public struct BlockPosition
@@ -38,30 +42,29 @@ namespace GimpBlocks
         public BlockPosition(ChunkPosition chunkPosition, RelativeBlockPosition relativeBlockPosition)
         {
             X = chunkPosition.X * Chunk.XDimension + relativeBlockPosition.X;
-            Y = chunkPosition.Y * Chunk.YDimension + relativeBlockPosition.Y;
+            Y = relativeBlockPosition.Y;
             Z = chunkPosition.Z * Chunk.XDimension + relativeBlockPosition.Z;
         }
 
+        // The chunk coordinates and relative block position are encoded in the absolute
+        // world block position.  The higher bits are the chunk coordinate and the lower
+        // bits are the relative coordinate. For negative chunk coordinates this kind of
+        // makes things backwards in terms of how data is stored in the chunk arrays but
+        // it turns out it doesn't actually matter because it gets reversed again when
+        // we display it (I think - verify this).
+
+        // Performance-wise it appears to be significantly better to calculate these as
+        // needed rather than calculate them once and store them (presumably because of
+        // the extra work involved in copying the struct by value for function calls).
+
         public ChunkPosition ChunkPosition
         {
-            get
-            {
-                int chunkX = X >> Chunk.Log2X;
-                int chunkY = Y >> Chunk.Log2Y;
-                int chunkZ = Z >> Chunk.Log2Z;
-                return new ChunkPosition(chunkX, chunkY, chunkZ);
-            }
+            get { return new ChunkPosition(X >> Chunk.Log2X, Z >> Chunk.Log2Z); }
         }
 
         public RelativeBlockPosition RelativeBlockPosition
         {
-            get
-            {
-                var relativeX = X & Chunk.BitmaskX;
-                var relativeY = Y & Chunk.BitmaskY;
-                var relativeZ = Z & Chunk.BitmaskZ;
-                return new RelativeBlockPosition(relativeX, relativeY, relativeZ);
-            }
+            get { return new RelativeBlockPosition(X & Chunk.BitmaskX, Y, Z & Chunk.BitmaskZ); }
         }
 
         public BlockPosition Left
@@ -101,9 +104,9 @@ namespace GimpBlocks
 
         public int DistanceSquared(BlockPosition otherPosition)
         {
-            int deltaX = this.X - otherPosition.X;
-            int deltaY = this.Y - otherPosition.Y;
-            int deltaZ = this.Z - otherPosition.Z;
+            int deltaX = X - otherPosition.X;
+            int deltaY = Y - otherPosition.Y;
+            int deltaZ = Z - otherPosition.Z;
 
             return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
         }

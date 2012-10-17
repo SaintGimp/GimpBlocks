@@ -139,7 +139,7 @@ namespace GimpBlocks.Specifications.EventSpecs
 
     public class TestableEventAggregator : EventAggregator
     {
-        public new bool HasListener(object listener)
+        public bool HasListener(object listener)
         {
             return base.IsRegistered(listener);
         }

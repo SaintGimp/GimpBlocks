@@ -6,80 +6,57 @@ using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
 {
-    public class ChunkPosition
+    public struct ChunkPosition
     {
         public int X;
-        public int Y;
         public int Z;
 
-        public ChunkPosition(int x, int y, int z)
+        // TODO: right now we don't support multiple chunks in the vertical axis (it wouldn't be hard
+        // except that there are some tricky issues around sunlight and updating everything that could
+        // be affected on a block place/destroy).  For performance we don't do anything with the Y axis
+        // since we don't need it.
+
+        public ChunkPosition(int x, int z)
         {
             X = x;
-            Y = y;
             Z = z;
         }
 
         public ChunkPosition(Vector3 vector)
         {
             X = (int)vector.X;
-            Y = (int)vector.Y;
             Z = (int)vector.Z;
         }
 
         public ChunkPosition Left
         {
-            get { return new ChunkPosition(X - 1, Y, Z); }
+            get { return new ChunkPosition(X - 1, Z); }
         }
 
         public ChunkPosition Right
         {
-            get { return new ChunkPosition(X + 1, Y, Z); }
+            get { return new ChunkPosition(X + 1, Z); }
         }
 
         public ChunkPosition Front
         {
-            get { return new ChunkPosition(X, Y, Z + 1); }
+            get { return new ChunkPosition(X, Z + 1); }
         }
 
         public ChunkPosition Back
         {
-            get { return new ChunkPosition(X, Y, Z - 1); }
-        }
-
-        public ChunkPosition Up
-        {
-            get { return new ChunkPosition(X, Y + 1, Z); }
-        }
-
-        public ChunkPosition Down
-        {
-            get { return new ChunkPosition(X, Y - 1, Z); }
-        }
-
-        public static ChunkPosition operator +(ChunkPosition first, Vector3 second)
-        {
-            return new ChunkPosition(first.X + (int)second.X, first.Y + (int)second.Y, first.Z + (int)second.Z);
-        }
-
-        public int DistanceSquared(ChunkPosition otherPosition)
-        {
-            int deltaX = this.X - otherPosition.X;
-            int deltaY = this.Y - otherPosition.Y;
-            int deltaZ = this.Z - otherPosition.Z;
-
-            return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+            get { return new ChunkPosition(X, Z - 1); }
         }
 
         public override string ToString()
         {
-            return string.Format("({0}, {1}, {2}", X, Y, Z);
+            return string.Format("({0}, {1}", X, Z);
         }
 
         public bool Between(ChunkPosition minimum, ChunkPosition maximum)
         {
             return X >= minimum.X && X <= maximum.X &&
-                Y >= minimum.Y && Y <= maximum.Y &&
-                    Z >= minimum.Z && Z <= maximum.Z;
+                Z >= minimum.Z && Z <= maximum.Z;
         }
     }
 }

@@ -42,9 +42,6 @@ namespace GimpBlocks
         public const int Log2Z = 5;
         public const int BitmaskZ = ZDimension - 1;
 
-        public static readonly byte MaximumLightLevel = 15;
-
-        // TODO: Need ChunkPosition struct
         public ChunkPosition Position { get; private set; }
 
         readonly World _world;
@@ -321,9 +318,9 @@ namespace GimpBlocks
                 }
             });
 
-            var worldLocation = new Vector3(XDimension * Position.X, 0, ZDimension * Position.Z);
+            var chunkOriginInWorld = new Vector3(XDimension * Position.X, 0, ZDimension * Position.Z);
             // TODO: is the conversion causing extra work here?
-            _renderer.Initialize(worldLocation, vertexLists, indexLists);
+            _renderer.Initialize(chunkOriginInWorld, vertexLists, indexLists);
         }
 
         void BuildQuads(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
@@ -684,9 +681,6 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        // Light propogation between chunks: once the chunk has its internal lighting calculated, we can take all of the edge blocks in a chunk
-        // and just propogate that current light level over to the neighboring chunk. The recursion will be naturally limited by the light level.
-
         Vector3 AverageLightingOver(Block adjacent, Block edge1, Block edge2, Block diagonal, float limit)
         {
             // For each vertex we examine four voxels grouped around the vertex in the plane of the face that the vertex belongs to.
@@ -708,7 +702,7 @@ namespace GimpBlocks
                 average = (adjacent.LightLevel + edge1.LightLevel + edge2.LightLevel + diagonal.LightLevel) / 4f;
             }
 
-            var percentage = Math.Min(average / MaximumLightLevel, limit);
+            var percentage = Math.Min(average / World.MaximumLightLevel, limit);
 
             return new Vector3(percentage);
         }
@@ -754,7 +748,7 @@ namespace GimpBlocks
 
                 propagator.NumberOfRecursions = 0;
                 var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
-                if (GetLightLevel(relativeBlockPosition) == MaximumLightLevel)
+                if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel)
                 {
                     // TODO: when propagating sunlight, we actually only need to do x/z layers from the highest solid
                     // block down to the lowest sunlit block, plus all sunlit blocks on the outside edges regardless
@@ -781,7 +775,7 @@ namespace GimpBlocks
                     int y = YDimension - 1;
                     while (y >= 0 && _blockArray[x, y, z].CanPropagateLight)
                     {
-                        _lightArray[x, y, z] = MaximumLightLevel;
+                        _lightArray[x, y, z] = World.MaximumLightLevel;
                         y--;
                     }
 

@@ -27,6 +27,8 @@ namespace GimpBlocks
         // something that's usually sparse could be stored in a sparse octtree where something else that varies a lot could
         // be an an array.  It's not clear which strategy is best in the long term.
 
+        public const byte MaximumLightLevel = 15;
+
         readonly IWorldRenderer _renderer;
         readonly Func<World, int, int, Chunk> _chunkFactory;
         readonly BoundingBoxRenderer _boundingBoxRenderer;
@@ -164,19 +166,13 @@ namespace GimpBlocks
 
         void RebuildAffectedChunks()
         {
-            var affectedVolume = new BlockVolume(_selectedBlock.Position, 15);
+            var affectedVolume = new BlockVolume(_selectedBlock.Position, MaximumLightLevel);
             var chunks = GetChunksIntersectingVolume(affectedVolume);
             RebuildChunks(chunks);
         }
 
         IEnumerable<Chunk> GetChunksIntersectingVolume(BlockVolume affectedVolume)
         {
-            // TODO: need a GetChunkCoordinates method
-            int minimumChunkX = affectedVolume.Minimum.X >> Chunk.Log2X;
-            int minimumChunkZ = affectedVolume.Minimum.Z >> Chunk.Log2Z;
-            int maximumChunkX = affectedVolume.Maximum.X >> Chunk.Log2X;
-            int maximumChunkZ = affectedVolume.Maximum.Z >> Chunk.Log2Z;
-
             return AllChunks.Where(chunk =>
                 chunk.Position.Between(affectedVolume.Minimum.ChunkPosition, affectedVolume.Maximum.ChunkPosition)
                 ).ToList();
@@ -188,9 +184,7 @@ namespace GimpBlocks
             {
                 SetBlockPrototype(_selectedBlock.Position, BlockPrototype.AirBlock);
 
-                // We need to figure out which chunks could possibly be effected and rebuild them all
-                var chunk = GetChunkFor(_selectedBlock.Position);
-                RebuildChunks(chunk);
+                RebuildAffectedChunks();
             }
         }
 
@@ -199,7 +193,7 @@ namespace GimpBlocks
             var chunkPosition = blockPosition.ChunkPosition;
 
             // TODO: maybe support multi-chunk vertically later
-            if (chunkPosition.Y != 0)
+            if (blockPosition.Y < 0 || blockPosition.Y >= Chunk.YDimension)
             {
                 return null;
             }
@@ -234,8 +228,9 @@ namespace GimpBlocks
 
             if (chunk != null)
             {
-                var prototype = chunk.GetBlockPrototype(blockPosition.RelativeBlockPosition);
-                var lightLevel = chunk.GetLightLevel(blockPosition.RelativeBlockPosition);
+                var relativePosition = blockPosition.RelativeBlockPosition;
+                var prototype = chunk.GetBlockPrototype(relativePosition);
+                var lightLevel = chunk.GetLightLevel(relativePosition);
 
                 return new Block(prototype, blockPosition, lightLevel);
             }

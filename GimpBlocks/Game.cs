@@ -22,7 +22,6 @@ namespace GimpBlocks
         SpriteBatch _spriteBatch;
         Texture2D _crosshairTexture;
 
-        IInputState _inputState;
         InputManager _inputManager;
         ICamera _camera;
         ICameraController _cameraController;
@@ -87,7 +86,7 @@ namespace GimpBlocks
             Func<World, int, int, Chunk> chunkFactory = (world, chunkX, chunkZ) =>
             {
                 var chunkRenderer = new ChunkRenderer(_graphics.GraphicsDevice, effect);
-                var position = new ChunkPosition(chunkX, 0, chunkZ);
+                var position = new ChunkPosition(chunkX, chunkZ);
                 return new Chunk(world, position, chunkRenderer, prototypeMap);
             };
             _world = new World(worldRenderer, chunkFactory, boundingBoxRenderer);
