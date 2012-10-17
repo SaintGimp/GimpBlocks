@@ -55,6 +55,7 @@ namespace GimpBlocks
             _globalMapper.AddKeyPressMessage<ToggleSingleStepSetting>(Keys.P);
 
             _globalMapper.AddKeyPressMessage<GarbageCollect>(Keys.G);
+            _globalMapper.AddKeyPressMessage<ProfileWorldGeneration>(Keys.T);
 
             _globalMapper.AddKeyPressMessage<ToggleInputMode>(Keys.Escape);
             _normalMapper.AddGeneralInputMessage<ToggleInputMode>(inputState => inputState.IsLeftMouseButtonClicked);

@@ -16,7 +16,8 @@ namespace GimpBlocks
     public class World
         : IListener<PlaceBlock>,
         IListener<DestroyBlock>,
-        IListener<BlockSelectionChanged>
+        IListener<BlockSelectionChanged>,
+        IListener<ProfileWorldGeneration>
     {
         // Design tradeoffs: We could have one array of structs that contain all block information.  The advantage there
         // is that if we need to access multiple pieces of information about a block simultaneously, we only need to do one
@@ -250,6 +251,30 @@ namespace GimpBlocks
         {
             _selectedBlock = message.SelectedBlock;
             _selectedBlockPlacePosition = message.SelectedPlacePosition;
+        }
+
+        public void Handle(ProfileWorldGeneration message)
+        {
+            var stopwatch = new Stopwatch();
+
+            int iterations = 10;
+            for (int x = 0; x < iterations; x++)
+            {
+                foreach (var chunk in _chunks)
+                {
+                    chunk.Dispose();
+                }
+
+                stopwatch.Start();
+
+                Generate();
+
+                stopwatch.Stop();
+            }
+
+            var result = string.Format("Average world generation time over {0} iterations: {1}", iterations,
+                stopwatch.ElapsedMilliseconds / iterations);
+            Trace.WriteLine(result);
         }
     }
 }

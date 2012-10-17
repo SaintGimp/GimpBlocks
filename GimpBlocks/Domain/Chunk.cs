@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
 {
-    public class Chunk
+    public class Chunk : IDisposable
     {
         // Design tradeoffs: We could have one array of structs that contain all block information.  The advantage there
         // is that if we need to access multiple pieces of information about a block simultaneously, we only need to do one
@@ -792,6 +792,16 @@ namespace GimpBlocks
                         y--;
                     }
                 }
+            }
+        }
+
+        bool _disposed;
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                ((IDisposable)_renderer).Dispose();
+                _disposed = true;
             }
         }
     }

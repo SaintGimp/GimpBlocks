@@ -108,4 +108,8 @@ namespace GimpBlocks
         public Block SelectedBlock;
         public BlockPosition SelectedPlacePosition;
     }
+
+    public class ProfileWorldGeneration : InputMessage
+    {
+    }
 }

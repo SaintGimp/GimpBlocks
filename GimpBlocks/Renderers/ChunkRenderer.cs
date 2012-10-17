@@ -13,7 +13,7 @@ namespace GimpBlocks
         void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix);
     }
 
-    public class ChunkRenderer : IChunkRenderer
+    public class ChunkRenderer : IChunkRenderer, IDisposable
     {
         readonly GraphicsDevice _graphicsDevice;
         readonly Effect _effect;
@@ -119,5 +119,23 @@ namespace GimpBlocks
             }
         }
 
+        bool _disposed;
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                foreach (var buffer in _vertexBuffers)
+                {
+                    buffer.Dispose();
+                }
+
+                foreach (var buffer in _indexBuffers)
+                {
+                    buffer.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
     }
 }
