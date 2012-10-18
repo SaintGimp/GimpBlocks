@@ -300,6 +300,8 @@ namespace GimpBlocks
             var indexLists = new List<short>[6];
             for (int x = 0; x < 6; x++)
             {
+                // You'd think that setting a largeish initial capacity would save us some time growing
+                // the lists, but it turns out to be the exact opposite in practice.  Not sure why.
                 vertexLists[x] = new List<VertexPositionColorLighting>();
                 indexLists[x] = new List<short>();
             }
@@ -753,6 +755,9 @@ namespace GimpBlocks
                     // TODO: when propagating sunlight, we actually only need to do x/z layers from the highest solid
                     // block down to the lowest sunlit block, plus all sunlit blocks on the outside edges regardless
                     // of y height (because they might be adjacent to an overhang on the next chunk over).
+
+                    // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
+                    // think about the implications for multi-threading and race conditions.
                     propagator.PropagateSunlightFromBlock(_world, new BlockPosition(Position, relativeBlockPosition));
                 }
                 //Trace.WriteLine(string.Format("Number of light propogation recursions for block {1},{2},{3}: {0}", propagator.NumberOfRecursions, x, y, z));

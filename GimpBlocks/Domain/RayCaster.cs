@@ -17,6 +17,8 @@ namespace GimpBlocks
 
         public static IntersectionResult Intersects(this Ray ray, World world, float maximumRayLength)
         {
+            // From A Fast Voxel Traversal Algorithm for Ray Tracing: http://www.cse.yorku.ca/~amana/research/grid.pdf
+
             var currentBlockPosition = new BlockPosition(ray.Position);
             int stepX, stepY, stepZ;
             float tMaxX, tMaxY, tMaxZ;

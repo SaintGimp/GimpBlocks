@@ -15,14 +15,10 @@ namespace GimpBlocks
         {
             NumberOfRecursions = 0;
 
-            var block = world.GetBlockAt(blockPosition);
+            // We assume that the block position passed to us has full sunlight and can
+            // propogate light.
 
-            if (!block.CanPropagateLight)
-            {
-                return;
-            }
-
-            var newLightValue = (byte)(block.LightLevel - 1);
+            const byte newLightValue = (byte)(World.MaximumLightLevel - 1);
 
             // We know we're starting with a sunlit block so we don't need to recurse up because
             // anything above this block is either sunlit or void. We don't need to recurse down
