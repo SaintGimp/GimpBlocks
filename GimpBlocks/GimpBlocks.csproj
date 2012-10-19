@@ -99,6 +99,7 @@
     <Compile Include="Domain\RayCaster.cs" />
     <Compile Include="Domain\Blocks\StoneBlock.cs" />
     <Compile Include="Domain\BlockPosition.cs" />
+    <Compile Include="Domain\Tessellator.cs" />
     <Compile Include="Domain\World.cs" />
     <Compile Include="Events\EventAggregator.cs" />
     <Compile Include="Events\EventAggregatorTypeInterceptor.cs" />
