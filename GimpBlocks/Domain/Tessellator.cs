@@ -10,6 +10,66 @@ namespace GimpBlocks
     {
         readonly World _world;
 
+        Block leftBlock;
+        Block leftUpBlock;
+        Block leftBackBlock;
+        Block leftUpBackBlock;
+        Block leftFrontBlock;
+        Block leftUpFrontBlock;
+        Block leftDownBlock;
+        Block leftDownFrontBlock;
+        Block leftDownBackBlock;
+
+        Block rightBlock;
+        Block rightUpBlock;
+        Block rightFrontBlock;
+        Block rightUpFrontBlock;
+        Block rightBackBlock;
+        Block rightUpBackBlock;
+        Block rightDownBlock;
+        Block rightDownBackBlock;
+        Block rightDownFrontBlock;
+
+        Block backBlock;
+        Block backUpBlock;
+        Block backRightBlock;
+        Block backUpRightBlock;
+        Block backLeftBlock;
+        Block backUpLeftBlock;
+        Block backDownBlock;
+        Block backDownLeftBlock;
+        Block backDownRightBlock;
+
+        Block frontBlock;
+        Block frontUpBlock;
+        Block frontLeftBlock;
+        Block frontUpLeftBlock;
+        Block frontRightBlock;
+        Block frontUpRightBlock;
+        Block frontDownBlock;
+        Block frontDownRightBlock;
+        Block frontDownLeftBlock;
+
+        Block upBlock;
+        Block upLeftBlock;
+        Block upBackBlock;
+        Block upLeftBackBlock;
+        Block upRightBlock;
+        Block upRightBackBlock;
+        Block upFrontBlock;
+        Block upRightFrontBlock;
+        Block upLeftFrontBlock;
+
+        Block downBlock;
+        Block downLeftBlock;
+        Block downFrontBlock;
+        Block downLeftFrontBlock;
+        Block downRightBlock;
+        Block downRightFrontBlock;
+        Block downBackBlock;
+        Block downRightBackBlock;
+        Block downLeftBackBlock;
+
         public Tessellator(World world)
         {
             _world = world;
@@ -17,12 +77,76 @@ namespace GimpBlocks
 
         public void TessellateBlock(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
         {
-            BuildLeftQuad(vertexLists[Face.Left], indexLists[Face.Left], worldBlockPosition, relativeBlockPosition);
-            BuildRightQuad(vertexLists[Face.Right], indexLists[Face.Right], worldBlockPosition, relativeBlockPosition);
-            BuildFrontQuad(vertexLists[Face.Front], indexLists[Face.Front], worldBlockPosition, relativeBlockPosition);
-            BuildBackQuad(vertexLists[Face.Back], indexLists[Face.Back], worldBlockPosition, relativeBlockPosition);
-            BuildTopQuad(vertexLists[Face.Top], indexLists[Face.Top], worldBlockPosition, relativeBlockPosition);
-            BuildBottomQuad(vertexLists[Face.Bottom], indexLists[Face.Bottom], worldBlockPosition, relativeBlockPosition);
+            GetRequiredBlocks(worldBlockPosition);
+            BuildLeftQuad(vertexLists[Face.Left], indexLists[Face.Left], relativeBlockPosition);
+            BuildRightQuad(vertexLists[Face.Right], indexLists[Face.Right], relativeBlockPosition);
+            BuildFrontQuad(vertexLists[Face.Front], indexLists[Face.Front], relativeBlockPosition);
+            BuildBackQuad(vertexLists[Face.Back], indexLists[Face.Back], relativeBlockPosition);
+            BuildTopQuad(vertexLists[Face.Top], indexLists[Face.Top], relativeBlockPosition);
+            BuildBottomQuad(vertexLists[Face.Bottom], indexLists[Face.Bottom], relativeBlockPosition);
+        }
+
+        void GetRequiredBlocks(BlockPosition worldBlockPosition)
+        {
+            leftBlock = _world.GetBlockAt(worldBlockPosition.Left);
+            leftUpBlock = _world.GetBlockAt(worldBlockPosition.Left.Up);
+            leftBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Back);
+            leftUpBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Up.Back);
+            leftFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Front);
+            leftUpFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Up.Front);
+            leftDownBlock = _world.GetBlockAt(worldBlockPosition.Left.Down);
+            leftDownFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Down.Front);
+            leftDownBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Down.Back);
+
+            rightBlock = _world.GetBlockAt(worldBlockPosition.Right);
+            rightUpBlock = _world.GetBlockAt(worldBlockPosition.Right.Up);
+            rightFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Front);
+            rightUpFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Up.Front);
+            rightBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Back);
+            rightUpBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Up.Back);
+            rightDownBlock = _world.GetBlockAt(worldBlockPosition.Right.Down);
+            rightDownBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Down.Back);
+            rightDownFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Down.Front);
+
+            backBlock = _world.GetBlockAt(worldBlockPosition.Back);
+            backUpBlock = _world.GetBlockAt(worldBlockPosition.Back.Up);
+            backRightBlock = _world.GetBlockAt(worldBlockPosition.Back.Right);
+            backUpRightBlock = _world.GetBlockAt(worldBlockPosition.Back.Up.Right);
+            backLeftBlock = _world.GetBlockAt(worldBlockPosition.Back.Left);
+            backUpLeftBlock = _world.GetBlockAt(worldBlockPosition.Back.Up.Left);
+            backDownBlock = _world.GetBlockAt(worldBlockPosition.Back.Down);
+            backDownLeftBlock = _world.GetBlockAt(worldBlockPosition.Back.Down.Left);
+            backDownRightBlock = _world.GetBlockAt(worldBlockPosition.Back.Down.Right);
+
+            frontBlock = _world.GetBlockAt(worldBlockPosition.Front);
+            frontUpBlock = _world.GetBlockAt(worldBlockPosition.Front.Up);
+            frontLeftBlock = _world.GetBlockAt(worldBlockPosition.Front.Left);
+            frontUpLeftBlock = _world.GetBlockAt(worldBlockPosition.Front.Up.Left);
+            frontRightBlock = _world.GetBlockAt(worldBlockPosition.Front.Right);
+            frontUpRightBlock = _world.GetBlockAt(worldBlockPosition.Front.Up.Right);
+            frontDownBlock = _world.GetBlockAt(worldBlockPosition.Front.Down);
+            frontDownRightBlock = _world.GetBlockAt(worldBlockPosition.Front.Down.Right);
+            frontDownLeftBlock = _world.GetBlockAt(worldBlockPosition.Front.Down.Left);
+
+            upBlock = _world.GetBlockAt(worldBlockPosition.Up);
+            upLeftBlock = _world.GetBlockAt(worldBlockPosition.Up.Left);
+            upBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Back);
+            upLeftBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Left.Back);
+            upRightBlock = _world.GetBlockAt(worldBlockPosition.Up.Right);
+            upRightBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Right.Back);
+            upFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Front);
+            upRightFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Right.Front);
+            upLeftFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Left.Front);
+
+            downBlock = _world.GetBlockAt(worldBlockPosition.Down);
+            downLeftBlock = _world.GetBlockAt(worldBlockPosition.Down.Left);
+            downFrontBlock = _world.GetBlockAt(worldBlockPosition.Down.Front);
+            downLeftFrontBlock = _world.GetBlockAt(worldBlockPosition.Down.Left.Front);
+            downRightBlock = _world.GetBlockAt(worldBlockPosition.Down.Right);
+            downRightFrontBlock = _world.GetBlockAt(worldBlockPosition.Down.Right.Front);
+            downBackBlock = _world.GetBlockAt(worldBlockPosition.Down.Back);
+            downRightBackBlock = _world.GetBlockAt(worldBlockPosition.Down.Right.Back);
+            downLeftBackBlock = _world.GetBlockAt(worldBlockPosition.Down.Left.Back);
         }
 
         // TODO: could maybe generalize these six methods into one once we're happy with the behavior
@@ -31,22 +155,12 @@ namespace GimpBlocks
         // we don't duplicate lookups.  We're looking up many of these multiple times, maybe with different names.
 
 
-        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
+        void BuildLeftQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, RelativeBlockPosition relativeBlockPosition)
         {
-            var leftBlock = _world.GetBlockAt(worldBlockPosition.Left);
             if (!leftBlock.CanBeSeenThrough)
             {
                 return;
             }
-
-            var leftUpBlock = _world.GetBlockAt(worldBlockPosition.Left.Up);
-            var leftBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Back);
-            var leftUpBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Up.Back);
-            var leftFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Front);
-            var leftUpFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Up.Front);
-            var leftDownBlock = _world.GetBlockAt(worldBlockPosition.Left.Down);
-            var leftDownFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Down.Front);
-            var leftDownBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Down.Back);
 
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
@@ -88,22 +202,12 @@ namespace GimpBlocks
             indexList.Add(bottomLeftBackIndex);
         }
 
-        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
+        void BuildRightQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, RelativeBlockPosition relativeBlockPosition)
         {
-            var rightBlock = _world.GetBlockAt(worldBlockPosition.Right);
             if (!rightBlock.CanBeSeenThrough)
             {
                 return;
             }
-
-            var rightUpBlock = _world.GetBlockAt(worldBlockPosition.Right.Up);
-            var rightFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Front);
-            var rightUpFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Up.Front);
-            var rightBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Back);
-            var rightUpBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Up.Back);
-            var rightDownBlock = _world.GetBlockAt(worldBlockPosition.Right.Down);
-            var rightDownBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Down.Back);
-            var rightDownFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Down.Front);
 
             var topRightFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
@@ -145,22 +249,12 @@ namespace GimpBlocks
             indexList.Add(bottomRightFrontIndex);
         }
 
-        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
+        void BuildBackQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, RelativeBlockPosition relativeBlockPosition)
         {
-            var backBlock = _world.GetBlockAt(worldBlockPosition.Back);
             if (!backBlock.CanBeSeenThrough)
             {
                 return;
             }
-
-            var backUpBlock = _world.GetBlockAt(worldBlockPosition.Back.Up);
-            var backRightBlock = _world.GetBlockAt(worldBlockPosition.Back.Right);
-            var backUpRightBlock = _world.GetBlockAt(worldBlockPosition.Back.Up.Right);
-            var backLeftBlock = _world.GetBlockAt(worldBlockPosition.Back.Left);
-            var backUpLeftBlock = _world.GetBlockAt(worldBlockPosition.Back.Up.Left);
-            var backDownBlock = _world.GetBlockAt(worldBlockPosition.Back.Down);
-            var backDownLeftBlock = _world.GetBlockAt(worldBlockPosition.Back.Down.Left);
-            var backDownRightBlock = _world.GetBlockAt(worldBlockPosition.Back.Down.Right);
 
             var topRightBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
@@ -202,22 +296,12 @@ namespace GimpBlocks
             indexList.Add(bottomRightBackIndex);
         }
 
-        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
+        void BuildFrontQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, RelativeBlockPosition relativeBlockPosition)
         {
-            var frontBlock = _world.GetBlockAt(worldBlockPosition.Front);
             if (!frontBlock.CanBeSeenThrough)
             {
                 return;
             }
-
-            var frontUpBlock = _world.GetBlockAt(worldBlockPosition.Front.Up);
-            var frontLeftBlock = _world.GetBlockAt(worldBlockPosition.Front.Left);
-            var frontUpLeftBlock = _world.GetBlockAt(worldBlockPosition.Front.Up.Left);
-            var frontRightBlock = _world.GetBlockAt(worldBlockPosition.Front.Right);
-            var frontUpRightBlock = _world.GetBlockAt(worldBlockPosition.Front.Up.Right);
-            var frontDownBlock = _world.GetBlockAt(worldBlockPosition.Front.Down);
-            var frontDownRightBlock = _world.GetBlockAt(worldBlockPosition.Front.Down.Right);
-            var frontDownLeftBlock = _world.GetBlockAt(worldBlockPosition.Front.Down.Left);
 
             var topLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
@@ -259,22 +343,12 @@ namespace GimpBlocks
             indexList.Add(bottomLeftFrontIndex);
         }
 
-        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
+        void BuildTopQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, RelativeBlockPosition relativeBlockPosition)
         {
-            var upBlock = _world.GetBlockAt(worldBlockPosition.Up);
             if (!upBlock.CanBeSeenThrough)
             {
                 return;
             }
-
-            var upLeftBlock = _world.GetBlockAt(worldBlockPosition.Up.Left);
-            var upBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Back);
-            var upLeftBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Left.Back);
-            var upRightBlock = _world.GetBlockAt(worldBlockPosition.Up.Right);
-            var upRightBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Right.Back);
-            var upFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Front);
-            var upRightFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Right.Front);
-            var upLeftFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Left.Front);
 
             var topLeftBackIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
@@ -316,22 +390,12 @@ namespace GimpBlocks
             indexList.Add(topLeftFrontIndex);
         }
 
-        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
+        void BuildBottomQuad(List<VertexPositionColorLighting> vertexList, List<short> indexList, RelativeBlockPosition relativeBlockPosition)
         {
-            var downBlock = _world.GetBlockAt(worldBlockPosition.Down);
             if (!downBlock.CanBeSeenThrough)
             {
                 return;
             }
-
-            var downLeftBlock = _world.GetBlockAt(worldBlockPosition.Down.Left);
-            var downFrontBlock = _world.GetBlockAt(worldBlockPosition.Down.Front);
-            var downLeftFrontBlock = _world.GetBlockAt(worldBlockPosition.Down.Left.Front);
-            var downRightBlock = _world.GetBlockAt(worldBlockPosition.Down.Right);
-            var downRightFrontBlock = _world.GetBlockAt(worldBlockPosition.Down.Right.Front);
-            var downBackBlock = _world.GetBlockAt(worldBlockPosition.Down.Back);
-            var downRightBackBlock = _world.GetBlockAt(worldBlockPosition.Down.Right.Back);
-            var downLeftBackBlock = _world.GetBlockAt(worldBlockPosition.Down.Left.Back);
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
             vertexList.Add(new VertexPositionColorLighting
