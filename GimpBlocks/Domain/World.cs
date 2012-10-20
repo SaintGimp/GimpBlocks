@@ -72,6 +72,7 @@ namespace GimpBlocks
             Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
             Trace.WriteLine(string.Format("World retrieved {0} blocks", NumberOfBlocksRetrieved));
             Trace.WriteLine(string.Format("Light propagations recursed {0} times", LightPropagator.TotalNumberOfRecursions));
+            Trace.WriteLine(string.Format("Tessellated {0} blocks", Tessellator.NumberOfBlocksTessellated));
         }
 
         IEnumerable<Chunk> AllChunks
@@ -86,11 +87,6 @@ namespace GimpBlocks
                 }
                 return chunkList;
             }
-        }
-
-        void RebuildChunks(Chunk chunk)
-        {
-            RebuildChunks(new [] { chunk });
         }
 
         void RebuildChunks(IEnumerable<Chunk> chunks)
