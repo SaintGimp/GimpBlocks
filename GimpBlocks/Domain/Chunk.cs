@@ -28,23 +28,24 @@ namespace GimpBlocks
 
 
         // left-right
-        public const int XDimension = 32;
-        public const int Log2X = 5;
+        public const int XDimension = 16;
+        public const int Log2X = 4;
         public const int BitmaskX = XDimension - 1;
         
         // up-down
-        public const int YDimension = 64;
-        public const int Log2Y = 6;
+        public const int YDimension = 128;
+        public const int Log2Y = 7;
         public const int BitmaskY = YDimension - 1;
 
         // in-out (positive toward viewer)
-        public const int ZDimension = 32;
-        public const int Log2Z = 5;
+        public const int ZDimension = 16;
+        public const int Log2Z = 4;
         public const int BitmaskZ = ZDimension - 1;
 
         public ChunkPosition Position { get; private set; }
         public BlockPosition OriginInWorld { get; private set; }
-
+        readonly IEnumerable<ChunkPosition> neighborhoodPositions;
+ 
         readonly World _world;
         readonly IChunkRenderer _renderer;
         
@@ -54,6 +55,8 @@ namespace GimpBlocks
         int highestVisibleBlock = -1;
         int lowestSunlitBlock = YDimension + 1;
         int lowestInvisibleBlock = YDimension + 1;
+
+        public static int NumberOfLightPropagations = 0;
 
         public Chunk(World world, ChunkPosition position, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
@@ -65,6 +68,14 @@ namespace GimpBlocks
             _lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
 
             OriginInWorld = new BlockPosition(Position, new RelativeBlockPosition(0, 0, 0));
+            neighborhoodPositions = new[]
+            {
+                Position,
+                Position.Left,
+                Position.Right,
+                Position.Front,
+                Position.Back
+            };
         }
 
         public BlockPrototype GetBlockPrototype(RelativeBlockPosition position)
@@ -76,7 +87,7 @@ namespace GimpBlocks
         {
             _blockArray[position.X, position.Y, position.Z] = prototype;
 
-            if (!prototype.CanBeSeen && position.Y > highestVisibleBlock)
+            if (prototype.CanBeSeen && position.Y > highestVisibleBlock)
             {
                 highestVisibleBlock = position.Y;
             }
@@ -166,46 +177,54 @@ namespace GimpBlocks
 
         public void CalculateLighting()
         {
+            var calculationLimit = GetHighestVisibleBlockInNeighborhood();
             var propagator = new LightPropagator();
 
             for (int x = 0; x < XDimension; x++)
             {
-                for (int y = lowestSunlitBlock; y < YDimension; y++)
+                for (int y = lowestSunlitBlock; y <= calculationLimit; y++)
                 {
                     for (int z = 0; z < ZDimension; z++)
                     {
                         // TODO: For now we can propogate only if the light is full strength,
                         // but that won't work for light sources that are less than full strength.  Maybe have a source
                         // and destination light map so we don't have to deal with half-calculated data?
-
-                        propagator.NumberOfRecursions = 0;
-                        var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
-                        if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel && NeedsPropogation(relativeBlockPosition))
+                        if (NeedsPropogation(x, y, z))
                         {
-                            // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
-                            // think about the implications for multi-threading and race conditions.
-                            propagator.PropagateSunlightFromBlock(_world, new BlockPosition(Position, relativeBlockPosition));
+                            propagator.NumberOfRecursions = 0;
+                            var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
+                            if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel)
+                            {
+                                // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
+                                // think about the implications for multi-threading and race conditions.
+                                propagator.PropagateSunlightFromBlock(_world, new BlockPosition(Position, relativeBlockPosition));
+                                NumberOfLightPropagations++;
+                            }
                         }
                     }
                 }
             }
-
-            //Trace.WriteLine(string.Format("Number of light propogation recursions for block {1},{2},{3}: {0}", propagator.NumberOfRecursions, x, y, z));
         }
 
-        bool NeedsPropogation(RelativeBlockPosition relativeBlockPosition)
+        int GetHighestVisibleBlockInNeighborhood()
+        {
+            return neighborhoodPositions.Select(position => _world.GetChunkAt(position))
+                .Where(chunk => chunk != null)
+                .Max(chunk => chunk.highestVisibleBlock);
+        }
+
+        bool NeedsPropogation(int x, int y, int z)
         {
             // When propagating sunlight, we actually only need to do x/z layers from the highest solid
-            // block minus one down to the lowest sunlit block, plus all sunlit blocks on the outside edges regardless
-            // of y height (because they might be adjacent to an overhang on the next chunk over).
-            // Whether this test is a net win or not probably depends on the chunk size and shape
+            // block minus one down to the lowest sunlit block, plus all sunlit blocks on the outside edges up
+            // to the highest solid block of any neighbors (because they might be adjacent to an overhang on the
+            // next chunk over).
 
-            if (relativeBlockPosition.Y < highestVisibleBlock)
+            if (y < highestVisibleBlock)
             {
                 return true;
             }
-            else if (relativeBlockPosition.X == 0 || relativeBlockPosition.X == XDimension - 1 ||
-                relativeBlockPosition.Z == 0 || relativeBlockPosition.Z == ZDimension - 1)
+            else if (x == 0 || x == XDimension - 1 || z == 0 || z == ZDimension - 1)
             {
                 return true;
             }

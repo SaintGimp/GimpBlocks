@@ -33,7 +33,7 @@ namespace GimpBlocks
         readonly Func<World, int, int, Chunk> _chunkFactory;
         readonly BoundingBoxRenderer _boundingBoxRenderer;
         readonly Chunk[,] _chunks;
-        readonly int _worldSizeInChunks = 4;
+        readonly int _worldSizeInChunks = 8;
 
         Block _selectedBlock;
         BlockPosition _selectedBlockPlacePosition;
@@ -71,6 +71,7 @@ namespace GimpBlocks
             stopwatch.Stop();
             Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
             Trace.WriteLine(string.Format("World retrieved {0} blocks", NumberOfBlocksRetrieved));
+            Trace.WriteLine(string.Format("Light propagated {0} times", Chunk.NumberOfLightPropagations));
             Trace.WriteLine(string.Format("Light propagations recursed {0} times", LightPropagator.TotalNumberOfRecursions));
             Trace.WriteLine(string.Format("Tessellated {0} blocks", Tessellator.NumberOfBlocksTessellated));
         }
@@ -194,6 +195,11 @@ namespace GimpBlocks
                 return null;
             }
 
+            return GetChunkAt(chunkPosition);
+        }
+
+        public Chunk GetChunkAt(ChunkPosition chunkPosition)
+        {
             return IsLoaded(chunkPosition) ? _chunks[chunkPosition.X, chunkPosition.Z] : null;
         }
 
