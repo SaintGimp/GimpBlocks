@@ -43,23 +43,28 @@ namespace GimpBlocks
         public const int BitmaskZ = ZDimension - 1;
 
         public ChunkPosition Position { get; private set; }
+        public BlockPosition OriginInWorld { get; private set; }
 
         readonly World _world;
         readonly IChunkRenderer _renderer;
-        readonly BlockPrototypeMap _prototypeMap;
         
         readonly BlockArray _blockArray;
         readonly Array3<byte> _lightArray;
+
+        int highestVisibleBlock = -1;
+        int lowestSunlitBlock = YDimension + 1;
+        int lowestInvisibleBlock = YDimension + 1;
 
         public Chunk(World world, ChunkPosition position, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
             Position = position;
             _world = world;
             _renderer = renderer;
-            _prototypeMap = prototypeMap;
 
             _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
             _lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
+
+            OriginInWorld = new BlockPosition(Position, new RelativeBlockPosition(0, 0, 0));
         }
 
         public BlockPrototype GetBlockPrototype(RelativeBlockPosition position)
@@ -70,226 +75,22 @@ namespace GimpBlocks
         public void SetBlockPrototype(RelativeBlockPosition position, BlockPrototype prototype)
         {
             _blockArray[position.X, position.Y, position.Z] = prototype;
+
+            if (!prototype.CanBeSeen && position.Y > highestVisibleBlock)
+            {
+                highestVisibleBlock = position.Y;
+            }
+
+            if (!prototype.CanBeSeen && position.Y < lowestInvisibleBlock)
+            {
+                lowestInvisibleBlock = position.Y;
+            }
         }
 
         public void Generate()
         {
-            //GenerateRandom();
-            //GenerateSlab();
-            GenerateTerrain1();
-        }
-
-        private void GenerateCaves1()
-        {
-            var primitive = new SimplexPerlin
-            {
-                Quality = NoiseQuality.Best,
-                Seed = 1
-            };
-
-            var filter = new HeterogeneousMultiFractal()
-            {
-                Primitive3D = primitive,
-                Frequency = 1,
-                Gain = 2,
-                Lacunarity = 2,
-                OctaveCount = 1,
-                Offset = 1,
-                SpectralExponent = 0.9f
-            };
-
-            _blockArray.Initialize((x, y, z) =>
-            {
-                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
-                {
-                    float divisor = 20;
-                    float filterX = (XDimension * Position.X + x) / divisor;
-                    float filterY = y / divisor;
-                    float filterZ = (ZDimension * Position.Z + z) / divisor;
-                    return filter.GetValue(filterX, filterY, filterZ) < 1.4 ? _prototypeMap[1] : _prototypeMap[0];
-                }
-                else
-                {
-                    return _prototypeMap[0];
-                }
-            });
-        }
-
-        private void GenerateCaves2()
-        {
-            var primitive = new SimplexPerlin
-            {
-                Quality = NoiseQuality.Best,
-                Seed = 1
-            };
-
-            var filter = new HybridMultiFractal()
-            {
-                Primitive3D = primitive,
-                Frequency = 1,
-                Gain = 2,
-                Lacunarity = 2,
-                OctaveCount = 1,
-                Offset = 1,
-                SpectralExponent = 0.9f
-            };
-
-            _blockArray.Initialize((x, y, z) =>
-            {
-                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
-                {
-                    float divisor = 20;
-                    float filterX = (XDimension * Position.X + x) / divisor;
-                    float filterY = y / divisor;
-                    float filterZ = (ZDimension * Position.Z + z) / divisor;
-                    return filter.GetValue(filterX, filterY, filterZ) < 1.5 ? _prototypeMap[1] : _prototypeMap[0];
-                }
-                else
-                {
-                    return _prototypeMap[0];
-                }
-            });
-        }
-
-        private void GenerateTerrain1()
-        {
-            var primitive = new SimplexPerlin
-            {
-                Quality = NoiseQuality.Best,
-                Seed = 1
-            };
-
-            var terrainFilter = new MultiFractal
-            {
-                Primitive3D = primitive,
-                Frequency = 1,
-                Gain = 3f,
-                Lacunarity = 2,
-                OctaveCount = 4,
-                Offset = 1,
-                SpectralExponent = 0.25f
-            };
-
-            // MultiFractal output seems to vary from 0 to 3ish
-            var outputScaler = new ScaleBias
-            {
-                SourceModule = terrainFilter,
-                Scale = 2 / 3f,
-                Bias = -1f
-            };
-
-            // The terrace seems to be useful for smoothing the lower parts while still allowing
-            // for dramatic mountains
-
-            var terrace = new Terrace()
-            {
-                SourceModule = outputScaler,
-            };
-            terrace.AddControlPoint(-1f);
-            //terrace.AddControlPoint(-0.5f);
-            //terrace.AddControlPoint(0f);
-            //terrace.AddControlPoint(0.5f);
-            terrace.AddControlPoint(2f);
-            //terrace.AddControlPoint(0.7f, 0.8f);
-
-            var inputScaler = new ScalePoint
-            {
-                SourceModule = terrace,
-                XScale = 0.01f,
-                YScale = 0.01f,
-                ZScale = 0.01f
-            };
-
-            // Setting the horizontal sampe rate to 4 smoothes things a bit, 16 smoothes a lot,
-            // looking much more gentle and not very sensitive to detail in the noise.
-
-            var horizontalSampleRate = 4;
-            var verticalSampleRate = 4;
-
-            var maxNoise = float.MinValue;
-            var minNoise = float.MaxValue;
-            var densityMap = new double[_blockArray.XDimension + 1, _blockArray.YDimension + 1, _blockArray.ZDimension + 1];
-            for (int x = 0; x <= _blockArray.XDimension; x += horizontalSampleRate)
-            {
-                for (int y = 0; y <= _blockArray.YDimension; y += verticalSampleRate)
-                {
-                    for (int z = 0; z <= _blockArray.ZDimension; z += horizontalSampleRate)
-                    {
-                        float worldX = (XDimension * Position.X + x);
-                        float worldY = y;
-                        float worldZ = (ZDimension * Position.Z + z);
-                        var noise = inputScaler.GetValue(worldX, worldY, worldZ);
-
-                        if (noise > maxNoise)
-                        {
-                            maxNoise = noise;
-                        }
-                        if (noise < minNoise)
-                        {
-                            minNoise = noise;
-                        }
-
-                        // This applies a gradient to the noise based on height.
-                        // The smaller the gradient value, the longer it takes to drive
-                        // the entire fractal below zero and the more overhang/hole stuff
-                        // we get.
-                        var density = noise - (y / 10f) + 3;
-                        //var density = noise - (y / 20f) + 3;
-                        densityMap[x, y, z] = density;
-                    }
-                }
-            }
-
-            Debug.WriteLine("Max noise: {0}, min noise: {1}", maxNoise, minNoise);
-
-            _blockArray.Initialize((x, y, z) =>
-            {
-                if (!(x % horizontalSampleRate == 0 && y % verticalSampleRate == 0 && z % horizontalSampleRate == 0))
-                {
-                    int offsetX = (x / horizontalSampleRate) * horizontalSampleRate;
-                    int offsetY = (y / verticalSampleRate) * verticalSampleRate;
-                    int offsetZ = (z / horizontalSampleRate) * horizontalSampleRate;
-                    densityMap[x, y, z] = GimpMath.TriLerp(x, y, z,
-                        densityMap[offsetX, offsetY, offsetZ],
-                        densityMap[offsetX, verticalSampleRate + offsetY, offsetZ],
-                        densityMap[offsetX, offsetY, offsetZ + horizontalSampleRate],
-                        densityMap[offsetX, offsetY + verticalSampleRate, offsetZ + horizontalSampleRate],
-                        densityMap[horizontalSampleRate + offsetX, offsetY, offsetZ],
-                        densityMap[horizontalSampleRate + offsetX, offsetY + verticalSampleRate, offsetZ],
-                        densityMap[horizontalSampleRate + offsetX, offsetY, offsetZ + horizontalSampleRate],
-                        densityMap[horizontalSampleRate + offsetX, offsetY + verticalSampleRate, offsetZ + horizontalSampleRate],
-                        offsetX, horizontalSampleRate + offsetX, offsetY, verticalSampleRate + offsetY, offsetZ, offsetZ + horizontalSampleRate);
-                }
-                return densityMap[x, y, z] > 0 ? BlockPrototype.StoneBlock : BlockPrototype.AirBlock;
-            });
-        }
-
-        void GenerateSlab()
-        {
-            for (int x = 1; x < _blockArray.XDimension - 1; x++)
-            {
-                for (int z = 1; z < _blockArray.ZDimension - 1; z++)
-                {
-                    _blockArray[x, 1, z] = BlockPrototype.StoneBlock;
-                }
-            }
-        }
-
-        void GenerateRandom()
-        {
-            var random = new Random(123);
-
-            _blockArray.Initialize((x, y, z) =>
-            {
-                if (x > 0 && x < _blockArray.XDimension - 1 && y > 0 && y < _blockArray.YDimension - 1 && z > 0 && z < _blockArray.ZDimension - 1)
-                {
-                    return random.Next(4) > 0 ? BlockPrototype.StoneBlock : BlockPrototype.AirBlock;
-                }
-                else
-                {
-                    return _prototypeMap[0];
-                }
-            });
+            var generator = new TerrainGenerator();
+            generator.GenerateTerrain(this);
         }
 
         public void Tessellate()
@@ -312,18 +113,25 @@ namespace GimpBlocks
             // calcuations.  If we want to burn extra memory in order to optimize this even more aggressively,
             // we could keep track of lowest/highest for each colum in the chunk.
             var tessellator = new Tessellator(_world);
-            _blockArray.ForEach((prototype, relativeBlockPosition) =>
+            for (int x = 0; x < XDimension; x++)
             {
-                if (!prototype.CanBeSeenThrough)
+                for (int y = lowestInvisibleBlock - 1; y <= highestVisibleBlock; y++)
                 {
-                    var worldBlockPosition = new BlockPosition(Position, relativeBlockPosition);
-                    tessellator.TessellateBlock(vertexLists, indexLists, worldBlockPosition, relativeBlockPosition);
+                    for (int z = 0; z < ZDimension; z++)
+                    {
+                        var position = new RelativeBlockPosition(x, y, z);
+                        var prototype = GetBlockPrototype(position);
+                        if (prototype.CanBeSeen)
+                        {
+                            var worldBlockPosition = new BlockPosition(Position, position);
+                            tessellator.TessellateBlock(vertexLists, indexLists, worldBlockPosition, position);
+                        }
+                    }
                 }
-            });
+            }
 
-            var chunkOriginInWorld = new Vector3(XDimension * Position.X, 0, ZDimension * Position.Z);
             // TODO: is the conversion causing extra work here?
-            _renderer.Initialize(chunkOriginInWorld, vertexLists, indexLists);
+            _renderer.Initialize((Vector3)OriginInWorld, vertexLists, indexLists);
         }
 
         public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
@@ -398,6 +206,12 @@ namespace GimpBlocks
                     while (y >= 0 && _blockArray[x, y, z].CanPropagateLight)
                     {
                         _lightArray[x, y, z] = World.MaximumLightLevel;
+
+                        if (y < lowestSunlitBlock)
+                        {
+                            lowestSunlitBlock = y;
+                        }
+
                         y--;
                     }
 
@@ -412,6 +226,7 @@ namespace GimpBlocks
         }
 
         bool _disposed;
+
         public void Dispose()
         {
             if (!_disposed)

@@ -82,7 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Blocks\AirBlock.cs" />
-    <Compile Include="Domain\BlockPrototype.cs" />
+    <Compile Include="Domain\Blocks\BlockPrototype.cs" />
     <Compile Include="Domain\BlockArray.cs" />
     <Compile Include="Cameras\Camera.cs" />
     <Compile Include="Cameras\CameraController.cs" />
@@ -92,6 +92,7 @@
     <Compile Include="Domain\Blocks\VoidBlock.cs" />
     <Compile Include="Domain\BlockVolume.cs" />
     <Compile Include="Domain\Chunk.cs" />
+    <Compile Include="Domain\Generators\TerrainGenerator.cs" />
     <Compile Include="Domain\RelativeBlockPosition.cs" />
     <Compile Include="Domain\ChunkPosition.cs" />
     <Compile Include="Domain\Face.cs" />
@@ -167,6 +168,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />

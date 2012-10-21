@@ -10,6 +10,7 @@ namespace GimpBlocks
         public StoneBlock()
         {
             CanPropagateLight = false;
+            CanBeSeen = true;
             CanBeSeenThrough = false;
             CanBeSelected = true;
         }

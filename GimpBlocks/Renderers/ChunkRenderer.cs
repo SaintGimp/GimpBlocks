@@ -38,7 +38,6 @@ namespace GimpBlocks
         {
             for (int x = 0; x < 6; x++)
             {
-                // TODO: need to handle case where there are no vertices at all
                 VertexPositionColorLighting[] vertexArray = vertices[x].ToArray();
                 if (vertexArray.Length > 0)
                 {
@@ -124,12 +123,12 @@ namespace GimpBlocks
         {
             if (!_disposed)
             {
-                foreach (var buffer in _vertexBuffers)
+                foreach (var buffer in _vertexBuffers.Where(b => b != null))
                 {
                     buffer.Dispose();
                 }
 
-                foreach (var buffer in _indexBuffers)
+                foreach (var buffer in _indexBuffers.Where(b => b != null))
                 {
                     buffer.Dispose();
                 }

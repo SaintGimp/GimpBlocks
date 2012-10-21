@@ -97,6 +97,11 @@ namespace GimpBlocks
             get { return new BlockPosition(X, Y - 1, Z); }
         }
 
+        public BlockPosition Relative(int relativeX, int relativeY, int relativeZ)
+        {
+            return new BlockPosition(X + relativeX, Y + relativeY, Z + relativeZ);
+        }
+
         public static BlockPosition operator +(BlockPosition first, Vector3 second)
         {
             return new BlockPosition(first.X + (int)second.X, first.Y + (int)second.Y, first.Z + (int)second.Z);
@@ -109,6 +114,11 @@ namespace GimpBlocks
             int deltaZ = Z - otherPosition.Z;
 
             return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+        }
+
+        public static explicit operator Vector3(BlockPosition position)
+        {
+            return new Vector3(position.X, position.Y, position.Z);
         }
 
         public override string ToString()
