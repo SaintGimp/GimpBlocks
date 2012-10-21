@@ -167,26 +167,52 @@ namespace GimpBlocks
         public void CalculateLighting()
         {
             var propagator = new LightPropagator();
-            _lightArray.ForEach((lightLevel, x, y, z) =>
+
+            for (int x = 0; x < XDimension; x++)
             {
-                // TODO: For now we can propogate only if the light is full strength,
-                // but that won't work for light sources that are less than full strength.  Maybe have a source
-                // and destination light map so we don't have to deal with half-calculated data?
-
-                propagator.NumberOfRecursions = 0;
-                var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
-                if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel)
+                for (int y = lowestSunlitBlock; y < YDimension; y++)
                 {
-                    // TODO: when propagating sunlight, we actually only need to do x/z layers from the highest solid
-                    // block down to the lowest sunlit block, plus all sunlit blocks on the outside edges regardless
-                    // of y height (because they might be adjacent to an overhang on the next chunk over).
+                    for (int z = 0; z < ZDimension; z++)
+                    {
+                        // TODO: For now we can propogate only if the light is full strength,
+                        // but that won't work for light sources that are less than full strength.  Maybe have a source
+                        // and destination light map so we don't have to deal with half-calculated data?
 
-                    // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
-                    // think about the implications for multi-threading and race conditions.
-                    propagator.PropagateSunlightFromBlock(_world, new BlockPosition(Position, relativeBlockPosition));
+                        propagator.NumberOfRecursions = 0;
+                        var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
+                        if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel && NeedsPropogation(relativeBlockPosition))
+                        {
+                            // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
+                            // think about the implications for multi-threading and race conditions.
+                            propagator.PropagateSunlightFromBlock(_world, new BlockPosition(Position, relativeBlockPosition));
+                        }
+                    }
                 }
-                //Trace.WriteLine(string.Format("Number of light propogation recursions for block {1},{2},{3}: {0}", propagator.NumberOfRecursions, x, y, z));
-            });
+            }
+
+            //Trace.WriteLine(string.Format("Number of light propogation recursions for block {1},{2},{3}: {0}", propagator.NumberOfRecursions, x, y, z));
+        }
+
+        bool NeedsPropogation(RelativeBlockPosition relativeBlockPosition)
+        {
+            // When propagating sunlight, we actually only need to do x/z layers from the highest solid
+            // block minus one down to the lowest sunlit block, plus all sunlit blocks on the outside edges regardless
+            // of y height (because they might be adjacent to an overhang on the next chunk over).
+            // Whether this test is a net win or not probably depends on the chunk size and shape
+
+            if (relativeBlockPosition.Y < highestVisibleBlock)
+            {
+                return true;
+            }
+            else if (relativeBlockPosition.X == 0 || relativeBlockPosition.X == XDimension - 1 ||
+                relativeBlockPosition.Z == 0 || relativeBlockPosition.Z == ZDimension - 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         void CastSunlight()
