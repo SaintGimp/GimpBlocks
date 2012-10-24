@@ -100,7 +100,7 @@ namespace GimpBlocks
 
         public void Generate()
         {
-            var generator = new TerrainGenerator();
+            var generator = new TerrainGenerator3();
             generator.GenerateTerrain(this);
         }
 
@@ -118,15 +118,17 @@ namespace GimpBlocks
                 indexLists[x] = new List<short>();
             }
 
-            // TODO: we could save iteration by only doing a slice of the chunk bounded at the top
-            // by the highest solid block and at the bottom by the lowest non-solid block minus one. Anything
-            // above or below that isnt going to have geometry.  Could also use a variation on that for lighting
-            // calcuations.  If we want to burn extra memory in order to optimize this even more aggressively,
+            // We save iteration by only doing a slice of the chunk bounded at the top
+            // by the highest solid block and at the bottom by the lowest non-solid block in the
+            // neighborhood minus one. Anything above or below that isnt going to have geometry.
+            // TODO: If we want to burn extra memory in order to optimize this even more aggressively,
             // we could keep track of lowest/highest for each colum in the chunk.
+
+            var lowerTesselationLimit = GetLowestInvisibleBlockInNeighborhood() - 1;
             var tessellator = new Tessellator(_world);
             for (int x = 0; x < XDimension; x++)
             {
-                for (int y = lowestInvisibleBlock - 1; y <= highestVisibleBlock; y++)
+                for (int y = lowerTesselationLimit; y <= highestVisibleBlock; y++)
                 {
                     for (int z = 0; z < ZDimension; z++)
                     {
@@ -143,6 +145,14 @@ namespace GimpBlocks
 
             // TODO: is the conversion causing extra work here?
             _renderer.Initialize((Vector3)OriginInWorld, vertexLists, indexLists);
+        }
+
+        int GetLowestInvisibleBlockInNeighborhood()
+        {
+            var lowest = neighborhoodPositions.Select(position => _world.GetChunkAt(position))
+                .Where(chunk => chunk != null)
+                .Min(chunk => chunk.lowestInvisibleBlock);
+            return Math.Max(lowest, 0);
         }
 
         public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)

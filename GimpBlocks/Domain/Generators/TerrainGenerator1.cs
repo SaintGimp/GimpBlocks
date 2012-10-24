@@ -10,8 +10,10 @@ using LibNoise.Tranformer;
 
 namespace GimpBlocks
 {
-    public class TerrainGenerator
+    public class TerrainGenerator1
     {
+        // Setting the horizontal sampe rate to 4 smoothes things a bit, 16 smoothes a lot,
+        // looking much more gentle and not very sensitive to detail in the noise.
         readonly int horizontalSampleRate = 4;
         readonly int verticalSampleRate = 4;
 
@@ -70,9 +72,6 @@ namespace GimpBlocks
                 ZScale = 0.01f
             };
 
-            // Setting the horizontal sampe rate to 4 smoothes things a bit, 16 smoothes a lot,
-            // looking much more gentle and not very sensitive to detail in the noise.
-
             var densityMap = new double[Chunk.XDimension + 1,Chunk.YDimension + 1,Chunk.ZDimension + 1];
             for (int x = 0; x <= Chunk.XDimension; x += horizontalSampleRate)
             {
@@ -90,7 +89,6 @@ namespace GimpBlocks
                         // the entire fractal below zero and the more overhang/hole stuff
                         // we get.
                         var density = noise - (y / 10f) + 3;
-                        //var density = noise - (y / 20f) + 3;
                         densityMap[x, y, z] = density;
                     }
                 }

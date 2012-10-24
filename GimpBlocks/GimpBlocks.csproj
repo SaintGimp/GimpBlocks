@@ -92,7 +92,9 @@
     <Compile Include="Domain\Blocks\VoidBlock.cs" />
     <Compile Include="Domain\BlockVolume.cs" />
     <Compile Include="Domain\Chunk.cs" />
-    <Compile Include="Domain\Generators\TerrainGenerator.cs" />
+    <Compile Include="Domain\Generators\TerrainGenerator3.cs" />
+    <Compile Include="Domain\Generators\TerrainGenerator2.cs" />
+    <Compile Include="Domain\Generators\TerrainGenerator1.cs" />
     <Compile Include="Domain\RelativeBlockPosition.cs" />
     <Compile Include="Domain\ChunkPosition.cs" />
     <Compile Include="Domain\Face.cs" />
