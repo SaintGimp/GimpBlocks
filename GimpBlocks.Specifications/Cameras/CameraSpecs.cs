@@ -445,6 +445,8 @@ namespace GimpBlocks.Specifications.Cameras
         Establish context = () =>
         {
             Settings.Instance.FarClippingPlaneDistance = 50000.0f;
+            Settings.Instance.CameraStartingLocation = Vector3.Zero;
+            Settings.Instance.CameraStartingLookAt = Vector3.Forward;
             _camera = new Camera();
         };
 
