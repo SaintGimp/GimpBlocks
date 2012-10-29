@@ -165,7 +165,7 @@ namespace GimpBlocks.Specifications.Input.XnaInputStateSpecs
 
         static public KeyboardState CreateKeyboardState(Keys key)
         {
-            return new KeyboardState(key);
+            return new KeyboardState(new [] { key });
         }
     }
 }

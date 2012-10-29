@@ -47,7 +47,10 @@ namespace GimpBlocks
 
         protected override void OnActivated(object sender, EventArgs args)
         {
-            inputManager.OnActivated();
+            if (inputManager != null)
+            {
+                inputManager.OnActivated();
+            }
 
             base.OnActivated(sender, args);
         }
@@ -90,7 +93,7 @@ namespace GimpBlocks
         void InitializeMouse()
         {
             IsMouseVisible = false;
-            Mouse.WindowHandle = Window.Handle;
+            //Mouse.WindowHandle = Window.Handle;
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
         }
 

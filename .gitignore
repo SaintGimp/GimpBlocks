@@ -1,6 +1,6 @@
 packages/
-/*/obj
-/*/bin
+obj
+bin
 _ReSharper*/
 [Tt]est[Rr]esult*
 *.csproj.user

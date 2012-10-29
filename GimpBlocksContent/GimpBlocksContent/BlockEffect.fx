@@ -37,12 +37,11 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
     return input.Color * input.Lighting;
 }
 
+// TODO: set renderstates here.
 technique Technique1
 {
     pass Pass1
     {
-        // TODO: set renderstates here.
-
         VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 PixelShaderFunction();
     }
