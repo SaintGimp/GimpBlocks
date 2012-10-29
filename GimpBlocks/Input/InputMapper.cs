@@ -10,9 +10,9 @@ namespace GimpBlocks
 
     public class InputMapper
     {
-        readonly List<KeyEvent> _keyPressEvents = new List<KeyEvent>();
-        readonly List<KeyEvent> _keyDownEvents = new List<KeyEvent>();
-        readonly List<InputEvent> _generalInputEvents = new List<InputEvent>();
+        readonly List<KeyEvent> keyPressEvents = new List<KeyEvent>();
+        readonly List<KeyEvent> keyDownEvents = new List<KeyEvent>();
+        readonly List<InputEvent> generalInputEvents = new List<InputEvent>();
 
         public void HandleInput(IInputState inputState)
         {
@@ -23,7 +23,7 @@ namespace GimpBlocks
 
         private void SendKeyPressMessages(IInputState inputState)
         {
-            foreach (var keyEvent in _keyPressEvents.Where(keyEvent => inputState.IsKeyPressed(keyEvent.Key)))
+            foreach (var keyEvent in keyPressEvents.Where(keyEvent => inputState.IsKeyPressed(keyEvent.Key)))
             {
                 keyEvent.Send(inputState);
             }
@@ -31,7 +31,7 @@ namespace GimpBlocks
 
         private void SendKeyDownMessages(IInputState inputState)
         {
-            foreach (var keyEvent in _keyDownEvents.Where(keyEvent => inputState.IsKeyDown(keyEvent.Key)))
+            foreach (var keyEvent in keyDownEvents.Where(keyEvent => inputState.IsKeyDown(keyEvent.Key)))
             {
                 keyEvent.Send(inputState);
             }
@@ -39,7 +39,7 @@ namespace GimpBlocks
 
         private void SendGeneralInputMessages(IInputState inputState)
         {
-            foreach (var inputEvent in _generalInputEvents.Where(inputEvent => inputEvent.Filter(inputState)))
+            foreach (var inputEvent in generalInputEvents.Where(inputEvent => inputEvent.Filter(inputState)))
             {
                 inputEvent.Send(inputState);
             }
@@ -50,17 +50,17 @@ namespace GimpBlocks
 
         public void AddKeyPressMessage<T>(Keys key) where T : InputMessage, new()
         {
-            _keyPressEvents.Add(new KeyEvent { Key = key, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x}) });
+            keyPressEvents.Add(new KeyEvent { Key = key, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x}) });
         }
 
         public void AddKeyDownMessage<T>(Keys key) where T : InputMessage, new()
         {
-            _keyDownEvents.Add(new KeyEvent { Key = key, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x }) });
+            keyDownEvents.Add(new KeyEvent { Key = key, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x }) });
         }
 
         public void AddGeneralInputMessage<T>(Func<IInputState, bool> filter) where T : InputMessage, new()
         {
-            _generalInputEvents.Add(new InputEvent { Filter = filter, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x }) });
+            generalInputEvents.Add(new InputEvent { Filter = filter, Send = x => EventAggregator.Instance.SendMessage(new T { InputState = x }) });
         }
 
         private class KeyEvent

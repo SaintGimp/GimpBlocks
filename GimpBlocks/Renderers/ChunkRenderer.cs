@@ -15,21 +15,21 @@ namespace GimpBlocks
 
     public class ChunkRenderer : IChunkRenderer, IDisposable
     {
-        readonly GraphicsDevice _graphicsDevice;
-        readonly Effect _effect;
-        readonly VertexBuffer[] _vertexBuffers = new VertexBuffer[6];
-        readonly IndexBuffer[] _indexBuffers = new IndexBuffer[6];
-        Vector3 _worldLocation;
+        readonly GraphicsDevice graphicsDevice;
+        readonly Effect effect;
+        readonly VertexBuffer[] vertexBuffers = new VertexBuffer[6];
+        readonly IndexBuffer[] indexBuffers = new IndexBuffer[6];
+        Vector3 worldLocation;
 
         public ChunkRenderer(GraphicsDevice graphicsDevice, Effect effect)
         {
-            _graphicsDevice = graphicsDevice;
-            _effect = effect;
+            this.graphicsDevice = graphicsDevice;
+            this.effect = effect;
         }
 
         public void Initialize(Vector3 worldLocation, IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices)
         {
-            _worldLocation = worldLocation;
+            this.worldLocation = worldLocation;
             CreateVertexBuffers(vertices);
             CreateIndexBuffers(indices);
         }
@@ -41,9 +41,9 @@ namespace GimpBlocks
                 VertexPositionColorLighting[] vertexArray = vertices[x].ToArray();
                 if (vertexArray.Length > 0)
                 {
-                    _vertexBuffers[x] = new VertexBuffer(_graphicsDevice, typeof(VertexPositionColorLighting), vertexArray.Length,
+                    vertexBuffers[x] = new VertexBuffer(graphicsDevice, typeof(VertexPositionColorLighting), vertexArray.Length,
                         BufferUsage.WriteOnly);
-                    _vertexBuffers[x].SetData(vertexArray);
+                    vertexBuffers[x].SetData(vertexArray);
                 }
             }
         }
@@ -55,18 +55,18 @@ namespace GimpBlocks
                 short[] indexArray = indices[x].ToArray();
                 if (indexArray.Length > 0)
                 {
-                    _indexBuffers[x] = new IndexBuffer(_graphicsDevice, IndexElementSize.SixteenBits, indexArray.Length,
+                    indexBuffers[x] = new IndexBuffer(graphicsDevice, IndexElementSize.SixteenBits, indexArray.Length,
                         BufferUsage.WriteOnly);
-                    _indexBuffers[x].SetData(indexArray);
+                    indexBuffers[x].SetData(indexArray);
                 }
             }
         }
 
         public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
-            _effect.Parameters["View"].SetValue(originBasedViewMatrix);
-            _effect.Parameters["Projection"].SetValue(projectionMatrix);
-            _effect.Parameters["World"].SetValue(GetWorldMatrix(cameraLocation));
+            effect.Parameters["View"].SetValue(originBasedViewMatrix);
+            effect.Parameters["Projection"].SetValue(projectionMatrix);
+            effect.Parameters["World"].SetValue(GetWorldMatrix(cameraLocation));
 
             SetFillMode();
 
@@ -81,16 +81,16 @@ namespace GimpBlocks
 
             for (int x = 0; x < 6; x++)
             {
-                if (_vertexBuffers[x] != null && _indexBuffers[x] != null)
+                if (vertexBuffers[x] != null && indexBuffers[x] != null)
                 {
-                    foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+                    foreach (EffectPass pass in effect.CurrentTechnique.Passes)
                     {
                         pass.Apply();
 
-                        _graphicsDevice.Indices = _indexBuffers[x];
-                        _graphicsDevice.SetVertexBuffer(_vertexBuffers[x]);
-                        _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, _vertexBuffers[x].VertexCount, 0,
-                            _indexBuffers[x].IndexCount / 3);
+                        graphicsDevice.Indices = indexBuffers[x];
+                        graphicsDevice.SetVertexBuffer(vertexBuffers[x]);
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, vertexBuffers[x].VertexCount, 0,
+                            indexBuffers[x].IndexCount / 3);
                     }
                 }
             }
@@ -98,7 +98,7 @@ namespace GimpBlocks
 
         Matrix GetWorldMatrix(Vector3 cameraLocation)
         {
-            var locationRelativeToCamera = _worldLocation - cameraLocation;
+            var locationRelativeToCamera = worldLocation - cameraLocation;
 
             Matrix scaleMatrix = Matrix.Identity;
             Matrix translationMatrix = Matrix.CreateTranslation(locationRelativeToCamera);
@@ -108,32 +108,32 @@ namespace GimpBlocks
 
         void SetFillMode()
         {
-            if (Settings.Instance.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.WireFrame)
+            if (Settings.Instance.ShouldDrawWireframe && graphicsDevice.RasterizerState.FillMode != FillMode.WireFrame)
             {
-                _graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
+                graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.WireFrame };
             }
-            else if (!Settings.Instance.ShouldDrawWireframe && _graphicsDevice.RasterizerState.FillMode != FillMode.Solid)
+            else if (!Settings.Instance.ShouldDrawWireframe && graphicsDevice.RasterizerState.FillMode != FillMode.Solid)
             {
-                _graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.Solid };
+                graphicsDevice.RasterizerState = new RasterizerState() { FillMode = FillMode.Solid };
             }
         }
 
-        bool _disposed;
+        bool disposed;
         public void Dispose()
         {
-            if (!_disposed)
+            if (!disposed)
             {
-                foreach (var buffer in _vertexBuffers.Where(b => b != null))
+                foreach (var buffer in vertexBuffers.Where(b => b != null))
                 {
                     buffer.Dispose();
                 }
 
-                foreach (var buffer in _indexBuffers.Where(b => b != null))
+                foreach (var buffer in indexBuffers.Where(b => b != null))
                 {
                     buffer.Dispose();
                 }
 
-                _disposed = true;
+                disposed = true;
             }
         }
     }

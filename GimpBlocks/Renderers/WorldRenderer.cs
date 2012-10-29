@@ -14,22 +14,22 @@ namespace GimpBlocks
 
     public class WorldRenderer : IWorldRenderer
     {
-        readonly GraphicsDevice _graphicsDevice;
-        readonly Effect _effect;
+        readonly GraphicsDevice graphicsDevice;
+        readonly Effect effect;
 
         public WorldRenderer(GraphicsDevice graphicsDevice, Effect effect)
         {
-            _graphicsDevice = graphicsDevice;
-            _effect = effect;
+            this.graphicsDevice = graphicsDevice;
+            this.effect = effect;
         }
 
         public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
-            _effect.Parameters["View"].SetValue(originBasedViewMatrix);
-            _effect.Parameters["Projection"].SetValue(projectionMatrix);
-            _effect.Parameters["World"].SetValue(GetWorldMatrix(cameraLocation));
+            effect.Parameters["View"].SetValue(originBasedViewMatrix);
+            effect.Parameters["Projection"].SetValue(projectionMatrix);
+            effect.Parameters["World"].SetValue(GetWorldMatrix(cameraLocation));
 
-            foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
             }

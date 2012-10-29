@@ -13,99 +13,99 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
     public class when_the_camera_should_move_forward : ControllingTheCameraContext
     {
         Because of = () =>
-            _controller.Handle(new MoveForward { InputState = _input });
+            controller.Handle(new MoveForward { InputState = input });
 
         It should_move_the_camera_forward_the_correct_distance = () =>
-            _camera.Received().MoveForwardHorizontally(_expectedDistance);
+            camera.Received().MoveForwardHorizontally(expectedDistance);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_move_backward : ControllingTheCameraContext
     {
         Because of = () =>
-            _controller.Handle(new MoveBackward { InputState = _input });
+            controller.Handle(new MoveBackward { InputState = input });
 
         It should_move_the_camera_backward_the_correct_distance = () =>
-            _camera.Received().MoveBackwardHorizontally(_expectedDistance);
+            camera.Received().MoveBackwardHorizontally(expectedDistance);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_move_left : ControllingTheCameraContext
     {
         Because of = () =>
-            _controller.Handle(new MoveLeft { InputState = _input });
+            controller.Handle(new MoveLeft { InputState = input });
 
         It should_move_the_camera_left_the_correct_distance = () =>
-            _camera.Received().MoveLeft(_expectedDistance);
+            camera.Received().MoveLeft(expectedDistance);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_move_right : ControllingTheCameraContext
     {
         Because of = () =>
-            _controller.Handle(new MoveRight() { InputState = _input });
+            controller.Handle(new MoveRight() { InputState = input });
 
         It should_move_the_camera_right_the_correct_distance = () =>
-            _camera.Received().MoveRight(_expectedDistance);
+            camera.Received().MoveRight(expectedDistance);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_move_up : ControllingTheCameraContext
     {
         Because of = () =>
-            _controller.Handle(new MoveUp { InputState = _input });
+            controller.Handle(new MoveUp { InputState = input });
 
         It should_move_the_camera_up_the_correct_distance = () =>
-            _camera.Received().MoveUp(_expectedDistance);
+            camera.Received().MoveUp(expectedDistance);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_move_down : ControllingTheCameraContext
     {
         Because of = () =>
-            _controller.Handle(new MoveDown { InputState = _input });
+            controller.Handle(new MoveDown { InputState = input });
 
         It should_move_the_camera_down_the_correct_distance = () =>
-            _camera.Received().MoveDown(_expectedDistance);
+            camera.Received().MoveDown(expectedDistance);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_look_around : ControllingTheCameraContext
     {
         Because of = () =>
-            _controller.Handle(new MouseLook { InputState = _input });
+            controller.Handle(new MouseLook { InputState = input });
 
         It should_pitch_the_camera = () =>
-            _camera.Received().ChangePitch(_expectedPitch);
+            camera.Received().ChangePitch(expectedPitch);
 
         It should_yaw_the_camera = () =>
-        _camera.Received().ChangeYaw(_expectedYaw);
+        camera.Received().ChangeYaw(expectedYaw);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_zoom_in : ControllingTheCameraContext
     {
         Establish context = () =>
-            _camera.ZoomLevel = 3f;
+            camera.ZoomLevel = 3f;
 
         Because of = () =>
-            _controller.Handle(new ZoomIn());
+            controller.Handle(new ZoomIn());
 
         It should_increase_the_zoom_level_of_the_camera = () =>
-            _camera.ZoomLevel.ShouldBeGreaterThan(3f);
+            camera.ZoomLevel.ShouldBeGreaterThan(3f);
     }
 
     [Subject("Controlling the camera")]
     public class when_the_camera_should_zoom_out : ControllingTheCameraContext
     {
         Establish context = () =>
-            _camera.ZoomLevel = 3f;
+            camera.ZoomLevel = 3f;
 
         Because of = () =>
-            _controller.Handle(new ZoomOut());
+            controller.Handle(new ZoomOut());
 
         It should_decrease_the_zoom_level_of_the_camera = () =>
-            _camera.ZoomLevel.ShouldBeLessThan(3f);
+            camera.ZoomLevel.ShouldBeLessThan(3f);
     }
 
     [Subject("Controlling the camera")]
@@ -115,10 +115,10 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
             Settings.Instance.Handle(new IncreaseCameraSpeed());
 
         Because of = () =>
-            _controller.Handle(new MoveForward { InputState = _input });
+            controller.Handle(new MoveForward { InputState = input });
 
         It should_move_the_camera_more_quickly = () =>
-            _camera.Received().MoveForwardHorizontally(_expectedDistance * 2);
+            camera.Received().MoveForwardHorizontally(expectedDistance * 2);
     }
 
     [Subject("Controlling the camera")]
@@ -128,39 +128,39 @@ namespace GimpBlocks.Specifications.Cameras.ControllingTheCamera
             Settings.Instance.Handle(new DecreaseCameraSpeed());
 
         Because of = () =>
-            _controller.Handle(new MoveForward { InputState = _input });
+            controller.Handle(new MoveForward { InputState = input });
 
         It should_move_the_camera_more_quickly = () =>
-            _camera.Received().MoveForwardHorizontally(_expectedDistance / 2);
+            camera.Received().MoveForwardHorizontally(expectedDistance / 2);
     }
 
     public class ControllingTheCameraContext
     {
-        public static ICamera _camera;
+        public static ICamera camera;
 
-        public static IInputState _input;
-        public static float _expectedDistance;
-        public static float _expectedPitch;
-        public static float _expectedYaw;
-        public static CameraController _controller;
+        public static IInputState input;
+        public static float expectedDistance;
+        public static float expectedPitch;
+        public static float expectedYaw;
+        public static CameraController controller;
 
         Establish context = () =>
         {
-            _camera = Substitute.For<ICamera>();
+            camera = Substitute.For<ICamera>();
 
             Settings.Instance.CameraMoveSpeedPerSecond = 10;
             Settings.Instance.CameraMouseLookDamping = 300f;
 
-            _input = Substitute.For<IInputState>();
-            _input.ElapsedTime.Returns(new TimeSpan(0, 0, 0, 0, 500));
-            _input.MouseDeltaX.Returns(100);
-            _input.MouseDeltaY.Returns(150);
+            input = Substitute.For<IInputState>();
+            input.ElapsedTime.Returns(new TimeSpan(0, 0, 0, 0, 500));
+            input.MouseDeltaX.Returns(100);
+            input.MouseDeltaY.Returns(150);
 
-            _expectedDistance = 10 / 2;
-            _expectedYaw = -100 / 300.0f;
-            _expectedPitch = -150 / 300.0f;
+            expectedDistance = 10 / 2;
+            expectedYaw = -100 / 300.0f;
+            expectedPitch = -150 / 300.0f;
 
-            _controller = new CameraController(_camera);
+            controller = new CameraController(camera);
         };
     }
 }

@@ -14,21 +14,21 @@ namespace GimpBlocks
 
     public class BoundingBoxRenderer : IBoundingBoxRenderer
     {
-        readonly GraphicsDevice _graphicsDevice;
-        readonly BasicEffect _effect;
-        readonly short[] _indices;
+        readonly GraphicsDevice graphicsDevice;
+        readonly BasicEffect effect;
+        readonly short[] indices;
 
         public BoundingBoxRenderer(GraphicsDevice graphicsDevice)
         {
-            _graphicsDevice = graphicsDevice;
-            _effect = new BasicEffect(_graphicsDevice);
-            _effect.VertexColorEnabled = true;
-            _effect.TextureEnabled = false;
-            _effect.LightingEnabled = false;
-            _effect.DiffuseColor = Vector3.One;
-            _effect.Alpha = 1f;
+            this.graphicsDevice = graphicsDevice;
+            effect = new BasicEffect(this.graphicsDevice);
+            effect.VertexColorEnabled = true;
+            effect.TextureEnabled = false;
+            effect.LightingEnabled = false;
+            effect.DiffuseColor = Vector3.One;
+            effect.Alpha = 1f;
 
-            _indices = new short[]
+            indices = new short[]
             {
                 0, 1,
                 1, 2,
@@ -47,17 +47,17 @@ namespace GimpBlocks
 
         public void Draw(BoundingBox boundingBox, Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
-            _effect.View = originBasedViewMatrix;
-            _effect.Projection = projectionMatrix;
-            _effect.World = GetWorldMatrix(Vector3.Zero, cameraLocation);
+            effect.View = originBasedViewMatrix;
+            effect.Projection = projectionMatrix;
+            effect.World = GetWorldMatrix(Vector3.Zero, cameraLocation);
 
             var vertices = CreateVertices(boundingBox);
 
-            foreach (EffectPass pass in _effect.CurrentTechnique.Passes)
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
 
-                _graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, vertices, 0, 8, _indices, 0, _indices.Length / 2);
+                graphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.LineList, vertices, 0, 8, indices, 0, indices.Length / 2);
             }
         }
 

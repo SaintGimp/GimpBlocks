@@ -7,8 +7,8 @@ namespace GimpBlocks
 {
     public class EventAggregator
     {
-        readonly object _lockObject = new object();
-        readonly List<WeakReference> _listeners = new List<WeakReference>();
+        readonly object lockObject = new object();
+        readonly List<WeakReference> listeners = new List<WeakReference>();
 
         static EventAggregator()
         {
@@ -20,7 +20,7 @@ namespace GimpBlocks
         public void SendMessage<T>(T message)
         {
             IEnumerable<IListener<T>> recipients;
-            lock (_lockObject)
+            lock (lockObject)
             {
                 recipients = FindEligibleListeners<T>();
             }
@@ -39,7 +39,7 @@ namespace GimpBlocks
         private IEnumerable<IListener<T>> FindEligibleListeners<T>()
         {
             var eligibleListeners = new List<IListener<T>>();
-            foreach (var weakReference in _listeners)
+            foreach (var weakReference in listeners)
             {
                 // We need to create a strong reference before testing aliveness
                 // so that the GC doesn't yank it out from under us.  Don't convert
@@ -57,25 +57,25 @@ namespace GimpBlocks
 
         public void AddListener(object listener)
         {
-            lock (_lockObject)
+            lock (lockObject)
             {
                 PruneDeadReferences();
 
                 if (!IsRegistered(listener))
                 {
-                    _listeners.Add(new WeakReference((listener)));
+                    listeners.Add(new WeakReference((listener)));
                 }
             }
         }
 
         protected bool IsRegistered(object listener)
         {
-            return _listeners.Exists(x => x.Target == listener);
+            return listeners.Exists(x => x.Target == listener);
         }
 
         private void PruneDeadReferences()
         {
-            _listeners.RemoveAll(x => x.Target == null);
+            listeners.RemoveAll(x => x.Target == null);
         }
     }
 }

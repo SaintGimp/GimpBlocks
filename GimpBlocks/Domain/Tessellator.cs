@@ -8,7 +8,7 @@ namespace GimpBlocks
 {
     public class Tessellator
     {
-        readonly World _world;
+        readonly World world;
 
         Block leftBlock;
         Block leftUpBlock;
@@ -74,7 +74,7 @@ namespace GimpBlocks
 
         public Tessellator(World world)
         {
-            _world = world;
+            this.world = world;
         }
 
         public void TessellateBlock(List<VertexPositionColorLighting>[] vertexLists, List<short>[] indexLists, BlockPosition worldBlockPosition, RelativeBlockPosition relativeBlockPosition)
@@ -105,17 +105,17 @@ namespace GimpBlocks
             // TODO: We can save a little time by getting the world
             // positions by relative arithmetic rather than direction chains.
 
-            upBlock = _world.GetBlockAt(worldBlockPosition.Up);
+            upBlock = world.GetBlockAt(worldBlockPosition.Up);
             if (upBlock.CanBeSeenThrough)
             {
-                upFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Front);
-                upBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Back);
-                upLeftFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Left.Front);
-                upLeftBlock = _world.GetBlockAt(worldBlockPosition.Up.Left);
-                upLeftBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Left.Back);
-                upRightFrontBlock = _world.GetBlockAt(worldBlockPosition.Up.Right.Front);
-                upRightBlock = _world.GetBlockAt(worldBlockPosition.Up.Right);
-                upRightBackBlock = _world.GetBlockAt(worldBlockPosition.Up.Right.Back);
+                upFrontBlock = world.GetBlockAt(worldBlockPosition.Up.Front);
+                upBackBlock = world.GetBlockAt(worldBlockPosition.Up.Back);
+                upLeftFrontBlock = world.GetBlockAt(worldBlockPosition.Up.Left.Front);
+                upLeftBlock = world.GetBlockAt(worldBlockPosition.Up.Left);
+                upLeftBackBlock = world.GetBlockAt(worldBlockPosition.Up.Left.Back);
+                upRightFrontBlock = world.GetBlockAt(worldBlockPosition.Up.Right.Front);
+                upRightBlock = world.GetBlockAt(worldBlockPosition.Up.Right);
+                upRightBackBlock = world.GetBlockAt(worldBlockPosition.Up.Right.Back);
             }
             else
             {
@@ -129,17 +129,17 @@ namespace GimpBlocks
                 upLeftFrontBlock = null;
             }
 
-            leftBlock = _world.GetBlockAt(worldBlockPosition.Left);
+            leftBlock = world.GetBlockAt(worldBlockPosition.Left);
             if (leftBlock.CanBeSeenThrough)
             {
-                leftFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Front);
-                leftBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Back);
-                leftUpFrontBlock = upLeftFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Left.Up.Front);
-                leftUpBlock = upLeftBlock ?? _world.GetBlockAt(worldBlockPosition.Left.Up);
-                leftUpBackBlock = upLeftBackBlock ?? _world.GetBlockAt(worldBlockPosition.Left.Up.Back);
-                leftDownFrontBlock = _world.GetBlockAt(worldBlockPosition.Left.Down.Front);
-                leftDownBlock = _world.GetBlockAt(worldBlockPosition.Left.Down);
-                leftDownBackBlock = _world.GetBlockAt(worldBlockPosition.Left.Down.Back);
+                leftFrontBlock = world.GetBlockAt(worldBlockPosition.Left.Front);
+                leftBackBlock = world.GetBlockAt(worldBlockPosition.Left.Back);
+                leftUpFrontBlock = upLeftFrontBlock ?? world.GetBlockAt(worldBlockPosition.Left.Up.Front);
+                leftUpBlock = upLeftBlock ?? world.GetBlockAt(worldBlockPosition.Left.Up);
+                leftUpBackBlock = upLeftBackBlock ?? world.GetBlockAt(worldBlockPosition.Left.Up.Back);
+                leftDownFrontBlock = world.GetBlockAt(worldBlockPosition.Left.Down.Front);
+                leftDownBlock = world.GetBlockAt(worldBlockPosition.Left.Down);
+                leftDownBackBlock = world.GetBlockAt(worldBlockPosition.Left.Down.Back);
             }
             else
             {
@@ -153,17 +153,17 @@ namespace GimpBlocks
                 leftDownBackBlock = null;
             }
 
-            rightBlock = _world.GetBlockAt(worldBlockPosition.Right);
+            rightBlock = world.GetBlockAt(worldBlockPosition.Right);
             if (rightBlock.CanBeSeenThrough)
             {
-                rightFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Front);
-                rightBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Back);
-                rightUpFrontBlock = upRightFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Right.Up.Front);
-                rightUpBlock = upRightBlock ?? _world.GetBlockAt(worldBlockPosition.Right.Up);
-                rightUpBackBlock = upRightBackBlock ?? _world.GetBlockAt(worldBlockPosition.Right.Up.Back);
-                rightDownFrontBlock = _world.GetBlockAt(worldBlockPosition.Right.Down.Front);
-                rightDownBlock = _world.GetBlockAt(worldBlockPosition.Right.Down);
-                rightDownBackBlock = _world.GetBlockAt(worldBlockPosition.Right.Down.Back);
+                rightFrontBlock = world.GetBlockAt(worldBlockPosition.Right.Front);
+                rightBackBlock = world.GetBlockAt(worldBlockPosition.Right.Back);
+                rightUpFrontBlock = upRightFrontBlock ?? world.GetBlockAt(worldBlockPosition.Right.Up.Front);
+                rightUpBlock = upRightBlock ?? world.GetBlockAt(worldBlockPosition.Right.Up);
+                rightUpBackBlock = upRightBackBlock ?? world.GetBlockAt(worldBlockPosition.Right.Up.Back);
+                rightDownFrontBlock = world.GetBlockAt(worldBlockPosition.Right.Down.Front);
+                rightDownBlock = world.GetBlockAt(worldBlockPosition.Right.Down);
+                rightDownBackBlock = world.GetBlockAt(worldBlockPosition.Right.Down.Back);
             }
             else
             {
@@ -177,17 +177,17 @@ namespace GimpBlocks
                 rightDownFrontBlock = null;
             }
 
-            backBlock = _world.GetBlockAt(worldBlockPosition.Back);
+            backBlock = world.GetBlockAt(worldBlockPosition.Back);
             if (backBlock.CanBeSeenThrough)
             {
-                backLeftBlock = leftBackBlock ?? _world.GetBlockAt(worldBlockPosition.Back.Left);
-                backRightBlock = rightBackBlock ?? _world.GetBlockAt(worldBlockPosition.Back.Right);
-                backUpLeftBlock = upLeftBackBlock ?? leftUpBackBlock ?? _world.GetBlockAt(worldBlockPosition.Back.Up.Left);
-                backUpBlock = upBackBlock ?? _world.GetBlockAt(worldBlockPosition.Back.Up);
-                backUpRightBlock = upRightBackBlock ?? rightUpBackBlock ?? _world.GetBlockAt(worldBlockPosition.Back.Up.Right);
-                backDownLeftBlock = leftDownBackBlock ?? _world.GetBlockAt(worldBlockPosition.Back.Down.Left);
-                backDownBlock = _world.GetBlockAt(worldBlockPosition.Back.Down);
-                backDownRightBlock = rightDownBackBlock ?? _world.GetBlockAt(worldBlockPosition.Back.Down.Right);
+                backLeftBlock = leftBackBlock ?? world.GetBlockAt(worldBlockPosition.Back.Left);
+                backRightBlock = rightBackBlock ?? world.GetBlockAt(worldBlockPosition.Back.Right);
+                backUpLeftBlock = upLeftBackBlock ?? leftUpBackBlock ?? world.GetBlockAt(worldBlockPosition.Back.Up.Left);
+                backUpBlock = upBackBlock ?? world.GetBlockAt(worldBlockPosition.Back.Up);
+                backUpRightBlock = upRightBackBlock ?? rightUpBackBlock ?? world.GetBlockAt(worldBlockPosition.Back.Up.Right);
+                backDownLeftBlock = leftDownBackBlock ?? world.GetBlockAt(worldBlockPosition.Back.Down.Left);
+                backDownBlock = world.GetBlockAt(worldBlockPosition.Back.Down);
+                backDownRightBlock = rightDownBackBlock ?? world.GetBlockAt(worldBlockPosition.Back.Down.Right);
             }
             else
             {
@@ -201,17 +201,17 @@ namespace GimpBlocks
                 backDownRightBlock = null;
             }
 
-            frontBlock = _world.GetBlockAt(worldBlockPosition.Front);
+            frontBlock = world.GetBlockAt(worldBlockPosition.Front);
             if (frontBlock.CanBeSeenThrough)
             {
-                frontLeftBlock = leftFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Front.Left);
-                frontRightBlock = rightFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Front.Right);
-                frontUpLeftBlock = upLeftFrontBlock ?? leftUpFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Front.Up.Left);
-                frontUpBlock = upFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Front.Up);
-                frontUpRightBlock = upRightFrontBlock ?? rightUpFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Front.Up.Right);
-                frontDownLeftBlock = leftDownFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Front.Down.Left);
-                frontDownBlock = _world.GetBlockAt(worldBlockPosition.Front.Down);
-                frontDownRightBlock = rightDownFrontBlock ?? _world.GetBlockAt(worldBlockPosition.Front.Down.Right);
+                frontLeftBlock = leftFrontBlock ?? world.GetBlockAt(worldBlockPosition.Front.Left);
+                frontRightBlock = rightFrontBlock ?? world.GetBlockAt(worldBlockPosition.Front.Right);
+                frontUpLeftBlock = upLeftFrontBlock ?? leftUpFrontBlock ?? world.GetBlockAt(worldBlockPosition.Front.Up.Left);
+                frontUpBlock = upFrontBlock ?? world.GetBlockAt(worldBlockPosition.Front.Up);
+                frontUpRightBlock = upRightFrontBlock ?? rightUpFrontBlock ?? world.GetBlockAt(worldBlockPosition.Front.Up.Right);
+                frontDownLeftBlock = leftDownFrontBlock ?? world.GetBlockAt(worldBlockPosition.Front.Down.Left);
+                frontDownBlock = world.GetBlockAt(worldBlockPosition.Front.Down);
+                frontDownRightBlock = rightDownFrontBlock ?? world.GetBlockAt(worldBlockPosition.Front.Down.Right);
             }
             else
             {
@@ -225,17 +225,17 @@ namespace GimpBlocks
                 frontDownLeftBlock = null;
             }
 
-            downBlock = _world.GetBlockAt(worldBlockPosition.Down);
+            downBlock = world.GetBlockAt(worldBlockPosition.Down);
             if (downBlock.CanBeSeenThrough)
             {
-                downFrontBlock = frontDownBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Front);
-                downBackBlock = backDownBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Back);
-                downLeftFrontBlock = leftDownFrontBlock ?? frontDownLeftBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Left.Front);
-                downLeftBlock = leftDownBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Left);
-                downLeftBackBlock = leftDownBackBlock ?? backDownLeftBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Left.Back);
-                downRightFrontBlock = rightDownFrontBlock ?? frontDownRightBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Right.Front);
-                downRightBlock = rightDownBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Right);
-                downRightBackBlock = rightDownBackBlock ?? backDownRightBlock ?? _world.GetBlockAt(worldBlockPosition.Down.Right.Back);
+                downFrontBlock = frontDownBlock ?? world.GetBlockAt(worldBlockPosition.Down.Front);
+                downBackBlock = backDownBlock ?? world.GetBlockAt(worldBlockPosition.Down.Back);
+                downLeftFrontBlock = leftDownFrontBlock ?? frontDownLeftBlock ?? world.GetBlockAt(worldBlockPosition.Down.Left.Front);
+                downLeftBlock = leftDownBlock ?? world.GetBlockAt(worldBlockPosition.Down.Left);
+                downLeftBackBlock = leftDownBackBlock ?? backDownLeftBlock ?? world.GetBlockAt(worldBlockPosition.Down.Left.Back);
+                downRightFrontBlock = rightDownFrontBlock ?? frontDownRightBlock ?? world.GetBlockAt(worldBlockPosition.Down.Right.Front);
+                downRightBlock = rightDownBlock ?? world.GetBlockAt(worldBlockPosition.Down.Right);
+                downRightBackBlock = rightDownBackBlock ?? backDownRightBlock ?? world.GetBlockAt(worldBlockPosition.Down.Right.Back);
             }
             // Don't need to null these out because they're not used anywhere else
         }

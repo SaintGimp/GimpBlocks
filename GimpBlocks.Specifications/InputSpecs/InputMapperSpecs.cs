@@ -15,18 +15,18 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
-            _input.IsKeyPressed(Keys.K).Returns(true);
+            inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
+            input.IsKeyPressed(Keys.K).Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_send_a_keypress_message = () =>
-            _eventListener.ShouldReceive<DoSomething>();
+            eventListener.ShouldReceive<DoSomething>();
 
         It should_send_a_message_containing_the_current_input_state = () =>
-            _eventListener.Message<DoSomething>().InputState.ShouldEqual(_input);
+            eventListener.Message<DoSomething>().InputState.ShouldEqual(input);
     }
 
     [Subject(typeof(InputMapper))]
@@ -34,19 +34,19 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
-            _inputMapper.AddKeyPressMessage<DoSomethingElse>(Keys.K);
-            _input.IsKeyPressed(Keys.K).Returns(true);
+            inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
+            inputMapper.AddKeyPressMessage<DoSomethingElse>(Keys.K);
+            input.IsKeyPressed(Keys.K).Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_send_the_first_keypress_message = () =>
-            _eventListener.ShouldReceive<DoSomething>();
+            eventListener.ShouldReceive<DoSomething>();
 
         It should_send_the_second_keypress_message = () =>
-            _eventListener.ShouldReceive<DoSomethingElse>();
+            eventListener.ShouldReceive<DoSomethingElse>();
     }
 
     [Subject(typeof(InputMapper))]
@@ -54,28 +54,28 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
-            _input.IsKeyPressed(Keys.J).Returns(true);
+            inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
+            input.IsKeyPressed(Keys.J).Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_not_send_a_keypress_message = () =>
-            _eventListener.ShouldNotReceive<DoSomething>();
+            eventListener.ShouldNotReceive<DoSomething>();
     }
 
     [Subject(typeof(InputMapper))]
     public class when_no_keys_are_pressed : InputMapperContext
     {
         Establish context = () =>
-            _inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
+            inputMapper.AddKeyPressMessage<DoSomething>(Keys.K);
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_not_send_a_keypress_message = () =>
-            _eventListener.ShouldNotReceive<DoSomething>();
+            eventListener.ShouldNotReceive<DoSomething>();
     }
 
     [Subject(typeof(InputMapper))]
@@ -83,18 +83,18 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddKeyDownMessage<DoSomething>(Keys.K);
-            _input.IsKeyDown(Keys.K).Returns(true);
+            inputMapper.AddKeyDownMessage<DoSomething>(Keys.K);
+            input.IsKeyDown(Keys.K).Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_send_a_keydown_message = () =>
-            _eventListener.ShouldReceive<DoSomething>();
+            eventListener.ShouldReceive<DoSomething>();
 
         It should_send_a_message_containing_the_current_input_state = () =>
-            _eventListener.Message<DoSomething>().InputState.ShouldEqual(_input);
+            eventListener.Message<DoSomething>().InputState.ShouldEqual(input);
     }
 
     [Subject(typeof(InputMapper))]
@@ -102,19 +102,19 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddKeyDownMessage<DoSomething>(Keys.K);
-            _inputMapper.AddKeyDownMessage<DoSomethingElse>(Keys.K);
-            _input.IsKeyDown(Keys.K).Returns(true);
+            inputMapper.AddKeyDownMessage<DoSomething>(Keys.K);
+            inputMapper.AddKeyDownMessage<DoSomethingElse>(Keys.K);
+            input.IsKeyDown(Keys.K).Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_send_the_first_keydown_message = () =>
-            _eventListener.ShouldReceive<DoSomething>();
+            eventListener.ShouldReceive<DoSomething>();
 
         It should_send_the_second_keydown_message = () =>
-            _eventListener.ShouldReceive<DoSomethingElse>();
+            eventListener.ShouldReceive<DoSomethingElse>();
     }
 
     [Subject(typeof(InputMapper))]
@@ -122,25 +122,25 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddKeyDownMessage<DoSomething>(Keys.K);
-            _input.IsKeyDown(Keys.J).Returns(true);
+            inputMapper.AddKeyDownMessage<DoSomething>(Keys.K);
+            input.IsKeyDown(Keys.J).Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_not_send_a_keydown_message = () =>
-            _eventListener.ShouldNotReceive<DoSomething>();
+            eventListener.ShouldNotReceive<DoSomething>();
     }
 
     [Subject(typeof(InputMapper))]
     public class when_no_keys_are_down : InputMapperContext
     {
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_not_send_a_keydown_message = () =>
-            _eventListener.ShouldNotReceive<DoSomething>();
+            eventListener.ShouldNotReceive<DoSomething>();
     }
 
     [Subject(typeof(InputMapper))]
@@ -148,16 +148,16 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddGeneralInputMessage<DoSomething>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
-            _input.MouseDeltaX.Returns(10);
-            _input.IsRightMouseButtonDown.Returns(true);
+            inputMapper.AddGeneralInputMessage<DoSomething>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
+            input.MouseDeltaX.Returns(10);
+            input.IsRightMouseButtonDown.Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_send_the_mapped_message = () =>
-            _eventListener.ShouldReceive<DoSomething>();
+            eventListener.ShouldReceive<DoSomething>();
     }
 
     [Subject(typeof(InputMapper))]
@@ -165,29 +165,29 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         Establish context = () =>
         {
-            _inputMapper.AddGeneralInputMessage<DoSomething>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
-            _input.IsRightMouseButtonDown.Returns(true);
+            inputMapper.AddGeneralInputMessage<DoSomething>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
+            input.IsRightMouseButtonDown.Returns(true);
         };
 
         Because of = () =>
-            _inputMapper.HandleInput(_input);
+            inputMapper.HandleInput(input);
 
         It should_not_send_the_mapped_message = () =>
-            _eventListener.ShouldNotReceive<DoSomething>();
+            eventListener.ShouldNotReceive<DoSomething>();
     }
 
     public class InputMapperContext
     {
-        static public IInputState _input;
-        static public InputMapper _inputMapper;
-        public static TestEventListener _eventListener;
+        static public IInputState input;
+        static public InputMapper inputMapper;
+        public static TestEventListener eventListener;
 
         Establish context = () =>
         {
-            _input = Substitute.For<IInputState>();
-            _inputMapper = new InputMapper();
-            _eventListener = new TestEventListener();
-            EventAggregator.Instance.AddListener(_eventListener);
+            input = Substitute.For<IInputState>();
+            inputMapper = new InputMapper();
+            eventListener = new TestEventListener();
+            EventAggregator.Instance.AddListener(eventListener);
         };
     }
 
@@ -203,11 +203,11 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
         : IListener<DoSomething>,
         IListener<DoSomethingElse>
     {
-        readonly List<object> _receivedMessages = new List<object>();
+        readonly List<object> receivedMessages = new List<object>();
 
         public T Message<T>()
         {
-            return _receivedMessages.OfType<T>().FirstOrDefault();
+            return receivedMessages.OfType<T>().FirstOrDefault();
         }
 
         public void ShouldReceive<T>()
@@ -222,12 +222,12 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
 
         public void Handle(DoSomething message)
         {
-            _receivedMessages.Add(message);
+            receivedMessages.Add(message);
         }
 
         public void Handle(DoSomethingElse message)
         {
-            _receivedMessages.Add(message);
+            receivedMessages.Add(message);
         }
     }
 }

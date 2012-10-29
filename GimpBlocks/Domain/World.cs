@@ -29,23 +29,23 @@ namespace GimpBlocks
 
         public const byte MaximumLightLevel = 15;
 
-        readonly IWorldRenderer _renderer;
-        readonly ChunkFactory _chunkFactory;
-        readonly IBoundingBoxRenderer _boundingBoxRenderer;
-        readonly Chunk[,] _chunks;
-        readonly int _worldSizeInChunks;
+        readonly IWorldRenderer renderer;
+        readonly ChunkFactory chunkFactory;
+        readonly IBoundingBoxRenderer boundingBoxRenderer;
+        readonly Chunk[,] chunks;
+        readonly int worldSizeInChunks;
 
-        Block _selectedBlock;
-        BlockPosition _selectedBlockPlacePosition;
+        Block selectedBlock;
+        BlockPosition selectedBlockPlacePosition;
 
         public World(int viewDistance, ChunkFactory chunkFactory, IWorldRenderer renderer, IBoundingBoxRenderer boundingBoxRenderer)
         {
-            _chunkFactory = chunkFactory;
-            _renderer = renderer;
-            _boundingBoxRenderer = boundingBoxRenderer;
+            this.chunkFactory = chunkFactory;
+            this.renderer = renderer;
+            this.boundingBoxRenderer = boundingBoxRenderer;
 
-            _worldSizeInChunks = viewDistance * 2;
-            _chunks = new Chunk[_worldSizeInChunks,_worldSizeInChunks];
+            worldSizeInChunks = viewDistance * 2;
+            chunks = new Chunk[worldSizeInChunks,worldSizeInChunks];
         }
 
         // TODO: there may be useful profiling code in the sample code at http://blog.eckish.net/2011/01/10/perfecting-a-cube/
@@ -57,13 +57,13 @@ namespace GimpBlocks
 
             var generateTimer = new Stopwatch();
             generateTimer.Start();
-            for (int x = 0; x <= _chunks.GetUpperBound(0); x++)
+            for (int x = 0; x <= chunks.GetUpperBound(0); x++)
             {
-                for (int z = 0; z <= _chunks.GetUpperBound(1); z++)
+                for (int z = 0; z <= chunks.GetUpperBound(1); z++)
                 {
-                    var chunk = _chunkFactory.Create(this, new ChunkPosition(x, z));
+                    var chunk = chunkFactory.Create(this, new ChunkPosition(x, z));
                     chunk.Generate();
-                    _chunks[x, z] = chunk;
+                    chunks[x, z] = chunk;
                 }
             }
             Trace.WriteLine(string.Format("chunk terrain: {0} ms", generateTimer.ElapsedMilliseconds));
@@ -84,7 +84,7 @@ namespace GimpBlocks
             {
                 // TODO: how can we more easily convert T[,] into IEnumerable<T>?
                 var chunkList = new List<Chunk>();
-                foreach (var chunk in _chunks)
+                foreach (var chunk in chunks)
                 {
                     chunkList.Add(chunk);
                 }
@@ -132,32 +132,32 @@ namespace GimpBlocks
 
         public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
-            _renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
+            renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
 
             // TODO: drawing near to far chunks may help by allowing the GPU to do occlusion culling
 
-            foreach (var chunk in _chunks)
+            foreach (var chunk in chunks)
             {
                 chunk.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
             }
 
-            if (_selectedBlock != null)
+            if (selectedBlock != null)
             {
-                var boundingBox = _selectedBlock.BoundingBox;
+                var boundingBox = selectedBlock.BoundingBox;
                 var offset = new Vector3(0.003f);
                 var selectionBox = new BoundingBox(boundingBox.Min - offset, boundingBox.Max + offset);
-                _boundingBoxRenderer.Draw(selectionBox, cameraLocation, originBasedViewMatrix, projectionMatrix);
+                boundingBoxRenderer.Draw(selectionBox, cameraLocation, originBasedViewMatrix, projectionMatrix);
             }
         }
 
         public void Handle(PlaceBlock message)
         {
-            if (_selectedBlock != null)
+            if (selectedBlock != null)
             {
                 // TODO: this will crash if we try to place a block outside of the loaded
                 // chunks. In the long run this won't be an issue because the user shouldn't ever
                 // be close to the edge of the loaded world.
-                SetBlockPrototype(_selectedBlockPlacePosition, BlockPrototype.StoneBlock);
+                SetBlockPrototype(selectedBlockPlacePosition, BlockPrototype.StoneBlock);
 
                 RebuildAffectedChunks();
             }
@@ -165,7 +165,7 @@ namespace GimpBlocks
 
         void RebuildAffectedChunks()
         {
-            var affectedVolume = new BlockVolume(this, _selectedBlock.Position, MaximumLightLevel);
+            var affectedVolume = new BlockVolume(this, selectedBlock.Position, MaximumLightLevel);
             var chunks = GetChunksIntersectingVolume(affectedVolume);
             RebuildChunks(chunks);
         }
@@ -179,9 +179,9 @@ namespace GimpBlocks
 
         public void Handle(DestroyBlock message)
         {
-            if (_selectedBlock != null)
+            if (selectedBlock != null)
             {
-                SetBlockPrototype(_selectedBlock.Position, BlockPrototype.AirBlock);
+                SetBlockPrototype(selectedBlock.Position, BlockPrototype.AirBlock);
 
                 RebuildAffectedChunks();
             }
@@ -202,12 +202,12 @@ namespace GimpBlocks
 
         public Chunk GetChunkAt(ChunkPosition chunkPosition)
         {
-            return IsLoaded(chunkPosition) ? _chunks[chunkPosition.X, chunkPosition.Z] : null;
+            return IsLoaded(chunkPosition) ? chunks[chunkPosition.X, chunkPosition.Z] : null;
         }
 
         bool IsLoaded(ChunkPosition chunkPosition)
         {
-            return (chunkPosition.X >= 0 && chunkPosition.X < _worldSizeInChunks && chunkPosition.Z >= 0 && chunkPosition.Z < _worldSizeInChunks);
+            return (chunkPosition.X >= 0 && chunkPosition.X < worldSizeInChunks && chunkPosition.Z >= 0 && chunkPosition.Z < worldSizeInChunks);
         }
 
         public void SetLightLevel(BlockPosition blockPosition, byte lightLevel)
@@ -248,8 +248,8 @@ namespace GimpBlocks
 
         public void Handle(BlockSelectionChanged message)
         {
-            _selectedBlock = message.SelectedBlock;
-            _selectedBlockPlacePosition = message.SelectedPlacePosition;
+            selectedBlock = message.SelectedBlock;
+            selectedBlockPlacePosition = message.SelectedPlacePosition;
         }
 
         public void Handle(ProfileWorldGeneration message)
@@ -259,7 +259,7 @@ namespace GimpBlocks
             int iterations = 10;
             for (int x = 0; x < iterations; x++)
             {
-                foreach (var chunk in _chunks)
+                foreach (var chunk in chunks)
                 {
                     chunk.Dispose();
                 }

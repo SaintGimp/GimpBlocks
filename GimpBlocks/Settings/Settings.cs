@@ -33,60 +33,60 @@ namespace GimpBlocks
             FarClippingPlaneDistance = 10000000;
         }
 
-        bool _shouldUpdate;
+        bool shouldUpdate;
         public bool ShouldUpdate
         {
-            get { return _shouldUpdate; }
-            set { SetFieldValue(ref _shouldUpdate, value); }
+            get { return shouldUpdate; }
+            set { SetFieldValue(ref shouldUpdate, value); }
         }
 
-        bool _shouldSingleStep;
+        bool shouldSingleStep;
         public bool ShouldSingleStep
         {
-            get { return _shouldSingleStep; }
-            set { SetFieldValue(ref _shouldSingleStep, value); }
+            get { return shouldSingleStep; }
+            set { SetFieldValue(ref shouldSingleStep, value); }
         }
 
-        bool _shouldDrawWireframe;
+        bool shouldDrawWireframe;
         public bool ShouldDrawWireframe
         {
-            get { return _shouldDrawWireframe; }
-            set { SetFieldValue(ref _shouldDrawWireframe, value); }
+            get { return shouldDrawWireframe; }
+            set { SetFieldValue(ref shouldDrawWireframe, value); }
         }
 
-        Vector3 _cameraStartingLocation;
+        Vector3 cameraStartingLocation;
         public Vector3 CameraStartingLocation
         {
-            get { return _cameraStartingLocation; }
-            set { SetFieldValue(ref _cameraStartingLocation, value); }
+            get { return cameraStartingLocation; }
+            set { SetFieldValue(ref cameraStartingLocation, value); }
         }
 
-        Vector3 _cameraStartingLookAt;
+        Vector3 cameraStartingLookAt;
         public Vector3 CameraStartingLookAt
         {
-            get { return _cameraStartingLookAt; }
-            set { SetFieldValue(ref _cameraStartingLookAt, value); }
+            get { return cameraStartingLookAt; }
+            set { SetFieldValue(ref cameraStartingLookAt, value); }
         }
 
-        float _cameraMoveSpeedPerSecond;
+        float cameraMoveSpeedPerSecond;
         public float CameraMoveSpeedPerSecond
         {
-            get { return _cameraMoveSpeedPerSecond; }
-            set { SetFieldValue(ref _cameraMoveSpeedPerSecond, value); }
+            get { return cameraMoveSpeedPerSecond; }
+            set { SetFieldValue(ref cameraMoveSpeedPerSecond, value); }
         }
 
-        float _cameraMouseLookDamping;
+        float cameraMouseLookDamping;
         public float CameraMouseLookDamping
         {
-            get { return _cameraMouseLookDamping; }
-            set { SetFieldValue(ref _cameraMouseLookDamping, value); }
+            get { return cameraMouseLookDamping; }
+            set { SetFieldValue(ref cameraMouseLookDamping, value); }
         }
 
-        float _farClippingPlaneDistance;
+        float farClippingPlaneDistance;
         public float FarClippingPlaneDistance
         {
-            get { return _farClippingPlaneDistance; }
-            set { SetFieldValue(ref _farClippingPlaneDistance, value); }
+            get { return farClippingPlaneDistance; }
+            set { SetFieldValue(ref farClippingPlaneDistance, value); }
         }
 
         public void Handle(ToggleDrawWireframeSetting message)

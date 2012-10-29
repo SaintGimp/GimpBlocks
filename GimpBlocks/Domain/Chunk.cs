@@ -41,12 +41,12 @@ namespace GimpBlocks
         public BlockPosition OriginInWorld { get; private set; }
         readonly IEnumerable<ChunkPosition> neighborhoodPositions;
  
-        readonly World _world;
-        readonly IEnvironmentGenerator _environmentGenerator;
-        readonly IChunkRenderer _renderer;
+        readonly World world;
+        readonly IEnvironmentGenerator environmentGenerator;
+        readonly IChunkRenderer renderer;
         
-        readonly BlockArray _blockArray;
-        readonly Array3<byte> _lightArray;
+        readonly BlockArray blockArray;
+        readonly Array3<byte> lightArray;
 
         int highestVisibleBlock = -1;
         int lowestSunlitBlock = YDimension + 1;
@@ -57,12 +57,12 @@ namespace GimpBlocks
         public Chunk(World world, ChunkPosition position, IEnvironmentGenerator environmentGenerator, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
             Position = position;
-            _world = world;
-            _environmentGenerator = environmentGenerator;
-            _renderer = renderer;
+            this.world = world;
+            this.environmentGenerator = environmentGenerator;
+            this.renderer = renderer;
 
-            _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
-            _lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
+            blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
+            lightArray = new Array3<byte>(XDimension, YDimension, ZDimension);
 
             OriginInWorld = new BlockPosition(Position, new RelativeBlockPosition(0, 0, 0));
             neighborhoodPositions = new[]
@@ -77,12 +77,12 @@ namespace GimpBlocks
 
         public BlockPrototype GetBlockPrototype(RelativeBlockPosition position)
         {
-            return _blockArray[position.X, position.Y, position.Z];
+            return blockArray[position.X, position.Y, position.Z];
         }
 
         public void SetBlockPrototype(RelativeBlockPosition position, BlockPrototype prototype)
         {
-            _blockArray[position.X, position.Y, position.Z] = prototype;
+            blockArray[position.X, position.Y, position.Z] = prototype;
 
             if (prototype.CanBeSeen && position.Y > highestVisibleBlock)
             {
@@ -97,7 +97,7 @@ namespace GimpBlocks
 
         public void Generate()
         {
-            _environmentGenerator.Generate(this);
+            environmentGenerator.Generate(this);
         }
 
         public void Tessellate()
@@ -121,7 +121,7 @@ namespace GimpBlocks
             // we could keep track of lowest/highest for each colum in the chunk.
 
             var lowerTesselationLimit = GetLowestInvisibleBlockInNeighborhood() - 1;
-            var tessellator = new Tessellator(_world);
+            var tessellator = new Tessellator(world);
             for (int x = 0; x < XDimension; x++)
             {
                 for (int y = lowerTesselationLimit; y <= highestVisibleBlock; y++)
@@ -140,12 +140,12 @@ namespace GimpBlocks
             }
 
             // TODO: is the conversion causing extra work here?
-            _renderer.Initialize((Vector3)OriginInWorld, vertexLists, indexLists);
+            renderer.Initialize((Vector3)OriginInWorld, vertexLists, indexLists);
         }
 
         int GetLowestInvisibleBlockInNeighborhood()
         {
-            var lowest = neighborhoodPositions.Select(position => _world.GetChunkAt(position))
+            var lowest = neighborhoodPositions.Select(position => world.GetChunkAt(position))
                 .Where(chunk => chunk != null)
                 .Min(chunk => chunk.lowestInvisibleBlock);
             return Math.Max(lowest, 0);
@@ -156,17 +156,17 @@ namespace GimpBlocks
             // TODO: frustum culling, and also skipping face VBs that are situation such that they
             // can never be seen from the current camera position.
 
-            _renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
+            renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
         }
 
         public byte GetLightLevel(RelativeBlockPosition position)
         {
-            return _lightArray[position.X, position.Y, position.Z];
+            return lightArray[position.X, position.Y, position.Z];
         }
 
         public void SetLightLevel(RelativeBlockPosition position, byte lightLevel)
         {
-            _lightArray[position.X, position.Y, position.Z] = lightLevel;
+            lightArray[position.X, position.Y, position.Z] = lightLevel;
         }
 
         public void SetInitialLighting()
@@ -203,7 +203,7 @@ namespace GimpBlocks
                             {
                                 // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
                                 // think about the implications for multi-threading and race conditions.
-                                propagator.PropagateSunlightFromBlock(_world, new BlockPosition(Position, relativeBlockPosition));
+                                propagator.PropagateSunlightFromBlock(world, new BlockPosition(Position, relativeBlockPosition));
                                 NumberOfLightPropagations++;
                             }
                         }
@@ -214,7 +214,7 @@ namespace GimpBlocks
 
         int GetHighestVisibleBlockInNeighborhood()
         {
-            return neighborhoodPositions.Select(position => _world.GetChunkAt(position))
+            return neighborhoodPositions.Select(position => world.GetChunkAt(position))
                 .Where(chunk => chunk != null)
                 .Max(chunk => chunk.highestVisibleBlock);
         }
@@ -254,9 +254,9 @@ namespace GimpBlocks
                 for (int z = 0; z < ZDimension; z++)
                 {
                     int y = YDimension - 1;
-                    while (y >= 0 && _blockArray[x, y, z].CanPropagateLight)
+                    while (y >= 0 && blockArray[x, y, z].CanPropagateLight)
                     {
-                        _lightArray[x, y, z] = World.MaximumLightLevel;
+                        lightArray[x, y, z] = World.MaximumLightLevel;
 
                         if (y < lowestSunlitBlock)
                         {
@@ -269,21 +269,21 @@ namespace GimpBlocks
                     // Anything not in sunlight starts out completely dark
                     while (y >= 0)
                     {
-                        _lightArray[x, y, z] = 0;
+                        lightArray[x, y, z] = 0;
                         y--;
                     }
                 }
             }
         }
 
-        bool _disposed;
+        bool disposed;
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (!disposed)
             {
-                ((IDisposable)_renderer).Dispose();
-                _disposed = true;
+                ((IDisposable)renderer).Dispose();
+                disposed = true;
             }
         }
     }

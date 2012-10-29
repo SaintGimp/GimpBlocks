@@ -8,42 +8,42 @@ namespace GimpBlocks
 {
     public class XnaInputState : IInputState
     {
-        KeyboardState _previousKeyboardState;
-        KeyboardState _currentKeyboardState;
-        MouseState _previousMouseState;
-        MouseState _currentMouseState;
-        TimeSpan _elapsedTime;
-        bool _isRelativeMouseMode;
-        Point _mouseOrigin;
+        KeyboardState previousKeyboardState;
+        KeyboardState currentKeyboardState;
+        MouseState previousMouseState;
+        MouseState currentMouseState;
+        TimeSpan elapsedTime;
+        bool isRelativeMouseMode;
+        Point mouseOrigin;
 
         public bool IsKeyDown(Keys key)
         {
-            return _currentKeyboardState.IsKeyDown(key);
+            return currentKeyboardState.IsKeyDown(key);
         }
 
         public bool IsKeyPressed(Keys key)
         {
-            return (!_previousKeyboardState.IsKeyDown(key) && _currentKeyboardState.IsKeyDown(key));
+            return (!previousKeyboardState.IsKeyDown(key) && currentKeyboardState.IsKeyDown(key));
         }
 
         public bool IsLeftMouseButtonDown
         {
-            get { return IsDown(_currentMouseState.LeftButton); }
+            get { return IsDown(currentMouseState.LeftButton); }
         }
 
         public bool IsLeftMouseButtonClicked
         {
-            get { return !IsDown(_previousMouseState.LeftButton) && IsDown(_currentMouseState.LeftButton); }
+            get { return !IsDown(previousMouseState.LeftButton) && IsDown(currentMouseState.LeftButton); }
         }
 
         public bool IsRightMouseButtonDown
         {
-            get { return IsDown(_currentMouseState.RightButton); }
+            get { return IsDown(currentMouseState.RightButton); }
         }
 
         public bool IsRightMouseButtonClicked
         {
-            get { return !IsDown(_previousMouseState.RightButton) && IsDown(_currentMouseState.RightButton); }
+            get { return !IsDown(previousMouseState.RightButton) && IsDown(currentMouseState.RightButton); }
         }
 
         private bool IsDown(ButtonState buttonState)
@@ -53,25 +53,25 @@ namespace GimpBlocks
 
         public int MouseX
         {
-            get { return _currentMouseState.X; }
+            get { return currentMouseState.X; }
         }
 
         public int MouseY
         {
-            get { return _currentMouseState.Y; }
+            get { return currentMouseState.Y; }
         }
 
         public int MouseDeltaX
         {
             get
             {
-                if (_isRelativeMouseMode)
+                if (isRelativeMouseMode)
                 {
-                    return (_currentMouseState.X - _mouseOrigin.X);
+                    return (currentMouseState.X - mouseOrigin.X);
                 }
                 else
                 {
-                    return (_currentMouseState.X - _previousMouseState.X);
+                    return (currentMouseState.X - previousMouseState.X);
                 }
             }
         }
@@ -80,40 +80,40 @@ namespace GimpBlocks
         {
             get
             {
-                if (_isRelativeMouseMode)
+                if (isRelativeMouseMode)
                 {
-                    return (_currentMouseState.Y - _mouseOrigin.Y);
+                    return (currentMouseState.Y - mouseOrigin.Y);
                 }
                 else
                 {
-                    return (_currentMouseState.Y - _previousMouseState.Y);
+                    return (currentMouseState.Y - previousMouseState.Y);
                 }
             }
         }
 
         public TimeSpan ElapsedTime
         {
-            get { return _elapsedTime; }
+            get { return elapsedTime; }
         }
 
         public void Update(TimeSpan elapsedTime, KeyboardState newKeyboardState, MouseState newMouseState)
         {
-            _previousKeyboardState = _currentKeyboardState;
-            _currentKeyboardState = newKeyboardState;
-            _previousMouseState = _currentMouseState;
-            _currentMouseState = newMouseState;
-            _elapsedTime = elapsedTime;
+            previousKeyboardState = currentKeyboardState;
+            currentKeyboardState = newKeyboardState;
+            previousMouseState = currentMouseState;
+            currentMouseState = newMouseState;
+            this.elapsedTime = elapsedTime;
         }
 
         public void SetAbsoluteMouseMode()
         {
-            _isRelativeMouseMode = false;
+            isRelativeMouseMode = false;
         }
 
         public void SetRelativeMouseMode(Point mouseOrigin)
         {
-            _isRelativeMouseMode = true;
-            _mouseOrigin = mouseOrigin;
+            isRelativeMouseMode = true;
+            this.mouseOrigin = mouseOrigin;
         }
     }
 }

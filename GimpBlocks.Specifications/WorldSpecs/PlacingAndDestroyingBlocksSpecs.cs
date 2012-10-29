@@ -13,21 +13,21 @@ namespace GimpBlocks.Specifications.WorldSpecs
         Establish context = () =>
         {
             CreateWorld(1);
-            _world.Handle(new BlockSelectionChanged
+            world.Handle(new BlockSelectionChanged
             {
-                SelectedBlock = _world.GetBlockAt(_groundBlockPosition),
-                SelectedPlacePosition = _groundBlockPosition.Up
+                SelectedBlock = world.GetBlockAt(groundBlockPosition),
+                SelectedPlacePosition = groundBlockPosition.Up
             });
         };
 
         Because of = () =>
-            _world.Handle(new PlaceBlock());
+            world.Handle(new PlaceBlock());
 
         It should_place_a_new_block_in_the_selected_place = () =>
-            _world.GetBlockAt(_groundBlockPosition.Up).Prototype.ShouldEqual(BlockPrototype.StoneBlock);
+            world.GetBlockAt(groundBlockPosition.Up).Prototype.ShouldEqual(BlockPrototype.StoneBlock);
 
         It should_not_destroy_the_selected_block = () =>
-            _world.GetBlockAt(_groundBlockPosition).Prototype.ShouldEqual(BlockPrototype.StoneBlock);
+            world.GetBlockAt(groundBlockPosition).Prototype.ShouldEqual(BlockPrototype.StoneBlock);
     }
 
     [Subject("Placing and destroying blocks")]
@@ -36,20 +36,20 @@ namespace GimpBlocks.Specifications.WorldSpecs
         Establish context = () =>
         {
             CreateWorld(1);
-            _world.Handle(new BlockSelectionChanged
+            world.Handle(new BlockSelectionChanged
             {
-                SelectedBlock = _world.GetBlockAt(_groundBlockPosition),
-                SelectedPlacePosition = _groundBlockPosition.Up
+                SelectedBlock = world.GetBlockAt(groundBlockPosition),
+                SelectedPlacePosition = groundBlockPosition.Up
             });
         };
 
         Because of = () =>
-            _world.Handle(new DestroyBlock());
+            world.Handle(new DestroyBlock());
 
         It should_destroy_the_selected_block = () =>
-            _world.GetBlockAt(_groundBlockPosition).Prototype.ShouldEqual(BlockPrototype.AirBlock);
+            world.GetBlockAt(groundBlockPosition).Prototype.ShouldEqual(BlockPrototype.AirBlock);
 
         It should_not_place_a_new_block_in_the_selected_place = () =>
-            _world.GetBlockAt(_groundBlockPosition.Up).Prototype.ShouldEqual(BlockPrototype.AirBlock);
+            world.GetBlockAt(groundBlockPosition.Up).Prototype.ShouldEqual(BlockPrototype.AirBlock);
     }
 }

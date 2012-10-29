@@ -7,50 +7,50 @@ namespace GimpBlocks
 {
     public class BlockArray
     {
-        readonly BlockPrototypeMap _prototypeMap;
-        readonly Array3<byte> _blockIndexes;
+        readonly BlockPrototypeMap prototypeMap;
+        readonly Array3<byte> blockIndexes;
 
         public BlockArray(BlockPrototypeMap prototypeMap, int xDimension, int yDimension, int zDimension)
         {
-            _prototypeMap = prototypeMap;
-            _blockIndexes = new Array3<byte>(xDimension, yDimension, zDimension);
+            this.prototypeMap = prototypeMap;
+            blockIndexes = new Array3<byte>(xDimension, yDimension, zDimension);
         }
 
         public int XDimension
         {
-            get { return _blockIndexes.XDimension; }
+            get { return blockIndexes.XDimension; }
         }
 
         public int YDimension
         {
-            get { return _blockIndexes.YDimension; }
+            get { return blockIndexes.YDimension; }
         }
 
         public int ZDimension
         {
-            get { return _blockIndexes.ZDimension; }
+            get { return blockIndexes.ZDimension; }
         }
 
         public BlockPrototype this[int x, int y, int z]
         {
-            get { return _prototypeMap[_blockIndexes[x, y, z]]; }
-            set { _blockIndexes[x, y, z] = _prototypeMap[value]; }
+            get { return prototypeMap[blockIndexes[x, y, z]]; }
+            set { blockIndexes[x, y, z] = prototypeMap[value]; }
         }
 
         public BlockPrototype this[BlockPosition location]
         {
             get { return this[location.X, location.Y, location.Z]; }
-            set { _blockIndexes[location.X, location.Y, location.Z] = _prototypeMap[value]; }
+            set { blockIndexes[location.X, location.Y, location.Z] = prototypeMap[value]; }
         }
 
         public void Initialize(Func<int, int, int, BlockPrototype> initializerFunction)
         {
-            _blockIndexes.Initialize((x, y, z) => _prototypeMap[initializerFunction(x, y, z)]);
+            blockIndexes.Initialize((x, y, z) => prototypeMap[initializerFunction(x, y, z)]);
         }
 
         public void ForEach(Action<BlockPrototype, RelativeBlockPosition> action)
         {
-            _blockIndexes.ForEach((index, x, y, z) => action(_prototypeMap[index], new RelativeBlockPosition(x, y, z)));
+            blockIndexes.ForEach((index, x, y, z) => action(prototypeMap[index], new RelativeBlockPosition(x, y, z)));
         }
     }
 }

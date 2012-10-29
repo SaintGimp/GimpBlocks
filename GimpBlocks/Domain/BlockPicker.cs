@@ -12,13 +12,13 @@ namespace GimpBlocks
         : IListener<CameraMoved>,
         IListener<ChunkRebuilt>
     {
-        readonly World _world;
-        readonly ICamera _camera;
+        readonly World world;
+        readonly ICamera camera;
 
         public BlockPicker(World world, ICamera camera)
         {
-            _world = world;
-            _camera = camera;
+            this.world = world;
+            this.camera = camera;
         }
 
         public void Handle(CameraMoved message)
@@ -28,9 +28,9 @@ namespace GimpBlocks
 
         void PickBlock()
         {
-            var ray = new Ray(_camera.Location, _camera.LookAt);
+            var ray = new Ray(camera.Location, camera.LookAt);
 
-            var intersectionResult = ray.Intersects(_world, 5);
+            var intersectionResult = ray.Intersects(world, 5);
 
             Block selectedBlock;
             BlockPosition selectedPlacePosition = new BlockPosition();

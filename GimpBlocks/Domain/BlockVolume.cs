@@ -7,20 +7,20 @@ namespace GimpBlocks
 {
     public class BlockVolume
     {
-        readonly World _world;
+        readonly World world;
         public readonly BlockPosition Minimum;
         public readonly BlockPosition Maximum;
 
         public BlockVolume(World world, BlockPosition minimum, BlockPosition maximum)
         {
-            _world = world;
+            this.world = world;
             Minimum = minimum;
             Maximum = maximum;
         }
 
         public BlockVolume(World world, BlockPosition center, int radius)
         {
-            _world = world;
+            this.world = world;
             Maximum = new BlockPosition(center.X + radius, center.Y + radius, center.Z + radius);
             Minimum = new BlockPosition(center.X - radius, center.Y - radius, center.Z - radius);
         }
@@ -29,13 +29,13 @@ namespace GimpBlocks
         {
             foreach (var position in AllPositions())
             {
-                _world.SetBlockPrototype(position, prototype);
+                world.SetBlockPrototype(position, prototype);
             }
         }
 
         public IEnumerable<Block> ContainedBlocks()
         {
-            return AllPositions().Select(position => _world.GetBlockAt(position));
+            return AllPositions().Select(position => world.GetBlockAt(position));
         }
         
         IEnumerable<BlockPosition> AllPositions()

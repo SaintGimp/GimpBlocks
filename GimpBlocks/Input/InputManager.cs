@@ -12,26 +12,26 @@ namespace GimpBlocks
     public class InputManager
         : IListener<ToggleInputMode>
     {
-        readonly Game _game;
-        readonly IInputState _inputState;
-        readonly InputMapper _globalMapper = new InputMapper();
-        readonly InputMapper _mouseLookMapper = new InputMapper();
-        readonly InputMapper _normalMapper = new InputMapper();
-        bool _mouseLookMode = true;
-        Rectangle _clientBounds;
+        readonly Game game;
+        readonly IInputState inputState;
+        readonly InputMapper globalMapper = new InputMapper();
+        readonly InputMapper mouseLookMapper = new InputMapper();
+        readonly InputMapper normalMapper = new InputMapper();
+        bool mouseLookMode = true;
+        Rectangle clientBounds;
 
         public InputManager(Game game, IInputState inputState)
         {
-            _game = game;
-            _inputState = inputState;
+            this.game = game;
+            this.inputState = inputState;
 
             SetInputBindings();
         }
 
         public void SetClientBounds(Rectangle clientBounds)
         {
-            _clientBounds = clientBounds;
-            if (_mouseLookMode)
+            this.clientBounds = clientBounds;
+            if (mouseLookMode)
             {
                 EnableMouseLookMode();
             }
@@ -39,44 +39,44 @@ namespace GimpBlocks
 
         void SetInputBindings()
         {
-            _globalMapper.AddKeyDownMessage<MoveForward>(Keys.W);
-            _globalMapper.AddKeyDownMessage<MoveBackward>(Keys.S);
-            _globalMapper.AddKeyDownMessage<MoveLeft>(Keys.A);
-            _globalMapper.AddKeyDownMessage<MoveRight>(Keys.D);
-            _globalMapper.AddKeyDownMessage<MoveUp>(Keys.E);
-            _globalMapper.AddKeyDownMessage<MoveDown>(Keys.C);
-            _globalMapper.AddKeyPressMessage<IncreaseCameraSpeed>(Keys.OemPlus);
-            _globalMapper.AddKeyPressMessage<DecreaseCameraSpeed>(Keys.OemMinus);
-            _globalMapper.AddKeyPressMessage<ZoomIn>(Keys.OemPeriod);
-            _globalMapper.AddKeyPressMessage<ZoomOut>(Keys.OemComma);
-            _globalMapper.AddKeyPressMessage<ResetCamera>(Keys.R);
-            _globalMapper.AddKeyPressMessage<ToggleDrawWireframeSetting>(Keys.F);
-            _globalMapper.AddKeyPressMessage<ToggleUpdateSetting>(Keys.U);
-            _globalMapper.AddKeyPressMessage<ToggleSingleStepSetting>(Keys.P);
+            globalMapper.AddKeyDownMessage<MoveForward>(Keys.W);
+            globalMapper.AddKeyDownMessage<MoveBackward>(Keys.S);
+            globalMapper.AddKeyDownMessage<MoveLeft>(Keys.A);
+            globalMapper.AddKeyDownMessage<MoveRight>(Keys.D);
+            globalMapper.AddKeyDownMessage<MoveUp>(Keys.E);
+            globalMapper.AddKeyDownMessage<MoveDown>(Keys.C);
+            globalMapper.AddKeyPressMessage<IncreaseCameraSpeed>(Keys.OemPlus);
+            globalMapper.AddKeyPressMessage<DecreaseCameraSpeed>(Keys.OemMinus);
+            globalMapper.AddKeyPressMessage<ZoomIn>(Keys.OemPeriod);
+            globalMapper.AddKeyPressMessage<ZoomOut>(Keys.OemComma);
+            globalMapper.AddKeyPressMessage<ResetCamera>(Keys.R);
+            globalMapper.AddKeyPressMessage<ToggleDrawWireframeSetting>(Keys.F);
+            globalMapper.AddKeyPressMessage<ToggleUpdateSetting>(Keys.U);
+            globalMapper.AddKeyPressMessage<ToggleSingleStepSetting>(Keys.P);
 
-            _globalMapper.AddKeyPressMessage<GarbageCollect>(Keys.G);
-            _globalMapper.AddKeyPressMessage<ProfileWorldGeneration>(Keys.T);
+            globalMapper.AddKeyPressMessage<GarbageCollect>(Keys.G);
+            globalMapper.AddKeyPressMessage<ProfileWorldGeneration>(Keys.T);
 
-            _globalMapper.AddKeyPressMessage<ToggleInputMode>(Keys.Escape);
-            _normalMapper.AddGeneralInputMessage<ToggleInputMode>(inputState => inputState.IsLeftMouseButtonClicked);
+            globalMapper.AddKeyPressMessage<ToggleInputMode>(Keys.Escape);
+            normalMapper.AddGeneralInputMessage<ToggleInputMode>(inputState => inputState.IsLeftMouseButtonClicked);
 
-            _mouseLookMapper.AddGeneralInputMessage<MouseLook>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
-            _mouseLookMapper.AddGeneralInputMessage<PlaceBlock>(inputState => inputState.IsRightMouseButtonClicked);
-            _mouseLookMapper.AddGeneralInputMessage<DestroyBlock>(inputState => inputState.IsLeftMouseButtonClicked);
+            mouseLookMapper.AddGeneralInputMessage<MouseLook>(inputState => inputState.MouseDeltaX != 0 || inputState.MouseDeltaY != 0);
+            mouseLookMapper.AddGeneralInputMessage<PlaceBlock>(inputState => inputState.IsRightMouseButtonClicked);
+            mouseLookMapper.AddGeneralInputMessage<DestroyBlock>(inputState => inputState.IsLeftMouseButtonClicked);
         }
 
         public void HandleInput(GameTime gameTime)
         {
-            _inputState.Update(gameTime.ElapsedGameTime, Keyboard.GetState(), Mouse.GetState());
+            inputState.Update(gameTime.ElapsedGameTime, Keyboard.GetState(), Mouse.GetState());
 
-            if (_mouseLookMode)
+            if (mouseLookMode)
             {
-                _mouseLookMapper.HandleInput(_inputState);
-                Mouse.SetPosition(_clientBounds.Width / 2, _clientBounds.Height / 2);
+                mouseLookMapper.HandleInput(inputState);
+                Mouse.SetPosition(clientBounds.Width / 2, clientBounds.Height / 2);
             }
             else
             {
-                _normalMapper.HandleInput(_inputState);
+                normalMapper.HandleInput(inputState);
             }
 
             // TODO: right now order here is important. The global mapper needs to run after
@@ -85,14 +85,14 @@ namespace GimpBlocks
             // mouselook handler queue up an action to be run after all input is handled for this frame,
             // or something like that.
 
-            _globalMapper.HandleInput(_inputState);
+            globalMapper.HandleInput(inputState);
         }
 
         public void Handle(ToggleInputMode message)
         {
-            _mouseLookMode = !_mouseLookMode;
+            mouseLookMode = !mouseLookMode;
 
-            if (_mouseLookMode)
+            if (mouseLookMode)
             {
                 EnableMouseLookMode();
             }
@@ -104,21 +104,21 @@ namespace GimpBlocks
 
         void EnableMouseLookMode()
         {
-            _inputState.SetRelativeMouseMode(new Point(_clientBounds.Width / 2, _clientBounds.Height / 2));
-            _game.IsMouseVisible = false;
-            Mouse.SetPosition(_clientBounds.Width / 2, _clientBounds.Height / 2);
+            inputState.SetRelativeMouseMode(new Point(clientBounds.Width / 2, clientBounds.Height / 2));
+            game.IsMouseVisible = false;
+            Mouse.SetPosition(clientBounds.Width / 2, clientBounds.Height / 2);
         }
 
         void DisableMouseLookMode()
         {
-            _inputState.SetAbsoluteMouseMode();
-            Mouse.SetPosition(_clientBounds.Width / 2, _clientBounds.Height / 2);
-            _game.IsMouseVisible = true;
+            inputState.SetAbsoluteMouseMode();
+            Mouse.SetPosition(clientBounds.Width / 2, clientBounds.Height / 2);
+            game.IsMouseVisible = true;
         }
 
         public void OnActivated()
         {
-            if (_mouseLookMode)
+            if (mouseLookMode)
             {
                 EnableMouseLookMode();
             }

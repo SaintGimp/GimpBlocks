@@ -18,26 +18,26 @@ namespace GimpBlocks
     /// </summary>
     public class Game : Microsoft.Xna.Framework.Game
     {
-        readonly GraphicsDeviceManager _graphics;
-        SpriteBatch _spriteBatch;
-        Texture2D _crosshairTexture;
+        readonly GraphicsDeviceManager graphics;
+        SpriteBatch spriteBatch;
+        Texture2D crosshairTexture;
 
-        InputManager _inputManager;
-        ICamera _camera;
-        ICameraController _cameraController;
-        World _world;
-        BlockPicker _blockPicker;
+        InputManager inputManager;
+        ICamera camera;
+        ICameraController cameraController;
+        World world;
+        BlockPicker blockPicker;
 
         public Game()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
             IsFixedTimeStep = false;
-            _graphics.SynchronizeWithVerticalRetrace = true;
+            graphics.SynchronizeWithVerticalRetrace = true;
 
-            _graphics.PreferredDepthStencilFormat = DepthFormat.Depth24;
-            _graphics.PreferMultiSampling = false;
+            graphics.PreferredDepthStencilFormat = DepthFormat.Depth24;
+            graphics.PreferMultiSampling = false;
 
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += Window_ClientSizeChanged;
@@ -46,12 +46,12 @@ namespace GimpBlocks
         void Window_ClientSizeChanged(object sender, EventArgs e)
         {
             SetViewportDependentParameters();
-            _inputManager.SetClientBounds(Window.ClientBounds);
+            inputManager.SetClientBounds(Window.ClientBounds);
         }
 
         protected override void OnActivated(object sender, EventArgs args)
         {
-            _inputManager.OnActivated();
+            inputManager.OnActivated();
 
             base.OnActivated(sender, args);
         }
@@ -64,7 +64,7 @@ namespace GimpBlocks
             float aspectRatio = width / (float)height;
             const float fieldOfView = MathHelper.Pi / 4;
 
-            _camera.SetProjectionParameters(fieldOfView, 1f, aspectRatio, .01f, 1000);
+            camera.SetProjectionParameters(fieldOfView, 1f, aspectRatio, .01f, 1000);
         }
 
         protected override void Initialize()
@@ -73,23 +73,23 @@ namespace GimpBlocks
             Mouse.WindowHandle = Window.Handle;
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
-            _inputManager = ObjectFactory.GetInstance<InputManager>();
-            _inputManager.SetClientBounds(Window.ClientBounds);
-            _camera = ObjectFactory.GetInstance<ICamera>();
+            inputManager = ObjectFactory.GetInstance<InputManager>();
+            inputManager.SetClientBounds(Window.ClientBounds);
+            camera = ObjectFactory.GetInstance<ICamera>();
             // TODO: Don't need this right now but we have to create the object in the container so it can receive messages
-            _cameraController = ObjectFactory.GetInstance<ICameraController>();
+            cameraController = ObjectFactory.GetInstance<ICameraController>();
 
             var effect = Content.Load<Effect>("BlockEffect");
-            var worldRenderer = new WorldRenderer(_graphics.GraphicsDevice, effect);
-            var boundingBoxRenderer = new BoundingBoxRenderer(_graphics.GraphicsDevice);
-            var chunkFactory = new ChunkFactory(new FlatEnvironmentGenerator(),  () => new ChunkRenderer(_graphics.GraphicsDevice, effect));
-            _world = new World(4, chunkFactory, worldRenderer, boundingBoxRenderer);
-            _blockPicker = new BlockPicker(_world, _camera);
+            var worldRenderer = new WorldRenderer(graphics.GraphicsDevice, effect);
+            var boundingBoxRenderer = new BoundingBoxRenderer(graphics.GraphicsDevice);
+            var chunkFactory = new ChunkFactory(new FlatEnvironmentGenerator(),  () => new ChunkRenderer(graphics.GraphicsDevice, effect));
+            world = new World(4, chunkFactory, worldRenderer, boundingBoxRenderer);
+            blockPicker = new BlockPicker(world, camera);
 
-            EventAggregator.Instance.AddListener(_blockPicker);
-            EventAggregator.Instance.AddListener(_world);
+            EventAggregator.Instance.AddListener(blockPicker);
+            EventAggregator.Instance.AddListener(world);
 
-            _world.Generate();
+            world.Generate();
 
             SetViewportDependentParameters();
 
@@ -102,8 +102,8 @@ namespace GimpBlocks
         /// </summary>
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(_graphics.GraphicsDevice);
-            _crosshairTexture = Content.Load<Texture2D>("crosshair");
+            spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
+            crosshairTexture = Content.Load<Texture2D>("crosshair");
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace GimpBlocks
         {
             if (IsActive)
             {
-                _inputManager.HandleInput(gameTime);
+                inputManager.HandleInput(gameTime);
             }
 
             base.Update(gameTime);
@@ -132,12 +132,12 @@ namespace GimpBlocks
             GraphicsDevice.BlendState = BlendState.Opaque;
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            _world.Draw(_camera.Location, _camera.OriginBasedViewTransformation, _camera.ProjectionTransformation);
+            world.Draw(camera.Location, camera.OriginBasedViewTransformation, camera.ProjectionTransformation);
             
-            _spriteBatch.Begin();
-            var crossHairPosition = new Vector2(Window.ClientBounds.Width / 2 - _crosshairTexture.Width / 2, Window.ClientBounds.Height / 2 - _crosshairTexture.Height / 2);
-            _spriteBatch.Draw(_crosshairTexture, crossHairPosition, Color.White);
-            _spriteBatch.End();
+            spriteBatch.Begin();
+            var crossHairPosition = new Vector2(Window.ClientBounds.Width / 2 - crosshairTexture.Width / 2, Window.ClientBounds.Height / 2 - crosshairTexture.Height / 2);
+            spriteBatch.Draw(crosshairTexture, crossHairPosition, Color.White);
+            spriteBatch.End();
 
             base.Draw(gameTime);
         }

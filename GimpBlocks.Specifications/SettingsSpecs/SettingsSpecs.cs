@@ -11,46 +11,46 @@ namespace GimpBlocks.Specifications.SettingsSpecs
     [Subject(typeof(Settings))]
     public class when_a_toggle_draw_wireframe_message_is_sent : SettingsContext
     {
-        static public bool _oldValue;
+        static public bool oldValue;
 
         Establish context = () =>
-            _oldValue = Settings.Instance.ShouldDrawWireframe;
+            oldValue = Settings.Instance.ShouldDrawWireframe;
 
         Because of = () =>
             Settings.Instance.Handle(new ToggleDrawWireframeSetting());
 
         It should_toggle_the_draw_wireframe_setting = () =>
-            Settings.Instance.ShouldDrawWireframe.ShouldNotEqual(_oldValue);
+            Settings.Instance.ShouldDrawWireframe.ShouldNotEqual(oldValue);
     }
 
     [Subject(typeof(Settings))]
     public class when_a_toggle_update_message_is_sent : SettingsContext
     {
-        static public bool _oldValue;
+        static public bool oldValue;
 
         Establish context = () =>
-            _oldValue = Settings.Instance.ShouldUpdate;
+            oldValue = Settings.Instance.ShouldUpdate;
 
         Because of = () =>
             Settings.Instance.Handle(new ToggleUpdateSetting());
 
         It should_toggle_the_update_setting = () =>
-            Settings.Instance.ShouldUpdate.ShouldNotEqual(_oldValue);
+            Settings.Instance.ShouldUpdate.ShouldNotEqual(oldValue);
     }
 
     [Subject(typeof(Settings))]
     public class when_a_single_step_message_is_sent : SettingsContext
     {
-        static public bool _oldValue;
+        static public bool oldValue;
 
         Establish context = () =>
-            _oldValue = Settings.Instance.ShouldSingleStep;
+            oldValue = Settings.Instance.ShouldSingleStep;
 
         Because of = () =>
             Settings.Instance.Handle(new ToggleSingleStepSetting());
 
         It should_toggle_the_single_step_setting = () =>
-            Settings.Instance.ShouldSingleStep.ShouldNotEqual(_oldValue);
+            Settings.Instance.ShouldSingleStep.ShouldNotEqual(oldValue);
     }
 
     // TODO: test that changes to all settings raises a SettingsChanged event,
