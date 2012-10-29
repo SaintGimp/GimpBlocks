@@ -3,11 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using LibNoise;
-using LibNoise.Filter;
-using LibNoise.Modifier;
-using LibNoise.Primitive;
-using LibNoise.Tranformer;
 using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
@@ -47,6 +42,7 @@ namespace GimpBlocks
         readonly IEnumerable<ChunkPosition> neighborhoodPositions;
  
         readonly World _world;
+        readonly IEnvironmentGenerator _environmentGenerator;
         readonly IChunkRenderer _renderer;
         
         readonly BlockArray _blockArray;
@@ -58,10 +54,11 @@ namespace GimpBlocks
 
         public static int NumberOfLightPropagations = 0;
 
-        public Chunk(World world, ChunkPosition position, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
+        public Chunk(World world, ChunkPosition position, IEnvironmentGenerator environmentGenerator, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
             Position = position;
             _world = world;
+            _environmentGenerator = environmentGenerator;
             _renderer = renderer;
 
             _blockArray = new BlockArray(prototypeMap, XDimension, YDimension, ZDimension);
@@ -100,8 +97,7 @@ namespace GimpBlocks
 
         public void Generate()
         {
-            var generator = new TerrainGenerator3();
-            generator.GenerateTerrain(this);
+            _environmentGenerator.Generate(this);
         }
 
         public void Tessellate()

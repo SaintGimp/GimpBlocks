@@ -13,8 +13,8 @@ using StructureMap;
 
 namespace GimpBlocks
 {
-    public class World
-        : IListener<PlaceBlock>,
+    public class World :
+        IListener<PlaceBlock>,
         IListener<DestroyBlock>,
         IListener<BlockSelectionChanged>,
         IListener<ProfileWorldGeneration>
@@ -30,19 +30,21 @@ namespace GimpBlocks
         public const byte MaximumLightLevel = 15;
 
         readonly IWorldRenderer _renderer;
-        readonly Func<World, int, int, Chunk> _chunkFactory;
-        readonly BoundingBoxRenderer _boundingBoxRenderer;
+        readonly ChunkFactory _chunkFactory;
+        readonly IBoundingBoxRenderer _boundingBoxRenderer;
         readonly Chunk[,] _chunks;
-        readonly int _worldSizeInChunks = 8;
+        readonly int _worldSizeInChunks;
 
         Block _selectedBlock;
         BlockPosition _selectedBlockPlacePosition;
 
-        public World(IWorldRenderer renderer, Func<World, int, int, Chunk> chunkFactory, BoundingBoxRenderer boundingBoxRenderer)
+        public World(int viewDistance, ChunkFactory chunkFactory, IWorldRenderer renderer, IBoundingBoxRenderer boundingBoxRenderer)
         {
-            _renderer = renderer;
             _chunkFactory = chunkFactory;
+            _renderer = renderer;
             _boundingBoxRenderer = boundingBoxRenderer;
+
+            _worldSizeInChunks = viewDistance * 2;
             _chunks = new Chunk[_worldSizeInChunks,_worldSizeInChunks];
         }
 
@@ -59,7 +61,7 @@ namespace GimpBlocks
             {
                 for (int z = 0; z <= _chunks.GetUpperBound(1); z++)
                 {
-                    var chunk = _chunkFactory(this, x, z);
+                    var chunk = _chunkFactory.Create(this, new ChunkPosition(x, z));
                     chunk.Generate();
                     _chunks[x, z] = chunk;
                 }
@@ -163,7 +165,7 @@ namespace GimpBlocks
 
         void RebuildAffectedChunks()
         {
-            var affectedVolume = new BlockVolume(_selectedBlock.Position, MaximumLightLevel);
+            var affectedVolume = new BlockVolume(this, _selectedBlock.Position, MaximumLightLevel);
             var chunks = GetChunksIntersectingVolume(affectedVolume);
             RebuildChunks(chunks);
         }

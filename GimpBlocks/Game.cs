@@ -76,20 +76,14 @@ namespace GimpBlocks
             _inputManager = ObjectFactory.GetInstance<InputManager>();
             _inputManager.SetClientBounds(Window.ClientBounds);
             _camera = ObjectFactory.GetInstance<ICamera>();
-            // Don't need this right now but we have to create the object in the container so it can receive messages
+            // TODO: Don't need this right now but we have to create the object in the container so it can receive messages
             _cameraController = ObjectFactory.GetInstance<ICameraController>();
 
             var effect = Content.Load<Effect>("BlockEffect");
             var worldRenderer = new WorldRenderer(_graphics.GraphicsDevice, effect);
             var boundingBoxRenderer = new BoundingBoxRenderer(_graphics.GraphicsDevice);
-            var prototypeMap = new BlockPrototypeMap();
-            Func<World, int, int, Chunk> chunkFactory = (world, chunkX, chunkZ) =>
-            {
-                var chunkRenderer = new ChunkRenderer(_graphics.GraphicsDevice, effect);
-                var position = new ChunkPosition(chunkX, chunkZ);
-                return new Chunk(world, position, chunkRenderer, prototypeMap);
-            };
-            _world = new World(worldRenderer, chunkFactory, boundingBoxRenderer);
+            var chunkFactory = new ChunkFactory(new FlatEnvironmentGenerator(),  () => new ChunkRenderer(_graphics.GraphicsDevice, effect));
+            _world = new World(4, chunkFactory, worldRenderer, boundingBoxRenderer);
             _blockPicker = new BlockPicker(_world, _camera);
 
             EventAggregator.Instance.AddListener(_blockPicker);
