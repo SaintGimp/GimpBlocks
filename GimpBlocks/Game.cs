@@ -82,7 +82,7 @@ namespace GimpBlocks
             var effect = Content.Load<Effect>("BlockEffect");
             var worldRenderer = new WorldRenderer(graphics.GraphicsDevice, effect);
             var boundingBoxRenderer = new BoundingBoxRenderer(graphics.GraphicsDevice);
-            var chunkFactory = new ChunkFactory(new FlatEnvironmentGenerator(),  () => new ChunkRenderer(graphics.GraphicsDevice, effect));
+            var chunkFactory = new ChunkFactory(new EnvironmentGenerator(),  () => new ChunkRenderer(graphics.GraphicsDevice, effect));
             world = new World(4, chunkFactory, worldRenderer, boundingBoxRenderer);
             blockPicker = new BlockPicker(world, camera);
 
