@@ -9,7 +9,6 @@ namespace GimpBlocks.Specifications.WorldSpecs
 {
     public class BasicWorldContext
     {
-        public static IWorldRenderer worldRenderer;
         public static IBoundingBoxRenderer boundingBoxRenderer;
         public static ChunkFactory chunkFactory;
         public static World world;
@@ -18,14 +17,13 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            worldRenderer = Substitute.For<IWorldRenderer>();
             boundingBoxRenderer = Substitute.For<IBoundingBoxRenderer>();
             chunkFactory = new ChunkFactory(new FlatEnvironmentGenerator(), () => Substitute.For<IChunkRenderer>());
         };
 
         public static void CreateWorld(int viewDistance)
         {
-            world = new World(viewDistance, chunkFactory, worldRenderer, boundingBoxRenderer);
+            world = new World(viewDistance, chunkFactory, boundingBoxRenderer);
             world.Generate();
         }
     }

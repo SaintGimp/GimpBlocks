@@ -124,7 +124,6 @@
     <Compile Include="Program.cs" />
     <Compile Include="Renderers\BoundingBoxRenderer.cs" />
     <Compile Include="Renderers\ChunkRenderer.cs" />
-    <Compile Include="Renderers\WorldRenderer.cs" />
     <Compile Include="Settings\Settings.cs" />
     <Compile Include="Settings\Statistics.cs" />
     <Compile Include="Renderers\VertexPositionColorLighting.cs" />

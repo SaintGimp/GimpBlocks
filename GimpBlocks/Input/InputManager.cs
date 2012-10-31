@@ -13,6 +13,7 @@ namespace GimpBlocks
         : IListener<ToggleInputMode>
     {
         readonly IInputState inputState;
+
         readonly InputMapper globalMapper = new InputMapper();
         readonly InputMapper mouseLookMapper = new InputMapper();
         readonly InputMapper normalMapper = new InputMapper();

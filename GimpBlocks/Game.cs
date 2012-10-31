@@ -20,20 +20,23 @@ namespace GimpBlocks
         IListener<EnabledMouseLookMode>,
         IListener<DisabledMouseLookMode>
     {
+        
         readonly GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        Texture2D crosshairTexture;
-
+        
+        // Game systems
         InputManager inputManager;
         ICamera camera;
-        ICameraController cameraController;
+        CameraController cameraController;
         World world;
         BlockPicker blockPicker;
 
-        public Game(InputManager inputManager)
-        {
-            this.inputManager = inputManager;
+        // Content
+        SpriteBatch spriteBatch;
+        Texture2D crosshairTexture;
+        Effect blockEffect;
 
+        public Game()
+        {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
@@ -78,29 +81,37 @@ namespace GimpBlocks
 
         protected override void Initialize()
         {
-            IsMouseVisible = false;
-            Mouse.WindowHandle = Window.Handle;
-            Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+            // This needs to be called first because it calls LoadContent
+            // which sets up stuff we need.
+            base.Initialize();
 
-            camera = ObjectFactory.GetInstance<ICamera>();
-            // TODO: Don't need this right now but we have to create the object in the container so it can receive messages
-            cameraController = ObjectFactory.GetInstance<ICameraController>();
+            InitializeMouse();
 
-            var effect = Content.Load<Effect>("BlockEffect");
-            var worldRenderer = new WorldRenderer(graphics.GraphicsDevice, effect);
             var boundingBoxRenderer = new BoundingBoxRenderer(graphics.GraphicsDevice);
-            var chunkFactory = new ChunkFactory(new EnvironmentGenerator(),  () => new ChunkRenderer(graphics.GraphicsDevice, effect));
-            world = new World(4, chunkFactory, worldRenderer, boundingBoxRenderer);
-            blockPicker = new BlockPicker(world, camera);
-
-            EventAggregator.Instance.AddListener(blockPicker);
+            var chunkFactory = new ChunkFactory(new EnvironmentGenerator(),  () => new ChunkRenderer(graphics.GraphicsDevice, blockEffect));
+            world = new World(4, chunkFactory, boundingBoxRenderer);
             EventAggregator.Instance.AddListener(world);
+
+            inputManager = new InputManager(new XnaInputState());
+            EventAggregator.Instance.AddListener(inputManager);
+
+            camera = new Camera();
+            cameraController = new CameraController(camera);
+            EventAggregator.Instance.AddListener(cameraController);
+
+            blockPicker = new BlockPicker(world, camera);
+            EventAggregator.Instance.AddListener(blockPicker);
 
             world.Generate();
 
             OnWindowClientSizeChanged();
+        }
 
-            base.Initialize();
+        void InitializeMouse()
+        {
+            IsMouseVisible = false;
+            Mouse.WindowHandle = Window.Handle;
+            Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
         }
 
         /// <summary>
@@ -109,6 +120,7 @@ namespace GimpBlocks
         /// </summary>
         protected override void LoadContent()
         {
+            blockEffect = Content.Load<Effect>("BlockEffect");
             spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
             crosshairTexture = Content.Load<Texture2D>("crosshair");
         }

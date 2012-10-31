@@ -23,7 +23,6 @@ namespace GimpBlocks
 
         public const byte MaximumLightLevel = 15;
 
-        readonly IWorldRenderer renderer;
         readonly ChunkFactory chunkFactory;
         readonly IBoundingBoxRenderer boundingBoxRenderer;
         readonly Chunk[,] chunks;
@@ -32,10 +31,9 @@ namespace GimpBlocks
         Block selectedBlock;
         BlockPosition selectedBlockPlacePosition;
 
-        public World(int viewDistance, ChunkFactory chunkFactory, IWorldRenderer renderer, IBoundingBoxRenderer boundingBoxRenderer)
+        public World(int viewDistance, ChunkFactory chunkFactory, IBoundingBoxRenderer boundingBoxRenderer)
         {
             this.chunkFactory = chunkFactory;
-            this.renderer = renderer;
             this.boundingBoxRenderer = boundingBoxRenderer;
 
             worldSizeInChunks = viewDistance * 2;
@@ -126,8 +124,6 @@ namespace GimpBlocks
 
         public void Draw(Vector3 cameraLocation, Matrix originBasedViewMatrix, Matrix projectionMatrix)
         {
-            renderer.Draw(cameraLocation, originBasedViewMatrix, projectionMatrix);
-
             // TODO: drawing near to far chunks may help by allowing the GPU to do occlusion culling
 
             foreach (var chunk in chunks)
