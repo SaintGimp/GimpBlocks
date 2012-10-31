@@ -26,7 +26,7 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
             eventListener.ShouldReceive<DoSomething>();
 
         It should_send_a_message_containing_the_current_input_state = () =>
-            eventListener.Message<DoSomething>().InputState.ShouldEqual(input);
+            eventListener.FirstMessage<DoSomething>().InputState.ShouldEqual(input);
     }
 
     [Subject(typeof(InputMapper))]
@@ -94,7 +94,7 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
             eventListener.ShouldReceive<DoSomething>();
 
         It should_send_a_message_containing_the_current_input_state = () =>
-            eventListener.Message<DoSomething>().InputState.ShouldEqual(input);
+            eventListener.FirstMessage<DoSomething>().InputState.ShouldEqual(input);
     }
 
     [Subject(typeof(InputMapper))]
@@ -180,13 +180,13 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
         static public IInputState input;
         static public InputMapper inputMapper;
-        public static TestEventListener eventListener;
+        public static InputMapperListener eventListener;
 
         Establish context = () =>
         {
             input = Substitute.For<IInputState>();
             inputMapper = new InputMapper();
-            eventListener = new TestEventListener();
+            eventListener = new InputMapperListener();
             EventAggregator.Instance.AddListener(eventListener);
         };
     }
@@ -199,35 +199,19 @@ namespace GimpBlocks.Specifications.Input.InputMapperSpecs
     {
     }
 
-    public class TestEventListener
-        : IListener<DoSomething>,
+    public class InputMapperListener : FakeEventListener,
+        IListener<DoSomething>,
         IListener<DoSomethingElse>
     {
-        readonly List<object> receivedMessages = new List<object>();
-
-        public T Message<T>()
-        {
-            return receivedMessages.OfType<T>().FirstOrDefault();
-        }
-
-        public void ShouldReceive<T>()
-        {
-            Message<T>().ShouldNotBeNull();
-        }
-
-        public void ShouldNotReceive<T>()
-        {
-            Message<T>().ShouldBeNull();
-        }
 
         public void Handle(DoSomething message)
         {
-            receivedMessages.Add(message);
+            RecordMessage(message);
         }
 
         public void Handle(DoSomethingElse message)
         {
-            receivedMessages.Add(message);
+            RecordMessage(message);
         }
     }
 }
