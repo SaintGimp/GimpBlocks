@@ -32,14 +32,18 @@ namespace GimpBlocks
 
         public Game()
         {
-            graphics = new GraphicsDeviceManager(this);
+            graphics = new GraphicsDeviceManager(this)
+            {
+                SynchronizeWithVerticalRetrace = true,
+                // TODO: we'd like to have a 24-bit depth buffer but right now MonoGame only gives
+                // us a 16-bit depth buffer regardless of what we ask for.
+                PreferredDepthStencilFormat = DepthFormat.Depth16,
+                PreferMultiSampling = false
+            };
+
             Content.RootDirectory = "Content";
 
             IsFixedTimeStep = false;
-            graphics.SynchronizeWithVerticalRetrace = true;
-
-            graphics.PreferredDepthStencilFormat = DepthFormat.Depth24;
-            graphics.PreferMultiSampling = false;
 
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += OnWindowClientSizeChanged;
@@ -74,7 +78,10 @@ namespace GimpBlocks
             float aspectRatio = width / (float)height;
             const float fieldOfView = MathHelper.Pi / 4;
 
-            camera.SetProjectionParameters(fieldOfView, 1f, aspectRatio, .01f, 1000);
+            // TODO: right now MonoGame is stuck with a 16-bit depth buffer so we need to be pretty conservative with
+            // the near clipping plane in order to preserve as much precision as possible. Move this back to 0.5 or
+            // something when we can.
+            camera.SetProjectionParameters(fieldOfView, 1f, aspectRatio, 1f, 500);
         }
 
         protected override void Initialize()
