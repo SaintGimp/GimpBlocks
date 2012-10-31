@@ -23,9 +23,10 @@ namespace GimpBlocks
             MakeSingleton<Game>();
             MakeSingleton<ICamera>();
             MakeSingleton<ICameraController>();
-            MakeSingleton<InputManager>();
             MakeSingleton<Statistics>();
 
+            MakeSingleton<InputManager>();
+            MakeSingleton<IInputState>();
             For<IInputState>().Use<XnaInputState>();
 
             RegisterInterceptor(new EventAggregatorTypeInterceptor());

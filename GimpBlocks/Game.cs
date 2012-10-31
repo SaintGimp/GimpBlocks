@@ -16,7 +16,9 @@ namespace GimpBlocks
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class Game : Microsoft.Xna.Framework.Game
+    public class Game : Microsoft.Xna.Framework.Game,
+        IListener<EnabledMouseLookMode>,
+        IListener<DisabledMouseLookMode>
     {
         readonly GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -28,8 +30,10 @@ namespace GimpBlocks
         World world;
         BlockPicker blockPicker;
 
-        public Game()
+        public Game(InputManager inputManager)
         {
+            this.inputManager = inputManager;
+
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
@@ -40,13 +44,7 @@ namespace GimpBlocks
             graphics.PreferMultiSampling = false;
 
             Window.AllowUserResizing = true;
-            Window.ClientSizeChanged += Window_ClientSizeChanged;
-        }
-
-        void Window_ClientSizeChanged(object sender, EventArgs e)
-        {
-            SetViewportDependentParameters();
-            inputManager.SetClientBounds(Window.ClientBounds);
+            Window.ClientSizeChanged += OnWindowClientSizeChanged;
         }
 
         protected override void OnActivated(object sender, EventArgs args)
@@ -56,7 +54,18 @@ namespace GimpBlocks
             base.OnActivated(sender, args);
         }
 
-        private void SetViewportDependentParameters()
+        void OnWindowClientSizeChanged(object sender, EventArgs e)
+        {
+            OnWindowClientSizeChanged();
+        }
+
+        void OnWindowClientSizeChanged()
+        {
+            SetViewportDependentParameters();
+            inputManager.SetClientBounds(Window.ClientBounds);
+        }
+
+        void SetViewportDependentParameters()
         {
             var width = GraphicsDevice.Viewport.Width;
             var height = GraphicsDevice.Viewport.Height;
@@ -73,8 +82,6 @@ namespace GimpBlocks
             Mouse.WindowHandle = Window.Handle;
             Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
 
-            inputManager = ObjectFactory.GetInstance<InputManager>();
-            inputManager.SetClientBounds(Window.ClientBounds);
             camera = ObjectFactory.GetInstance<ICamera>();
             // TODO: Don't need this right now but we have to create the object in the container so it can receive messages
             cameraController = ObjectFactory.GetInstance<ICameraController>();
@@ -91,7 +98,7 @@ namespace GimpBlocks
 
             world.Generate();
 
-            SetViewportDependentParameters();
+            OnWindowClientSizeChanged();
 
             base.Initialize();
         }
@@ -140,6 +147,16 @@ namespace GimpBlocks
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        public void Handle(EnabledMouseLookMode message)
+        {
+            IsMouseVisible = false;
+        }
+
+        public void Handle(DisabledMouseLookMode message)
+        {
+            IsMouseVisible = true;
         }
     }
 }

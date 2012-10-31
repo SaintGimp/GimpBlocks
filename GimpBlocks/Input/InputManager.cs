@@ -12,7 +12,6 @@ namespace GimpBlocks
     public class InputManager
         : IListener<ToggleInputMode>
     {
-        readonly Game game;
         readonly IInputState inputState;
         readonly InputMapper globalMapper = new InputMapper();
         readonly InputMapper mouseLookMapper = new InputMapper();
@@ -20,9 +19,8 @@ namespace GimpBlocks
         bool mouseLookMode = true;
         Rectangle clientBounds;
 
-        public InputManager(Game game, IInputState inputState)
+        public InputManager(IInputState inputState)
         {
-            this.game = game;
             this.inputState = inputState;
 
             SetInputBindings();
@@ -81,7 +79,7 @@ namespace GimpBlocks
 
             // TODO: right now order here is important. The global mapper needs to run after
             // the others because otherwise we can toggle mouselook first then the mouselook handler
-            // runs with imputs that aren't correct. A better way to fix this might be to have the toggle
+            // runs with inputs that aren't correct. A better way to fix this might be to have the toggle
             // mouselook handler queue up an action to be run after all input is handled for this frame,
             // or something like that.
 
@@ -105,7 +103,7 @@ namespace GimpBlocks
         void EnableMouseLookMode()
         {
             inputState.SetRelativeMouseMode(new Point(clientBounds.Width / 2, clientBounds.Height / 2));
-            game.IsMouseVisible = false;
+            EventAggregator.Instance.SendMessage(new EnabledMouseLookMode());
             Mouse.SetPosition(clientBounds.Width / 2, clientBounds.Height / 2);
         }
 
@@ -113,7 +111,7 @@ namespace GimpBlocks
         {
             inputState.SetAbsoluteMouseMode();
             Mouse.SetPosition(clientBounds.Width / 2, clientBounds.Height / 2);
-            game.IsMouseVisible = true;
+            EventAggregator.Instance.SendMessage(new DisabledMouseLookMode());
         }
 
         public void OnActivated()

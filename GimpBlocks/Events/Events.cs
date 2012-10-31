@@ -112,4 +112,12 @@ namespace GimpBlocks
     public class ProfileWorldGeneration : InputMessage
     {
     }
+
+    public class EnabledMouseLookMode
+    {
+    }
+
+    public class DisabledMouseLookMode
+    {
+    }
 }

@@ -3,13 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using LibNoise;
-using LibNoise.Filter;
-using LibNoise.Modifier;
-using LibNoise.Primitive;
-using LibNoise.Tranformer;
 using Microsoft.Xna.Framework;
-using StructureMap;
 
 namespace GimpBlocks
 {
@@ -92,12 +86,12 @@ namespace GimpBlocks
             }
         }
 
-        void RebuildChunks(IEnumerable<Chunk> chunks)
+        void RebuildChunks(IEnumerable<Chunk> chunksToRebuild)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            foreach (var chunk in chunks)
+            foreach (var chunk in chunksToRebuild)
             {
                 chunk.SetInitialLighting();
             }
@@ -106,7 +100,7 @@ namespace GimpBlocks
             Trace.WriteLine(string.Format("initialize lighting: {0} ms", stopwatch.ElapsedMilliseconds));
             stopwatch.Restart();
 
-            foreach (var chunk in chunks)
+            foreach (var chunk in chunksToRebuild)
             {
                 chunk.CalculateLighting();
             }
@@ -115,7 +109,7 @@ namespace GimpBlocks
             Trace.WriteLine(string.Format("calculate lighting: {0} ms", stopwatch.ElapsedMilliseconds));
             stopwatch.Restart();
 
-            foreach (var chunk in chunks)
+            foreach (var chunk in chunksToRebuild)
             {
                 chunk.Tessellate();
             }
@@ -123,7 +117,7 @@ namespace GimpBlocks
             stopwatch.Stop();
             Trace.WriteLine(string.Format("tessellation: {0} ms", stopwatch.ElapsedMilliseconds));
 
-            foreach (var chunk in chunks)
+            foreach (var chunk in chunksToRebuild)
             {
                 EventAggregator.Instance.SendMessage(new ChunkRebuilt { Chunk = chunk });
             }
