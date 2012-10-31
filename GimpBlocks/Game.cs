@@ -43,7 +43,7 @@ namespace GimpBlocks
 
             Content.RootDirectory = "Content";
 
-            IsFixedTimeStep = false;
+            IsFixedTimeStep = true;
 
             Window.AllowUserResizing = true;
             Window.ClientSizeChanged += OnWindowClientSizeChanged;
