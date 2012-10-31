@@ -1,5 +1,4 @@
 using System;
-using StructureMap;
 
 namespace GimpBlocks
 {
@@ -11,9 +10,7 @@ namespace GimpBlocks
         /// </summary>
         static void Main(string[] args)
         {
-            Bootstrapper.BootstrapStructureMap();
-
-            using (var game = ObjectFactory.GetInstance<Game>())
+            using (var game = new Game())
             {
                 game.Run();
             }

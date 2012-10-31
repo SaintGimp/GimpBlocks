@@ -71,9 +71,6 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="mscorlib" />
-    <Reference Include="StructureMap, Version=2.6.4.0, Culture=neutral, PublicKeyToken=e60ad81abae3c223, processorArchitecture=MSIL">
-      <HintPath>..\packages\structuremap.2.6.4.1\lib\net40\StructureMap.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
@@ -108,12 +105,9 @@
     <Compile Include="Domain\Tessellator.cs" />
     <Compile Include="Domain\World.cs" />
     <Compile Include="Events\EventAggregator.cs" />
-    <Compile Include="Events\EventAggregatorTypeInterceptor.cs" />
     <Compile Include="Events\Events.cs" />
     <Compile Include="Events\IListener.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="Infrastructure\Bootstrapper.cs" />
-    <Compile Include="Infrastructure\GameRegistry.cs" />
     <Compile Include="Infrastructure\StopwatchExtensions.cs" />
     <Compile Include="Input\IInputState.cs" />
     <Compile Include="Input\InputManager.cs" />

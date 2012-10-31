@@ -9,18 +9,13 @@ using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-using StructureMap;
 
 namespace GimpBlocks
 {
-    /// <summary>
-    /// This is the main type for your game
-    /// </summary>
     public class Game : Microsoft.Xna.Framework.Game,
         IListener<EnabledMouseLookMode>,
         IListener<DisabledMouseLookMode>
     {
-        
         readonly GraphicsDeviceManager graphics;
         
         // Game systems
@@ -87,8 +82,22 @@ namespace GimpBlocks
 
             InitializeMouse();
 
+            InitializeWorld();
+
+            OnWindowClientSizeChanged();
+        }
+
+        void InitializeMouse()
+        {
+            IsMouseVisible = false;
+            Mouse.WindowHandle = Window.Handle;
+            Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
+        }
+
+        void InitializeWorld()
+        {
             var boundingBoxRenderer = new BoundingBoxRenderer(graphics.GraphicsDevice);
-            var chunkFactory = new ChunkFactory(new EnvironmentGenerator(),  () => new ChunkRenderer(graphics.GraphicsDevice, blockEffect));
+            var chunkFactory = new ChunkFactory(new EnvironmentGenerator(), () => new ChunkRenderer(graphics.GraphicsDevice, blockEffect));
             world = new World(4, chunkFactory, boundingBoxRenderer);
             EventAggregator.Instance.AddListener(world);
 
@@ -103,15 +112,6 @@ namespace GimpBlocks
             EventAggregator.Instance.AddListener(blockPicker);
 
             world.Generate();
-
-            OnWindowClientSizeChanged();
-        }
-
-        void InitializeMouse()
-        {
-            IsMouseVisible = false;
-            Mouse.WindowHandle = Window.Handle;
-            Mouse.SetPosition(Window.ClientBounds.Width / 2, Window.ClientBounds.Height / 2);
         }
 
         /// <summary>
