@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Machine.Specifications;
-using NSubstitute;
 
 namespace GimpBlocks.Specifications.WorldSpecs
 {
@@ -45,5 +44,25 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         It should_set_all_blocks_to_air = () =>
             testVolume.ContainedBlocks().ShouldEachConformTo(block => block.Prototype == BlockPrototype.AirBlock);
+    }
+
+    [Subject("Setting block types")]
+    public class when_the_world_has_multiple_chunks : BasicWorldContext
+    {
+        static BlockVolume testVolume;
+
+        Establish context = () =>
+        {
+            CreateWorld(2);
+            var minimum = new BlockPosition(Chunk.XDimension - 1, Chunk.YDimension - 1, Chunk.ZDimension - 1);
+            var maximum = new BlockPosition(Chunk.XDimension, Chunk.YDimension - 1, Chunk.ZDimension);
+            testVolume = new BlockVolume(world, minimum, maximum);
+        };
+
+        Because of = () =>
+            testVolume.SetAllTo(BlockPrototype.StoneBlock);
+
+        It should_set_blocks_across_chunk_boundaries = () =>
+            testVolume.ContainedBlocks().ShouldEachConformTo(block => block.Prototype == BlockPrototype.StoneBlock);
     }
 }

@@ -32,6 +32,8 @@ namespace GimpBlocks
 
         public Game()
         {
+            EventAggregator.Instance.AddListener(this);
+
             graphics = new GraphicsDeviceManager(this)
             {
                 SynchronizeWithVerticalRetrace = true,

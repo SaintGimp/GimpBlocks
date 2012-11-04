@@ -88,9 +88,11 @@
     <Compile Include="SettingsSpecs\SettingsSpecs.cs" />
     <Compile Include="Utilities\FakeEventListener.cs" />
     <Compile Include="WorldSpecs\BasicWorldContext.cs" />
+    <Compile Include="WorldSpecs\LightPropagationSpecs.cs" />
     <Compile Include="WorldSpecs\PickingBlocksSpecs.cs" />
     <Compile Include="WorldSpecs\PlacingAndDestroyingBlocksSpecs.cs" />
     <Compile Include="WorldSpecs\SettingBlockTypeSpecs.cs" />
+    <Compile Include="WorldSpecs\TessellationSpecs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

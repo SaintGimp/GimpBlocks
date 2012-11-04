@@ -249,6 +249,12 @@ namespace GimpBlocks
             // blocks. Maybe more trouble than it's worth, but should think
             // about it.
 
+            // TODO: could we use GetHighestVisibleBlockInNeighborhood to optimize the
+            // amount of sunlight we need to cast? If not done carefully, though, I
+            // guess we could have a problem with progagation leaking into the unset
+            // area at the top and causing a lot more propagation work which kind of
+            // defeats the purpose.
+
             for (int x = 0; x < XDimension; x++)
             {
                 for (int z = 0; z < ZDimension; z++)

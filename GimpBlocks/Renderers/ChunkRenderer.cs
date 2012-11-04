@@ -30,6 +30,8 @@ namespace GimpBlocks
         public void Initialize(Vector3 worldLocation, IEnumerable<VertexPositionColorLighting>[] vertices, IEnumerable<short>[] indices)
         {
             this.worldLocation = worldLocation;
+            
+            DestroyBuffers();
             CreateVertexBuffers(vertices);
             CreateIndexBuffers(indices);
         }
@@ -123,17 +125,27 @@ namespace GimpBlocks
         {
             if (!disposed)
             {
-                foreach (var buffer in vertexBuffers.Where(b => b != null))
-                {
-                    buffer.Dispose();
-                }
-
-                foreach (var buffer in indexBuffers.Where(b => b != null))
-                {
-                    buffer.Dispose();
-                }
+                DestroyBuffers();
 
                 disposed = true;
+            }
+        }
+
+        void DestroyBuffers()
+        {
+            for (int x = 0; x < 6; x++)
+            {
+                if (vertexBuffers[x] != null)
+                {
+                    vertexBuffers[x].Dispose();
+                }
+                vertexBuffers[x] = null;
+
+                if (indexBuffers[x] != null)
+                {
+                    indexBuffers[x].Dispose();
+                }
+                indexBuffers[x] = null;
             }
         }
     }

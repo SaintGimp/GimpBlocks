@@ -14,6 +14,7 @@ namespace GimpBlocks
     {
         readonly World world;
         readonly ICamera camera;
+        readonly int pickDistance = 6;
 
         public BlockPicker(World world, ICamera camera)
         {
@@ -30,7 +31,7 @@ namespace GimpBlocks
         {
             var ray = new Ray(camera.Location, camera.LookAt);
 
-            var intersectionResult = ray.Intersects(world, 5);
+            var intersectionResult = ray.Intersects(world, pickDistance);
 
             Block selectedBlock;
             BlockPosition selectedPlacePosition = new BlockPosition();

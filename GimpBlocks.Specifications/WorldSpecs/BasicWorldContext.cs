@@ -24,7 +24,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
         public static void CreateWorld(int viewDistance)
         {
             world = new World(viewDistance, chunkFactory, boundingBoxRenderer);
-            world.Generate();
+            world.LoadChunks();
         }
     }
 }

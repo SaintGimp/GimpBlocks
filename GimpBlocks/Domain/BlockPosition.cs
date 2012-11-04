@@ -123,7 +123,7 @@ namespace GimpBlocks
 
         public override string ToString()
         {
-            return string.Format("({0}, {1}, {2}", X, Y, Z);
+            return string.Format("({0}, {1}, {2})", X, Y, Z);
         }
     }
 }

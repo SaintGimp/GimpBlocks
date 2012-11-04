@@ -25,6 +25,19 @@ namespace GimpBlocks
             Minimum = new BlockPosition(center.X - radius, center.Y - radius, center.Z - radius);
         }
 
+        public BlockVolume(World world, BlockPosition anchor, int xExtent, int yExtent, int zExtent)
+        {
+            this.world = world;
+            int minimumX = Math.Min(anchor.X, anchor.X + xExtent);
+            int minimumY = Math.Min(anchor.Y, anchor.Y + yExtent);
+            int minimumZ = Math.Min(anchor.Z, anchor.Z + zExtent);
+            int maximumX = Math.Max(anchor.X, anchor.X + xExtent);
+            int maximumY = Math.Max(anchor.Y, anchor.Y + yExtent);
+            int maximumZ = Math.Max(anchor.Z, anchor.Z + zExtent);
+            Maximum = new BlockPosition(maximumX, maximumY, maximumZ);
+            Minimum = new BlockPosition(minimumX, minimumY, minimumZ); 
+        }
+
         public void SetAllTo(BlockPrototype prototype)
         {
             foreach (var position in AllPositions())
@@ -50,6 +63,11 @@ namespace GimpBlocks
                     }
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("(min: {0}, max: {1}", Minimum, Maximum);
         }
     }
 }

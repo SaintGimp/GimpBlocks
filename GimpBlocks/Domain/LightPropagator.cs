@@ -56,7 +56,7 @@ namespace GimpBlocks
             TotalNumberOfRecursions++;
             NumberOfRecursions++;
 
-            if (incomingLightValue <= 1)
+            if (incomingLightValue < 1)
             {
                 return;
             }
@@ -91,12 +91,15 @@ namespace GimpBlocks
             // sunlit blocks and make a list of just the ones that managed to propogate light somewhere, then do
             // iterative deepening on just those.
 
-            RecursivelyPropagateLight(world, blockPosition.Left, outgoingLightLevel);
-            RecursivelyPropagateLight(world, blockPosition.Right, outgoingLightLevel);
-            RecursivelyPropagateLight(world, blockPosition.Up, outgoingLightLevel);
-            RecursivelyPropagateLight(world, blockPosition.Down, outgoingLightLevel);
-            RecursivelyPropagateLight(world, blockPosition.Front, outgoingLightLevel);
-            RecursivelyPropagateLight(world, blockPosition.Back, outgoingLightLevel);
+            if (outgoingLightLevel > 0)
+            {
+                RecursivelyPropagateLight(world, blockPosition.Left, outgoingLightLevel);
+                RecursivelyPropagateLight(world, blockPosition.Right, outgoingLightLevel);
+                RecursivelyPropagateLight(world, blockPosition.Up, outgoingLightLevel);
+                RecursivelyPropagateLight(world, blockPosition.Down, outgoingLightLevel);
+                RecursivelyPropagateLight(world, blockPosition.Front, outgoingLightLevel);
+                RecursivelyPropagateLight(world, blockPosition.Back, outgoingLightLevel);
+            }
         }
     }
 }

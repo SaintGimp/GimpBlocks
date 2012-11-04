@@ -47,6 +47,20 @@ namespace GimpBlocks
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            LoadChunks();
+
+            RebuildChunks(AllChunks);
+
+            stopwatch.Stop();
+            Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
+            Trace.WriteLine(string.Format("World retrieved {0} blocks", NumberOfBlocksRetrieved));
+            Trace.WriteLine(string.Format("Light propagated {0} times", Chunk.NumberOfLightPropagations));
+            Trace.WriteLine(string.Format("Light propagations recursed {0} times", LightPropagator.TotalNumberOfRecursions));
+            Trace.WriteLine(string.Format("Tessellated {0} blocks", Tessellator.NumberOfBlocksTessellated));
+        }
+
+        public void LoadChunks()
+        {
             var generateTimer = new Stopwatch();
             generateTimer.Start();
             for (int x = 0; x <= chunks.GetUpperBound(0); x++)
@@ -58,16 +72,7 @@ namespace GimpBlocks
                     chunks[x, z] = chunk;
                 }
             }
-            Trace.WriteLine(string.Format("chunk terrain: {0} ms", generateTimer.ElapsedMilliseconds));
-
-            RebuildChunks(AllChunks);
-
-            stopwatch.Stop();
-            Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
-            Trace.WriteLine(string.Format("World retrieved {0} blocks", NumberOfBlocksRetrieved));
-            Trace.WriteLine(string.Format("Light propagated {0} times", Chunk.NumberOfLightPropagations));
-            Trace.WriteLine(string.Format("Light propagations recursed {0} times", LightPropagator.TotalNumberOfRecursions));
-            Trace.WriteLine(string.Format("Tessellated {0} blocks", Tessellator.NumberOfBlocksTessellated));
+            Trace.WriteLine(string.Format("generate chunks: {0} ms", generateTimer.ElapsedMilliseconds));
         }
 
         IEnumerable<Chunk> AllChunks
@@ -85,6 +90,32 @@ namespace GimpBlocks
         }
 
         void RebuildChunks(IEnumerable<Chunk> chunksToRebuild)
+        {
+            DoLighting(chunksToRebuild);
+
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            foreach (var chunk in chunksToRebuild)
+            {
+                chunk.Tessellate();
+            }
+
+            stopwatch.Stop();
+            Trace.WriteLine(string.Format("tessellation: {0} ms", stopwatch.ElapsedMilliseconds));
+
+            foreach (var chunk in chunksToRebuild)
+            {
+                EventAggregator.Instance.SendMessage(new ChunkRebuilt { Chunk = chunk });
+            }
+        }
+
+        public void DoLighting()
+        {
+            DoLighting(AllChunks);
+        }
+
+        public void DoLighting(IEnumerable<Chunk> chunksToRebuild)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -105,20 +136,6 @@ namespace GimpBlocks
 
             stopwatch.Stop();
             Trace.WriteLine(string.Format("calculate lighting: {0} ms", stopwatch.ElapsedMilliseconds));
-            stopwatch.Restart();
-
-            foreach (var chunk in chunksToRebuild)
-            {
-                chunk.Tessellate();
-            }
-
-            stopwatch.Stop();
-            Trace.WriteLine(string.Format("tessellation: {0} ms", stopwatch.ElapsedMilliseconds));
-
-            foreach (var chunk in chunksToRebuild)
-            {
-                EventAggregator.Instance.SendMessage(new ChunkRebuilt { Chunk = chunk });
-            }
         }
 
 
