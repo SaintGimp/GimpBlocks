@@ -14,7 +14,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             airVolume = new BlockVolume(world,
                 new BlockPosition(0, groundBlockPosition.Y + 1, 0),
                 new BlockPosition(Chunk.XDimension - 1, Chunk.YDimension - 1, Chunk.ZDimension - 1));
@@ -41,7 +41,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             overhangVolume = new BlockVolume(world,
                 new BlockPosition(groundBlockPosition.X - 2, groundBlockPosition.Y + 10, groundBlockPosition.Z - 2),
                 new BlockPosition(groundBlockPosition.X + 2, groundBlockPosition.Y + 10, groundBlockPosition.Z + 2));
@@ -76,7 +76,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             undergroundVolume = new BlockVolume(world,
                 new BlockPosition(groundBlockPosition.X - 2, groundBlockPosition.Y - 10, groundBlockPosition.Z - 2),
                 new BlockPosition(groundBlockPosition.X + 2, groundBlockPosition.Y - 20, groundBlockPosition.Z + 2));
@@ -100,7 +100,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             downVolume = new BlockVolume(world, groundBlockPosition, 0, -4, 0);
             sidewaysVolume = new BlockVolume(world, downVolume.Minimum, 4, 0, 0);
             upVolume = new BlockVolume(world, sidewaysVolume.Maximum, 0, 2, 0);
@@ -122,11 +122,10 @@ namespace GimpBlocks.Specifications.WorldSpecs
     {
         static BlockVolume downVolume;
         static BlockVolume sidewaysVolume;
-        static BlockVolume upVolume;
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             downVolume = new BlockVolume(world, groundBlockPosition, 0, -4, 0);
             sidewaysVolume = new BlockVolume(world, downVolume.Minimum, World.MaximumLightLevel, 0, 0);
 
@@ -149,11 +148,10 @@ namespace GimpBlocks.Specifications.WorldSpecs
     {
         static BlockVolume downVolume;
         static BlockVolume sidewaysVolume;
-        static BlockVolume upVolume;
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             downVolume = new BlockVolume(world, new BlockPosition(Chunk.XDimension - 5, groundBlockPosition.Y, groundBlockPosition.Z), 0, -4, 0);
             sidewaysVolume = new BlockVolume(world, downVolume.Minimum, World.MaximumLightLevel, 0, 0);
 
@@ -179,7 +177,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
             // Set up a situation where there's an air block in an adjacent chunk that's cut off from the
             // light in the adjacent chunk but can be lit by the first chunk. Also, this air block is higher than
             // any terrain in the first block (so the propagation is in danger of being optimized away).
-            CreateWorld(2);
+            CreateFlatWorld(2);
             cubeVolume = new BlockVolume(world, new BlockPosition(Chunk.XDimension, groundBlockPosition.Y + 1, 0), 3, 3, 3);
             voidPosition = new BlockPosition(Chunk.XDimension, groundBlockPosition.Y + 2, 1);
             cubeVolume.SetAllTo(BlockPrototype.StoneBlock);

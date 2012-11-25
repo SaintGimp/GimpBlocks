@@ -61,6 +61,7 @@
     <Compile Include="Domain\ChunkFactory.cs" />
     <Compile Include="Domain\ChunkPosition.cs" />
     <Compile Include="Domain\Face.cs" />
+    <Compile Include="Domain\Generators\EmptyEnvironmentGenerator.cs" />
     <Compile Include="Domain\Generators\EnvironmentGenerator.cs" />
     <Compile Include="Domain\Generators\FlatEnvironmentGenerator.cs" />
     <Compile Include="Domain\Generators\TerrainGenerator1.cs" />

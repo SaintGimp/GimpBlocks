@@ -49,7 +49,7 @@ namespace GimpBlocks
 
             LoadChunks();
 
-            RebuildChunks(AllChunks);
+            RebuildAllChunks();
 
             stopwatch.Stop();
             Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
@@ -87,6 +87,11 @@ namespace GimpBlocks
                 }
                 return chunkList;
             }
+        }
+
+        public void RebuildAllChunks()
+        {
+            RebuildChunks(AllChunks);
         }
 
         void RebuildChunks(IEnumerable<Chunk> chunksToRebuild)

@@ -12,7 +12,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
     {
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             world.Handle(new BlockSelectionChanged
             {
                 SelectedBlock = world.GetBlockAt(groundBlockPosition),
@@ -35,7 +35,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
     {
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             world.Handle(new BlockSelectionChanged
             {
                 SelectedBlock = world.GetBlockAt(groundBlockPosition),

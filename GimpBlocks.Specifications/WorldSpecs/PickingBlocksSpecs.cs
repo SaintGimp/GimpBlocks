@@ -110,7 +110,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             camera = new Camera();
             var cameraLocation = new Vector3(groundBlockPosition.X + 2, groundBlockPosition.Y + 2, groundBlockPosition.Z + 2);
             var lookAt = new Vector3(groundBlockPosition.X + .5f, groundBlockPosition.Y + 1, groundBlockPosition.Z + .5f);

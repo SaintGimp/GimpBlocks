@@ -120,7 +120,7 @@ namespace GimpBlocks
             // TODO: If we want to burn extra memory in order to optimize this even more aggressively,
             // we could keep track of lowest/highest for each colum in the chunk.
 
-            var lowerTesselationLimit = GetLowestInvisibleBlockInNeighborhood() - 1;
+            var lowerTesselationLimit = Math.Max(GetLowestInvisibleBlockInNeighborhood() - 1, 0);
             var tessellator = new Tessellator(world);
             for (int x = 0; x < XDimension; x++)
             {

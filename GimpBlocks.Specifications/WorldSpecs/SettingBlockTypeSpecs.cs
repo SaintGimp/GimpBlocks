@@ -13,7 +13,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             var minimum = new BlockPosition(0, 0, 0);
             var maximum = new BlockPosition(Chunk.XDimension - 1, Chunk.YDimension - 1, Chunk.ZDimension - 1);
             testVolume = new BlockVolume(world, minimum, maximum);
@@ -33,7 +33,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(1);
+            CreateFlatWorld(1);
             var minimum = new BlockPosition(0, 0, 0);
             var maximum = new BlockPosition(Chunk.XDimension - 1, Chunk.YDimension - 1, Chunk.ZDimension - 1);
             testVolume = new BlockVolume(world, minimum, maximum);
@@ -53,7 +53,7 @@ namespace GimpBlocks.Specifications.WorldSpecs
 
         Establish context = () =>
         {
-            CreateWorld(2);
+            CreateFlatWorld(2);
             var minimum = new BlockPosition(Chunk.XDimension - 1, Chunk.YDimension - 1, Chunk.ZDimension - 1);
             var maximum = new BlockPosition(Chunk.XDimension, Chunk.YDimension - 1, Chunk.ZDimension);
             testVolume = new BlockVolume(world, minimum, maximum);
