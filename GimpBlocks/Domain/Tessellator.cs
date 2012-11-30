@@ -6,8 +6,13 @@ using Microsoft.Xna.Framework;
 
 namespace GimpBlocks
 {
+    // TODO: this is really verbose. Is there a more elegant solution here?
+
     public class Tessellator
     {
+        public static readonly float TopFaceLightingLimit = 1.0f;
+        public static readonly float SideFaceLightingLimit = 0.85f;
+        public static readonly float BottomFaceLightingLimit = 0.70f;
         readonly World world;
 
         Block leftBlock;
@@ -254,7 +259,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(leftBlock, leftUpBlock, leftBackBlock, leftUpBackBlock, 0.85f)
+                Lighting = AverageLightingOver(leftBlock, leftUpBlock, leftBackBlock, leftUpBackBlock, SideFaceLightingLimit)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
@@ -262,7 +267,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(leftBlock, leftUpBlock, leftFrontBlock, leftUpFrontBlock, 0.85f)
+                Lighting = AverageLightingOver(leftBlock, leftUpBlock, leftFrontBlock, leftUpFrontBlock, SideFaceLightingLimit)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
@@ -270,7 +275,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(leftBlock, leftDownBlock, leftFrontBlock, leftDownFrontBlock, 0.85f)
+                Lighting = AverageLightingOver(leftBlock, leftDownBlock, leftFrontBlock, leftDownFrontBlock, SideFaceLightingLimit)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
@@ -278,7 +283,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(leftBlock, leftDownBlock, leftBackBlock, leftDownBackBlock, 0.85f)
+                Lighting = AverageLightingOver(leftBlock, leftDownBlock, leftBackBlock, leftDownBackBlock, SideFaceLightingLimit)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -301,7 +306,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(rightBlock, rightUpBlock, rightFrontBlock, rightUpFrontBlock, 0.85f)
+                Lighting = AverageLightingOver(rightBlock, rightUpBlock, rightFrontBlock, rightUpFrontBlock, SideFaceLightingLimit)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
@@ -309,7 +314,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(rightBlock, rightUpBlock, rightBackBlock, rightUpBackBlock, 0.85f)
+                Lighting = AverageLightingOver(rightBlock, rightUpBlock, rightBackBlock, rightUpBackBlock, SideFaceLightingLimit)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
@@ -317,7 +322,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(rightBlock, rightDownBlock, rightBackBlock, rightDownBackBlock, 0.85f)
+                Lighting = AverageLightingOver(rightBlock, rightDownBlock, rightBackBlock, rightDownBackBlock, SideFaceLightingLimit)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
@@ -325,7 +330,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(rightBlock, rightDownBlock, rightFrontBlock, rightDownFrontBlock, 0.85f)
+                Lighting = AverageLightingOver(rightBlock, rightDownBlock, rightFrontBlock, rightDownFrontBlock, SideFaceLightingLimit)
             });
 
             indexList.Add(topRightFrontIndex);
@@ -348,7 +353,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(backBlock, backUpBlock, backRightBlock, backUpRightBlock, 0.85f)
+                Lighting = AverageLightingOver(backBlock, backUpBlock, backRightBlock, backUpRightBlock, SideFaceLightingLimit)
             });
 
             var topLeftBackIndex = (short)vertexList.Count;
@@ -356,7 +361,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(backBlock, backUpBlock, backLeftBlock, backUpLeftBlock, 0.85f)
+                Lighting = AverageLightingOver(backBlock, backUpBlock, backLeftBlock, backUpLeftBlock, SideFaceLightingLimit)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
@@ -364,7 +369,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(backBlock, backDownBlock, backLeftBlock, backDownLeftBlock, 0.85f)
+                Lighting = AverageLightingOver(backBlock, backDownBlock, backLeftBlock, backDownLeftBlock, SideFaceLightingLimit)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
@@ -372,7 +377,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(backBlock, backDownBlock, backRightBlock, backDownRightBlock, 0.85f)
+                Lighting = AverageLightingOver(backBlock, backDownBlock, backRightBlock, backDownRightBlock, SideFaceLightingLimit)
             });
 
             indexList.Add(topRightBackIndex);
@@ -395,7 +400,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(frontBlock, frontUpBlock, frontLeftBlock, frontUpLeftBlock, 0.85f)
+                Lighting = AverageLightingOver(frontBlock, frontUpBlock, frontLeftBlock, frontUpLeftBlock, SideFaceLightingLimit)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
@@ -403,7 +408,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(frontBlock, frontUpBlock, frontRightBlock, frontUpRightBlock, 0.85f)
+                Lighting = AverageLightingOver(frontBlock, frontUpBlock, frontRightBlock, frontUpRightBlock, SideFaceLightingLimit)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
@@ -411,7 +416,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(frontBlock, frontDownBlock, frontRightBlock, frontDownRightBlock, 0.85f)
+                Lighting = AverageLightingOver(frontBlock, frontDownBlock, frontRightBlock, frontDownRightBlock, SideFaceLightingLimit)
             });
 
             var bottomLeftFrontIndex = (short)vertexList.Count;
@@ -419,7 +424,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(frontBlock, frontDownBlock, frontLeftBlock, frontDownLeftBlock, 0.85f)
+                Lighting = AverageLightingOver(frontBlock, frontDownBlock, frontLeftBlock, frontDownLeftBlock, SideFaceLightingLimit)
             });
 
             indexList.Add(topLeftFrontIndex);
@@ -442,7 +447,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(upBlock, upLeftBlock, upBackBlock, upLeftBackBlock, 1f)
+                Lighting = AverageLightingOver(upBlock, upLeftBlock, upBackBlock, upLeftBackBlock, TopFaceLightingLimit)
             });
 
             var topRightBackIndex = (short)vertexList.Count;
@@ -450,7 +455,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Up,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(upBlock, upRightBlock, upBackBlock, upRightBackBlock, 1f)
+                Lighting = AverageLightingOver(upBlock, upRightBlock, upBackBlock, upRightBackBlock, TopFaceLightingLimit)
             });
 
             var topRightFrontIndex = (short)vertexList.Count;
@@ -458,7 +463,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(upBlock, upRightBlock, upFrontBlock, upRightFrontBlock, 1f)
+                Lighting = AverageLightingOver(upBlock, upRightBlock, upFrontBlock, upRightFrontBlock, TopFaceLightingLimit)
             });
 
             var topLeftFrontIndex = (short)vertexList.Count;
@@ -466,7 +471,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Up.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(upBlock, upLeftBlock, upFrontBlock, upLeftFrontBlock, 1f)
+                Lighting = AverageLightingOver(upBlock, upLeftBlock, upFrontBlock, upLeftFrontBlock, TopFaceLightingLimit)
             });
 
             indexList.Add(topLeftBackIndex);
@@ -489,7 +494,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(downBlock, downLeftBlock, downFrontBlock, downLeftFrontBlock, 0.70f)
+                Lighting = AverageLightingOver(downBlock, downLeftBlock, downFrontBlock, downLeftFrontBlock, BottomFaceLightingLimit)
             });
 
             var bottomRightFrontIndex = (short)vertexList.Count;
@@ -497,7 +502,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Front,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(downBlock, downRightBlock, downFrontBlock, downRightFrontBlock, 0.70f)
+                Lighting = AverageLightingOver(downBlock, downRightBlock, downFrontBlock, downRightFrontBlock, BottomFaceLightingLimit)
             });
 
             var bottomRightBackIndex = (short)vertexList.Count;
@@ -505,7 +510,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(downBlock, downRightBlock, downBackBlock, downRightBackBlock, 0.70f)
+                Lighting = AverageLightingOver(downBlock, downRightBlock, downBackBlock, downRightBackBlock, BottomFaceLightingLimit)
             });
 
             var bottomLeftBackIndex = (short)vertexList.Count;
@@ -513,7 +518,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition,
                 Color = Color.LightGray,
-                Lighting = AverageLightingOver(downBlock, downLeftBlock, downBackBlock, downLeftBackBlock, 0.70f)
+                Lighting = AverageLightingOver(downBlock, downLeftBlock, downBackBlock, downLeftBackBlock, BottomFaceLightingLimit)
             });
 
             indexList.Add(bottomLeftFrontIndex);
