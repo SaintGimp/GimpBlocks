@@ -50,6 +50,7 @@ namespace GimpBlocks
 
         int highestVisibleBlock = -1;
         int lowestSunlitBlock = YDimension + 1;
+        // TODO: I don't like this name, find a better one
         int lowestInvisibleBlock = YDimension + 1;
 
         public static int NumberOfLightPropagations = 0;
@@ -120,7 +121,7 @@ namespace GimpBlocks
             // TODO: If we want to burn extra memory in order to optimize this even more aggressively,
             // we could keep track of lowest/highest for each colum in the chunk.
 
-            var lowerTesselationLimit = Math.Max(GetLowestInvisibleBlockInNeighborhood() - 1, 0);
+            var lowerTesselationLimit = Math.Max(lowestInvisibleBlock - 1, 0);
             var tessellator = new Tessellator(world);
             for (int x = 0; x < XDimension; x++)
             {
@@ -145,6 +146,11 @@ namespace GimpBlocks
 
         int GetLowestInvisibleBlockInNeighborhood()
         {
+            // TODO: we're actually not interested in the lowest transparent block in the whole
+            // neighborhood, just the lowest transparent block that's adjacent to our blocks
+            // because those would force us to tesselate a solid block on our side when otherwise
+            // we might optimize it away. Improve this.
+
             var lowest = neighborhoodPositions.Select(position => world.GetChunkAt(position))
                 .Where(chunk => chunk != null)
                 .Min(chunk => chunk.lowestInvisibleBlock);

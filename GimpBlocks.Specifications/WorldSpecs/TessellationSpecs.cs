@@ -118,4 +118,29 @@ namespace GimpBlocks.Specifications.WorldSpecs
         It should_not_generate_indices_for_hidden_faces = () =>
             chunkRenderer.Indices.Count.ShouldEqual(60);
     }
+
+    [Subject("Tessellation")]
+    public class when_a_neighboring_chunk_has_transparent_blocks_adjacent_to_this_chunks_solid_blocks_and_lower_than_this_chunks_transparent_blocks_ : BasicWorldContext
+    {
+        // Ordinarily we want to be able to optimize tesselation so that we skip any bottom layers that are totally solid and
+        // so won't have any exposed geometry to tessellate.
+        
+        // tODO: this isnt done
+
+        Establish context = () =>
+        {
+            CreateEmptyWorld(2);
+            world.SetBlockPrototype(new BlockPosition(Chunk.XDimension - 1, 0, 0), BlockPrototype.StoneBlock);
+            world.SetBlockPrototype(new BlockPosition(Chunk.XDimension, 0, 0), BlockPrototype.StoneBlock);
+        };
+
+        Because of = () =>
+            world.RebuildAllChunks();
+
+        It should_not_generate_vertices_for_hidden_faces = () =>
+            chunkRenderer.Vertices.Count.ShouldEqual(40);
+
+        It should_not_generate_indices_for_hidden_faces = () =>
+            chunkRenderer.Indices.Count.ShouldEqual(60);
+    }
 }

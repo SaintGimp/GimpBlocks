@@ -94,11 +94,13 @@
     <Reference Include="LibNoise">
       <HintPath>..\lib\LibNoise\LibNoise.dll</HintPath>
     </Reference>
-    <Reference Include="Lidgren.Network.Windows, Version=2011.3.12.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\lib\MonoGame\Lidgren.Network.Windows.dll</HintPath>
+    <Reference Include="Lidgren.Network, Version=2011.3.12.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\MonoGame\Lidgren.Network.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework.Windows, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\lib\MonoGame\MonoGame.Framework.Windows.dll</HintPath>
+    <Reference Include="MonoGame.Framework, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\MonoGame\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <HintPath>..\lib\MonoGame\OpenTK.dll</HintPath>

@@ -14,7 +14,7 @@ namespace GimpBlocks
     {
         public void Generate(Chunk chunk)
         {
-            var terrainGenerator = new TerrainGenerator1();
+            var terrainGenerator = new TerrainGenerator3();
             terrainGenerator.GenerateTerrain(chunk);
         }
     }
