@@ -3,12 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 
 namespace GimpBlocks
 {
@@ -29,6 +25,8 @@ namespace GimpBlocks
         SpriteBatch spriteBatch;
         Texture2D crosshairTexture;
         Effect blockEffect;
+
+        bool initialized;
 
         public Game()
         {
@@ -68,12 +66,25 @@ namespace GimpBlocks
 
         void OnWindowClientSizeChanged()
         {
-            SetViewportDependentParameters();
-            inputManager.SetClientBounds(Window.ClientBounds);
+            if (initialized)
+            {
+                Window.ClientSizeChanged -= OnWindowClientSizeChanged;
+
+                SetViewportDependentParameters();
+                inputManager.SetClientBounds(Window.ClientBounds);
+
+                Window.ClientSizeChanged += OnWindowClientSizeChanged;
+            }
         }
 
         void SetViewportDependentParameters()
         {
+            // http://stackoverflow.com/questions/8396677/uniformly-resizing-a-window-in-xna
+
+            graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+            graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+            graphics.ApplyChanges();
+
             var width = GraphicsDevice.Viewport.Width;
             var height = GraphicsDevice.Viewport.Height;
 
@@ -96,6 +107,7 @@ namespace GimpBlocks
 
             InitializeWorld();
 
+            initialized = true;
             OnWindowClientSizeChanged();
         }
 
