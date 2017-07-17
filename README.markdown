@@ -13,7 +13,8 @@ Experiments in building a Minecraft-esque game engine.  I have no particular pla
 
 The GimpBlocks project is a Visual Studio 2015 solution with a dependency on [MonoGame](http://www.monogame.net).
 
-* Install the most recent stable version of Monogame from http://www.monogame.net/downloads/ (required for content processing)
+* Install the DirectX Runtime from https://www.microsoft.com/en-us/download/details.aspx?id=35
+* Install the most recent stable version of Monogame from http://www.monogame.net/downloads/
 * Open the solution in Visual Studio
 * Set GimpBlocks as the startup project
 * Press F5 to build and run
