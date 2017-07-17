@@ -1,11 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GimpBlocks", "GimpBlocks\GimpBlocks.csproj", "{86CBA13B-C115-47D5-A234-41F5E2E102B5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GimpBlocks.Specs", "GimpBlocks.Specs\GimpBlocks.Specs.csproj", "{B68BAE52-3304-4E88-BB05-3371CAC873AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5E534BBA-F8E9-4304-A025-C3FEBE0D1FCA}"
+	ProjectSection(SolutionItems) = preProject
+		README.markdown = README.markdown
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,8 +28,8 @@ Global
 		{86CBA13B-C115-47D5-A234-41F5E2E102B5}.Release|x86.Build.0 = Release|x86
 		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Debug|x86.Build.0 = Debug|Any CPU
+		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Debug|x86.ActiveCfg = Debug|x86
+		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Debug|x86.Build.0 = Debug|x86
 		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B68BAE52-3304-4E88-BB05-3371CAC873AB}.Release|x86.ActiveCfg = Release|Any CPU

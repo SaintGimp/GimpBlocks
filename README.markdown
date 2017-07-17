@@ -11,19 +11,12 @@ Experiments in building a Minecraft-esque game engine.  I have no particular pla
 
 # How do I build and run it?
 
-The GimpBlocks project is a Visual Studio 2012 solution dependencies on a couple of NuGet packages (automatically downloaded when you build) and [MonoGame](http://monogame.codeplex.com/).
+The GimpBlocks project is a Visual Studio 2015 solution with a dependency on [MonoGame](http://www.monogame.net).
 
-* Download and run the MonoGame installer, choose to install OpenAL as well as the core files. (TODO: move all MonoGame dependencies into the repo.)
-* Load the solution in Visual Studio.
-* Build and run.
-
-The content files are pre-compiled with the XNA content pipeline.  Right now, if you want to add more content files you'll have to do the following:
-* Load GimpBlocksContent.sln in Visual Studio 2010 with XNA 4.0 installed.
-* Build the solution.
-* Copy the contents of \GimpBlocksContent\DummyGame\bin\x86\Debug\Content to \GimpBlocks\Content.
-(This will hopefully go away when MonoGame implements its own content pipeline.)
-
-If you run into any problems, let me know.
+* Install the most recent stable version of Monogame from http://www.monogame.net/downloads/ (required for content processing)
+* Open the solution in Visual Studio
+* Set GimpBlocks as the startup project
+* Press F5 to build and run
 
 # What are the controls?
 
