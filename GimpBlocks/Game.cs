@@ -35,9 +35,7 @@ namespace GimpBlocks
             graphics = new GraphicsDeviceManager(this)
             {
                 SynchronizeWithVerticalRetrace = true,
-                // TODO: we'd like to have a 24-bit depth buffer but right now MonoGame only gives
-                // us a 16-bit depth buffer regardless of what we ask for.
-                PreferredDepthStencilFormat = DepthFormat.Depth16,
+                PreferredDepthStencilFormat = DepthFormat.Depth24,
                 PreferMultiSampling = false
             };
 
@@ -61,20 +59,16 @@ namespace GimpBlocks
 
         void OnWindowClientSizeChanged(object sender, EventArgs e)
         {
-            OnWindowClientSizeChanged();
-        }
+            // In MonoGame 3.6 this event is not fired when the user maximizes the window :-( 
+            // https://github.com/MonoGame/MonoGame/pull/5585
+            // https://github.com/MonoGame/MonoGame/issues/5533
 
-        void OnWindowClientSizeChanged()
-        {
-            if (initialized)
-            {
-                Window.ClientSizeChanged -= OnWindowClientSizeChanged;
+            Window.ClientSizeChanged -= OnWindowClientSizeChanged;
 
-                SetViewportDependentParameters();
-                inputManager.SetClientBounds(Window.ClientBounds);
+            SetViewportDependentParameters();
+            inputManager.SetClientBounds(Window.ClientBounds);
 
-                Window.ClientSizeChanged += OnWindowClientSizeChanged;
-            }
+            Window.ClientSizeChanged += OnWindowClientSizeChanged;
         }
 
         void SetViewportDependentParameters()
@@ -91,10 +85,8 @@ namespace GimpBlocks
             float aspectRatio = width / (float)height;
             const float fieldOfView = MathHelper.Pi / 4;
 
-            // TODO: right now MonoGame is stuck with a 16-bit depth buffer so we need to be pretty conservative with
-            // the near clipping plane in order to preserve as much precision as possible. Move this back to 0.5 or
-            // something when we can.
-            camera.SetProjectionParameters(fieldOfView, 1f, aspectRatio, 1f, 500);
+            // TODO: we should call a method that changes only the aspect ratio here
+            camera.SetProjectionParameters(fieldOfView, 1f, aspectRatio, 0.1f, 10000000);
         }
 
         protected override void Initialize()
@@ -108,7 +100,7 @@ namespace GimpBlocks
             InitializeWorld();
 
             initialized = true;
-            OnWindowClientSizeChanged();
+            OnWindowClientSizeChanged(null, null);
         }
 
         void InitializeMouse()

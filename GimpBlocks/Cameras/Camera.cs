@@ -73,7 +73,7 @@ namespace GimpBlocks
         float fieldOfView = MathHelper.Pi / 4;
         float zoomLevel = 1.0f;
         float aspectRatio = 640f / 480f;
-        float nearPlane = 0.01f;
+        float nearPlane = 0.1f;
         float farPlane = Settings.Instance.FarClippingPlaneDistance;
         Matrix projectionMatrix;
 
