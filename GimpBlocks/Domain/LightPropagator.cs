@@ -9,12 +9,9 @@ namespace GimpBlocks
     public class LightPropagator
     {
         public static int TotalNumberOfRecursions = 0;
-        public int NumberOfRecursions = 0;
 
         public void PropagateSunlightFromBlock(World world, BlockPosition blockPosition)
         {
-            NumberOfRecursions = 0;
-
             // We assume that the block position passed to us has full sunlight and can
             // propogate light.
 
@@ -32,8 +29,6 @@ namespace GimpBlocks
 
         public void PropagateLightFromBlock(World world, BlockPosition blockPosition)
         {
-            NumberOfRecursions = 0;
-
             var block = world.GetBlockAt(blockPosition);
 
             if (!block.CanPropagateLight)
@@ -54,7 +49,6 @@ namespace GimpBlocks
         void RecursivelyPropagateLight(World world, BlockPosition blockPosition, byte incomingLightValue)
         {
             TotalNumberOfRecursions++;
-            NumberOfRecursions++;
 
             if (incomingLightValue < 1)
             {
@@ -90,6 +84,10 @@ namespace GimpBlocks
             // That would probably not be a net win but it's worth thinking about.  We could do a first pass on all
             // sunlit blocks and make a list of just the ones that managed to propogate light somewhere, then do
             // iterative deepening on just those.
+
+            // Another way of looking at it might be to put these recursive visits into a queue and pull them out
+            // in a FIFO fashion, so you'd do all of the brightest blocks first, then all of the second-brightest
+            // blocks, then all of the third-brightest, etc. What about garbage collection, though?
 
             if (outgoingLightLevel > 0)
             {

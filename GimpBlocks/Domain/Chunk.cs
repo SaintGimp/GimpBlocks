@@ -203,7 +203,6 @@ namespace GimpBlocks
                         // and destination light map so we don't have to deal with half-calculated data?
                         if (NeedsPropogation(x, y, z))
                         {
-                            propagator.NumberOfRecursions = 0;
                             var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
                             if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel)
                             {
