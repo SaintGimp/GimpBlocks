@@ -53,8 +53,6 @@ namespace GimpBlocks
         // TODO: I don't like this name, find a better one
         int lowestInvisibleBlock = YDimension + 1;
 
-        public static int NumberOfLightPropagations = 0;
-
         public Chunk(World world, ChunkPosition position, IEnvironmentGenerator environmentGenerator, IChunkRenderer renderer, BlockPrototypeMap prototypeMap)
         {
             Position = position;
@@ -208,13 +206,14 @@ namespace GimpBlocks
                             {
                                 // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
                                 // think about the implications for multi-threading and race conditions.
-                                propagator.PropagateSunlightFromBlock(world, new BlockPosition(Position, relativeBlockPosition));
-                                NumberOfLightPropagations++;
+                                propagator.EnqueueOperation(new LightingOperation(world, new BlockPosition(Position, relativeBlockPosition), World.MaximumLightLevel, true));
                             }
                         }
                     }
                 }
             }
+
+            propagator.Execute();
         }
 
         int GetHighestVisibleBlockInNeighborhood()

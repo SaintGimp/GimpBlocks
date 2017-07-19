@@ -54,8 +54,7 @@ namespace GimpBlocks
             stopwatch.Stop();
             Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
             Trace.WriteLine(string.Format("World retrieved {0} blocks", NumberOfBlocksRetrieved));
-            Trace.WriteLine(string.Format("Light propagated {0} times", Chunk.NumberOfLightPropagations));
-            Trace.WriteLine(string.Format("Light propagations recursed {0} times", LightPropagator.TotalNumberOfRecursions));
+            Trace.WriteLine(string.Format("Light operations executed {0} times", LightPropagator.NumberOfLightingOperations));
             Trace.WriteLine(string.Format("Tessellated {0} blocks", Tessellator.NumberOfBlocksTessellated));
         }
 

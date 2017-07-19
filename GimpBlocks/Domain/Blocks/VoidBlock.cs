@@ -10,7 +10,7 @@ namespace GimpBlocks
         public VoidBlock()
         {
             // This is the block type for areas outside of the loaded world.
-            // It cannot transmit light so that light propogation stops, but
+            // It cannot transmit light so that light propagation stops, but
             // it can be seen through so we generate faces for real blocks
             // ajacent to it.
             CanPropagateLight = false;

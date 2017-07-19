@@ -11,7 +11,7 @@ namespace GimpBlocks
         public static BlockPrototype StoneBlock = new StoneBlock();
         public static BlockPrototype VoidBlock = new VoidBlock();
 
-        // Can light propogate through this block to other blocks?
+        // Can light propagate through this block to other blocks?
         public bool CanPropagateLight { get; protected set; }
 
         // Can this block be seen (if exposed)?

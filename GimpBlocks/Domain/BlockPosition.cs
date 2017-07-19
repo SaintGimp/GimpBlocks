@@ -97,6 +97,22 @@ namespace GimpBlocks
             get { return new BlockPosition(X, Y - 1, Z); }
         }
 
+        public IEnumerable<BlockPosition> Neighbors
+        {
+            get
+            {
+                return new[]
+                {
+                    Left,
+                    Right,
+                    Front,
+                    Back,
+                    Up,
+                    Down
+                };
+            }
+        }
+
         public BlockPosition Relative(int relativeX, int relativeY, int relativeZ)
         {
             return new BlockPosition(X + relativeX, Y + relativeY, Z + relativeZ);

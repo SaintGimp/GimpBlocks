@@ -64,6 +64,7 @@
     <Compile Include="Domain\Generators\TerrainGenerator1.cs" />
     <Compile Include="Domain\Generators\TerrainGenerator2.cs" />
     <Compile Include="Domain\Generators\TerrainGenerator3.cs" />
+    <Compile Include="Domain\LightingOperation.cs" />
     <Compile Include="Domain\LightPropagator.cs" />
     <Compile Include="Domain\RayCaster.cs" />
     <Compile Include="Domain\RelativeBlockPosition.cs" />
