@@ -202,7 +202,8 @@ namespace GimpBlocks
                         if (NeedsPropogation(x, y, z))
                         {
                             var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
-                            if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel)
+                            if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel
+                                && !IsSurroundedBySunlitBlocks(relativeBlockPosition))
                             {
                                 // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
                                 // think about the implications for multi-threading and race conditions.
@@ -214,6 +215,25 @@ namespace GimpBlocks
             }
 
             propagator.Execute();
+        }
+
+        private bool IsSurroundedBySunlitBlocks(RelativeBlockPosition relativeBlockPosition)
+        {
+            if (relativeBlockPosition.X == 0 || relativeBlockPosition.X == XDimension - 1 || relativeBlockPosition.Z == 0 || relativeBlockPosition.Z == ZDimension - 1)
+            {
+                return false;
+            }
+            else if (GetLightLevel(relativeBlockPosition.Left) == World.MaximumLightLevel
+                && GetLightLevel(relativeBlockPosition.Right) == World.MaximumLightLevel
+                && GetLightLevel(relativeBlockPosition.Front) == World.MaximumLightLevel
+                && GetLightLevel(relativeBlockPosition.Back) == World.MaximumLightLevel)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         int GetHighestVisibleBlockInNeighborhood()
