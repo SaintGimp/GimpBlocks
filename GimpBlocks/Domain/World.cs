@@ -54,7 +54,8 @@ namespace GimpBlocks
             stopwatch.Stop();
             Trace.WriteLine(string.Format("Generated world in {0} ms", stopwatch.ElapsedMilliseconds));
             Trace.WriteLine(string.Format("World retrieved {0} blocks", NumberOfBlocksRetrieved));
-            Trace.WriteLine(string.Format("Light operations executed {0} times", LightPropagator.NumberOfLightingOperations));
+            Trace.WriteLine(string.Format("Initial light operations {0}", LightPropagator.NumberOfInitialLightingOperations));
+            Trace.WriteLine(string.Format("Additional light operations {0}", LightPropagator.NumberOfAdditionalLightingOperations));
             Trace.WriteLine(string.Format("Tessellated {0} blocks", Tessellator.NumberOfBlocksTessellated));
         }
 
@@ -259,6 +260,7 @@ namespace GimpBlocks
 
         public void Handle(BlockSelectionChanged message)
         {
+            // TODO: this fires on every single mouse move. Can we improve that?
             selectedBlock = message.SelectedBlock;
             selectedBlockPlacePosition = message.SelectedPlacePosition;
         }

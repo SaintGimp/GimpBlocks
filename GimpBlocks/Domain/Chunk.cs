@@ -202,8 +202,6 @@ namespace GimpBlocks
                             if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel
                                 && NeedsPropagation(relativeBlockPosition))
                             {
-                                // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
-                                // think about the implications for multi-threading and race conditions.
                                 propagator.EnqueueOperation(new LightingOperation(world, new BlockPosition(Position, relativeBlockPosition), World.MaximumLightLevel, true));
                             }
                         }
@@ -230,17 +228,17 @@ namespace GimpBlocks
                     world.GetBlockAt(blockPosition.Back)
                 };
 
-                return (neighboringBlocks.Any(block => block.LightLevel == 0 && block.CanPropagateLight));
+                return (neighboringBlocks.Any(block => block.LightLevel < World.MaximumLightLevel && block.CanPropagateLight));
             }
             else
             {
                 int x = relativeBlockPosition.X;
                 int y = relativeBlockPosition.Y;
                 int z = relativeBlockPosition.Z;
-                return ((lightArray[x - 1, y, z] == 0 && blockArray[x - 1, y, z].CanPropagateLight)
-                    || (lightArray[x + 1, y, z] == 0 && blockArray[x + 1, y, z].CanPropagateLight)
-                    || (lightArray[x, y, z - 1] == 0 && blockArray[x, y, z - 1].CanPropagateLight)
-                    || (lightArray[x, y, z + 1] == 0 && blockArray[x, y, z + 1].CanPropagateLight));
+                return ((lightArray[x - 1, y, z] < World.MaximumLightLevel && blockArray[x - 1, y, z].CanPropagateLight)
+                    || (lightArray[x + 1, y, z] < World.MaximumLightLevel && blockArray[x + 1, y, z].CanPropagateLight)
+                    || (lightArray[x, y, z - 1] < World.MaximumLightLevel && blockArray[x, y, z - 1].CanPropagateLight)
+                    || (lightArray[x, y, z + 1] < World.MaximumLightLevel && blockArray[x, y, z + 1].CanPropagateLight));
             }
         }
 
@@ -274,13 +272,6 @@ namespace GimpBlocks
 
         void CastSunlight()
         {
-            // TODO: would it be useful to keep track of everywhere that we
-            // set sunlight and then just iterate over that list later when
-            // we calculate light?  Maybe we could even then trace out the
-            // edges of that volume and propogate sunlight from only those
-            // blocks. Maybe more trouble than it's worth, but should think
-            // about it.
-
             // TODO: could we use GetHighestVisibleBlockInNeighborhood to optimize the
             // amount of sunlight we need to cast? If not done carefully, though, I
             // guess we could have a problem with progagation leaking into the unset

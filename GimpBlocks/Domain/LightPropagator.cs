@@ -11,11 +11,13 @@ namespace GimpBlocks
     {
         private ConcurrentQueue<LightingOperation> pendingOperations = new ConcurrentQueue<LightingOperation>();
 
-        public static int NumberOfLightingOperations = 0;
+        public static int NumberOfInitialLightingOperations = 0;
+        public static int NumberOfAdditionalLightingOperations = 0;
 
         public void EnqueueOperation(LightingOperation operation)
         {
             pendingOperations.Enqueue(operation);
+            NumberOfInitialLightingOperations++;
         }
 
         public void Execute()
@@ -23,12 +25,11 @@ namespace GimpBlocks
             LightingOperation currentOperation;
             while (pendingOperations.TryDequeue(out currentOperation))
             {
-                NumberOfLightingOperations++;
-
                 var newOperations = currentOperation.Propagate();
                 foreach (var newOperation in newOperations)
                 {
                     pendingOperations.Enqueue(newOperation);
+                    NumberOfAdditionalLightingOperations++;
                 }
             }
         }
