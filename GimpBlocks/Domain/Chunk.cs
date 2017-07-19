@@ -182,9 +182,6 @@ namespace GimpBlocks
             CastSunlight();
         }
 
-        // TODO: we should only calculate lighting once all neighbor chunks have geometry
-        // and have sunlight casted
-
         public void CalculateLighting()
         {
             var calculationLimit = GetHighestVisibleBlockInNeighborhood();
@@ -199,7 +196,7 @@ namespace GimpBlocks
                         // TODO: For now we can propogate only if the light is full strength,
                         // but that won't work for light sources that are less than full strength.  Maybe have a source
                         // and destination light map so we don't have to deal with half-calculated data?
-                        if (NeedsPropogation(x, y, z))
+                        if (MightNeedPropagation(x, y, z))
                         {
                             var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
                             if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel
@@ -219,20 +216,30 @@ namespace GimpBlocks
 
         private bool IsSurroundedBySunlitBlocks(RelativeBlockPosition relativeBlockPosition)
         {
+            // If this block is on the edge of the chunk we need to go through the world to pick up blocks
+            // from other chunks
             if (relativeBlockPosition.X == 0 || relativeBlockPosition.X == XDimension - 1 || relativeBlockPosition.Z == 0 || relativeBlockPosition.Z == ZDimension - 1)
             {
-                return false;
-            }
-            else if (GetLightLevel(relativeBlockPosition.Left) == World.MaximumLightLevel
-                && GetLightLevel(relativeBlockPosition.Right) == World.MaximumLightLevel
-                && GetLightLevel(relativeBlockPosition.Front) == World.MaximumLightLevel
-                && GetLightLevel(relativeBlockPosition.Back) == World.MaximumLightLevel)
-            {
-                return true;
+                var blockPosition = new BlockPosition(Position, relativeBlockPosition);
+                var neighboringBlocks = new[]
+                {
+                    world.GetBlockAt(blockPosition.Left),
+                    world.GetBlockAt(blockPosition.Right),
+                    world.GetBlockAt(blockPosition.Front),
+                    world.GetBlockAt(blockPosition.Back)
+                };
+
+                return (neighboringBlocks.All(block => block.LightLevel == World.MaximumLightLevel));
             }
             else
             {
-                return false;
+                int x = relativeBlockPosition.X;
+                int y = relativeBlockPosition.Y;
+                int z = relativeBlockPosition.Z;
+                return (lightArray[x - 1, y, z] == World.MaximumLightLevel
+                    && lightArray[x + 1, y, z] == World.MaximumLightLevel
+                    && lightArray[x, y, z - 1] == World.MaximumLightLevel
+                    && lightArray[x, y, z + 1] == World.MaximumLightLevel);
             }
         }
 
@@ -243,7 +250,7 @@ namespace GimpBlocks
                 .Max(chunk => chunk.highestVisibleBlock);
         }
 
-        bool NeedsPropogation(int x, int y, int z)
+        bool MightNeedPropagation(int x, int y, int z)
         {
             // When propagating sunlight, we actually only need to do x/z layers from the highest solid
             // block minus one down to the lowest sunlit block, plus all sunlit blocks on the outside edges up
