@@ -200,7 +200,7 @@ namespace GimpBlocks
                         {
                             var relativeBlockPosition = new RelativeBlockPosition(x, y, z);
                             if (GetLightLevel(relativeBlockPosition) == World.MaximumLightLevel
-                                && !IsSurroundedBySunlitBlocks(relativeBlockPosition))
+                                && NeedsPropagation(relativeBlockPosition))
                             {
                                 // TODO: because the propagator will happily move into neighboring chunks to do its work, we need to
                                 // think about the implications for multi-threading and race conditions.
@@ -214,10 +214,11 @@ namespace GimpBlocks
             propagator.Execute();
         }
 
-        private bool IsSurroundedBySunlitBlocks(RelativeBlockPosition relativeBlockPosition)
+        private bool NeedsPropagation(RelativeBlockPosition relativeBlockPosition)
         {
             // If this block is on the edge of the chunk we need to go through the world to pick up blocks
-            // from other chunks
+            // from other chunks, otherwise we can just do internal checks. We don't care about up and down
+            // because up will always be sunlit and down will be either sunlit or solid.
             if (relativeBlockPosition.X == 0 || relativeBlockPosition.X == XDimension - 1 || relativeBlockPosition.Z == 0 || relativeBlockPosition.Z == ZDimension - 1)
             {
                 var blockPosition = new BlockPosition(Position, relativeBlockPosition);
@@ -229,17 +230,17 @@ namespace GimpBlocks
                     world.GetBlockAt(blockPosition.Back)
                 };
 
-                return (neighboringBlocks.All(block => block.LightLevel == World.MaximumLightLevel));
+                return (neighboringBlocks.Any(block => block.LightLevel == 0 && block.CanPropagateLight));
             }
             else
             {
                 int x = relativeBlockPosition.X;
                 int y = relativeBlockPosition.Y;
                 int z = relativeBlockPosition.Z;
-                return (lightArray[x - 1, y, z] == World.MaximumLightLevel
-                    && lightArray[x + 1, y, z] == World.MaximumLightLevel
-                    && lightArray[x, y, z - 1] == World.MaximumLightLevel
-                    && lightArray[x, y, z + 1] == World.MaximumLightLevel);
+                return ((lightArray[x - 1, y, z] == 0 && blockArray[x - 1, y, z].CanPropagateLight)
+                    || (lightArray[x + 1, y, z] == 0 && blockArray[x + 1, y, z].CanPropagateLight)
+                    || (lightArray[x, y, z - 1] == 0 && blockArray[x, y, z - 1].CanPropagateLight)
+                    || (lightArray[x, y, z + 1] == 0 && blockArray[x, y, z + 1].CanPropagateLight));
             }
         }
 
