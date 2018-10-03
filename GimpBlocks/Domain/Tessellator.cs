@@ -8,6 +8,8 @@ namespace GimpBlocks
 {
     // TODO: this is really verbose. Is there a more elegant solution here?
 
+    // TODO: study https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
+
     public class Tessellator
     {
         public static readonly float TopFaceLightingLimit = 1.0f;
@@ -275,6 +277,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Front,
                 Color = Color.LightGray,
+                //
                 Lighting = AverageLightingOver(leftBlock, leftDownBlock, leftFrontBlock, leftDownFrontBlock, SideFaceLightingLimit)
             });
 
@@ -283,6 +286,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition,
                 Color = Color.LightGray,
+                //
                 Lighting = AverageLightingOver(leftBlock, leftDownBlock, leftBackBlock, leftDownBackBlock, SideFaceLightingLimit)
             });
 
@@ -455,6 +459,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Up,
                 Color = Color.LightGray,
+                //
                 Lighting = AverageLightingOver(upBlock, upRightBlock, upBackBlock, upRightBackBlock, TopFaceLightingLimit)
             });
 
@@ -463,6 +468,7 @@ namespace GimpBlocks
             {
                 Position = relativeBlockPosition.Right.Up.Front,
                 Color = Color.LightGray,
+                //
                 Lighting = AverageLightingOver(upBlock, upRightBlock, upFrontBlock, upRightFrontBlock, TopFaceLightingLimit)
             });
 

@@ -91,8 +91,7 @@ namespace GimpBlocks
 
                         graphicsDevice.Indices = indexBuffers[x];
                         graphicsDevice.SetVertexBuffer(vertexBuffers[x]);
-                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, vertexBuffers[x].VertexCount, 0,
-                            indexBuffers[x].IndexCount / 3);
+                        graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, indexBuffers[x].IndexCount / 3);
                     }
                 }
             }

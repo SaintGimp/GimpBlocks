@@ -26,8 +26,6 @@ namespace GimpBlocks
         Texture2D crosshairTexture;
         Effect blockEffect;
 
-        bool initialized;
-
         public Game()
         {
             EventAggregator.Instance.AddListener(this);
@@ -99,7 +97,6 @@ namespace GimpBlocks
 
             InitializeWorld();
 
-            initialized = true;
             OnWindowClientSizeChanged(null, null);
         }
 

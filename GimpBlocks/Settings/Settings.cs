@@ -29,7 +29,7 @@ namespace GimpBlocks
             CameraStartingLocation = Vector3.Up * 110 + Vector3.Right * 10 + Vector3.Backward * 10;
             CameraStartingLookAt = Vector3.Up * 30 + Vector3.Right * 128 + Vector3.Backward * 128;
             CameraMoveSpeedPerSecond = 10;
-            CameraMouseLookDamping = 300f;
+            CameraMouseLookDamping = 600f;
             FarClippingPlaneDistance = 10000000;
         }
 
